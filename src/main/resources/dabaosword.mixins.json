@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.amotassic.dabaosword.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "dabaosword.refmap.json",
+  "mixins": [
+    "ItemEntityMixin",
+    "LargeFireballMixin",
+    "LivingEntityMixin",
+    "PlayerMixin"
+  ],
+  "client": [
+    "client.GameRendererMixin",
+    "client.LivingEntityRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

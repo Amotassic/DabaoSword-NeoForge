@@ -1,0 +1,67 @@
+package com.amotassic.dabaosword.item.card;
+
+import com.amotassic.dabaosword.item.ModItems;
+import com.amotassic.dabaosword.util.Sounds;
+import com.amotassic.dabaosword.util.Tags;
+import net.minecraft.network.chat.Component;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
+
+import static com.amotassic.dabaosword.util.ModTools.*;
+
+public class JuedouItem extends CardItem {
+    public JuedouItem(Properties p_41383_) {super(p_41383_);}
+
+    @Override
+    public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
+        if (!world.isClientSide && selected && entity instanceof Player player) {
+            player.addEffect(new MobEffectInstance(ModItems.REACH, 10,114,false,false,false));
+        }
+        super.inventoryTick(stack, world, entity, slot, selected);
+    }
+
+    @Override
+    public @NotNull InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
+        if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND && entity.isAlive()) {
+            user.addTag("juedou");
+            if (entity instanceof Player player && hasItem(player, ModItems.WUXIE.get())) {
+                removeItem(player, ModItems.WUXIE.get());
+                jizhi(player); benxi(player);
+                voice(player, Sounds.WUXIE.get());
+            } else {
+                if (entity instanceof Player target) {
+                    TagKey<Item> tag = Tags.SHA;
+                    int userSha = count(user, tag);
+                    int targetSha = count(target, tag);
+                    if (userSha >= targetSha) { target.invulnerableTime = 0;
+                        target.addTag("juedou");
+                        target.hurt(user.damageSources().sonicBoom(user),5f);
+                        target.displayClientMessage(Component.literal(user.getScoreboardName()).append(Component.translatable("dabaosword.juedou2")),false);
+                    } else { user.invulnerableTime = 0;
+                        user.hurt(target.damageSources().sonicBoom(target),5f);
+                        user.displayClientMessage(Component.translatable("dabaosword.juedou1"),false);
+                        if (targetSha != 0) {
+                            ItemStack sha = stackInTag(tag, target);
+                            sha.shrink(1);
+                        }
+                    }
+                } else { entity.invulnerableTime = 0;
+                    entity.hurt(user.damageSources().sonicBoom(user),5f);}
+            }
+            if (!user.isCreative()) {stack.shrink(1);}
+            jizhi(user); benxi(user);
+            voice(user, Sounds.JUEDOU.get());
+            return InteractionResult.SUCCESS;
+        }
+        return InteractionResult.PASS;
+    }
+}

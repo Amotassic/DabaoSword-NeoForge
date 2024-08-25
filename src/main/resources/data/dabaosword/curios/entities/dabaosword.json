@@ -1,0 +1,12 @@
+{
+  "entities": [
+    "player"
+  ],
+  "slots": [
+    "armor",
+    "weapon",
+    "skills",
+    "horses",
+    "card_pile"
+  ]
+}
