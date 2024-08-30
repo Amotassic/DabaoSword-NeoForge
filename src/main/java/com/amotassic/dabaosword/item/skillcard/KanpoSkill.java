@@ -21,7 +21,7 @@ public class KanpoSkill extends SkillItem {
             int cd = getCD(stack);
             if (cd == 0 && !stack1.isEmpty() && stack1.is(Tags.ARMOURY_CARD)) {
                 setCD(stack, 10);
-                viewAs(player, Tags.ARMOURY_CARD, ModItems.WUXIE.get(), Sounds.KANPO1.get(), Sounds.KANPO2.get());
+                HuojiSkill.viewAs(player, Tags.ARMOURY_CARD, ModItems.WUXIE.get(), Sounds.KANPO1.get(), Sounds.KANPO2.get());
             }
         }
         super.curioTick(slotContext, stack);

@@ -22,9 +22,7 @@ public class BingliangItem extends CardItem {
                 removeItem(player, ModItems.WUXIE.get());
                 jizhi(player); benxi(player);
                 voice(player, Sounds.WUXIE.get());
-            } else {
-                entity.addEffect(new MobEffectInstance(ModItems.BINGLIANG, MobEffectInstance.INFINITE_DURATION,1));
-            }
+            } else entity.addEffect(new MobEffectInstance(ModItems.BINGLIANG, MobEffectInstance.INFINITE_DURATION,1));
             if (!user.isCreative()) {stack.shrink(1);}
             jizhi(user); benxi(user);
             voice(user, Sounds.BINGLIANG.get());

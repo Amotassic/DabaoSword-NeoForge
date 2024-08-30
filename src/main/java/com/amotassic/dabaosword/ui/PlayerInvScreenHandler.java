@@ -85,8 +85,8 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
                     if (new Random().nextFloat() < 0.5) {voice(player, Sounds.SHANZHUAN1.get());} else {voice(player, Sounds.SHANZHUAN2.get());}
                     if (targetStack.is(Tags.BASIC_CARD)) target.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 5));
                     else target.addEffect(new MobEffectInstance(ModItems.BINGLIANG, MobEffectInstance.INFINITE_DURATION,1));
-                    targetStack.shrink(1);
                     target.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("dabaosword.discard")).append(targetStack.getDisplayName()), false);
+                    targetStack.shrink(1);
                     player.addEffect(new MobEffectInstance(ModItems.COOLDOWN, 20 * 8,0,false,false,true));
                     closeGUI(player);
                 }
@@ -157,15 +157,12 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
         } else if (cards == 1) {
             List<ItemStack> candidate = new ArrayList<>();
             NonNullList<ItemStack> inventory = player.getInventory().items;
-            List<Integer> cardSlots = IntStream.range(0, inventory.size()).filter(
-                            i -> inventory.get(i).is(Tags.CARD) || inventory.get(i).getItem() == ModItems.GAIN_CARD.get())
-                    .boxed().toList();
+            List<Integer> cardSlots = IntStream.range(0, inventory.size()).filter(i -> isCard(inventory.get(i))).boxed().toList();
             for (Integer slot : cardSlots) {candidate.add(inventory.get(slot));}
             ItemStack off = player.getOffhandItem();
-            if (off.is(Tags.CARD) || off.getItem() == ModItems.GAIN_CARD.get()) candidate.add(off);
+            if (isCard(off)) candidate.add(off);
             if(!candidate.isEmpty()) {
-                Random r = new Random();
-                int index = r.nextInt(candidate.size());
+                int index = new Random().nextInt(candidate.size());
                 return candidate.get(index);
             }
         }

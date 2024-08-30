@@ -26,16 +26,16 @@ public class Cooldown2Effect extends MobEffect {
 
     @Override
     public boolean applyEffectTick(@NotNull LivingEntity entity, int amplifier) {
-        if (entity instanceof Player player && player.level() instanceof ServerLevel world) {
+        if (entity.level() instanceof ServerLevel world) {
             int restTime = Objects.requireNonNull(entity.getEffect(ModItems.COOLDOWN2)).getDuration();
             //一级效果被用于万箭齐发
             if (amplifier == 1) {
-                arrowRain(player, 3);
-                if (restTime <= 1) player.getTags().remove("wanjian");
+                arrowRain(entity, 3);
+                if (restTime <= 1) entity.getTags().remove("wanjian");
             }
 
-            if (amplifier == 3 && hasTrinket(SkillCards.LEIJI.get(), player) && restTime >= 15) {//雷击的效果
-                EntityType.LIGHTNING_BOLT.spawn(world, new BlockPos((int) player.getX(), (int) player.getY(), (int) player.getZ()),null);
+            if (amplifier == 3 && hasTrinket(SkillCards.LEIJI.get(), entity) && restTime >= 15) {//雷击的效果
+                EntityType.LIGHTNING_BOLT.spawn(world, new BlockPos((int) entity.getX(), (int) entity.getY(), (int) entity.getZ()),null);
             }
         }
         return true;

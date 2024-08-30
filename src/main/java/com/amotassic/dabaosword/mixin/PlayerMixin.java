@@ -21,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -38,39 +39,39 @@ import static com.amotassic.dabaosword.util.ModTools.*;
 public abstract class PlayerMixin extends LivingEntity {
     @Shadow public abstract boolean isCreative();
 
-    @Shadow public abstract boolean hurt(DamageSource p_36154_, float p_36155_);
+    @Shadow public abstract boolean hurt(@NotNull DamageSource p_36154_, float p_36155_);
 
     protected PlayerMixin(EntityType<? extends LivingEntity> p_20966_, Level p_20967_) {super(p_20966_, p_20967_);}
 
-    @Unique Player player = (Player) (Object) this;
+    @Unique Player dabaoSword$player = (Player) (Object) this;
 
     @Inject(method = "hurt",at = @At("HEAD"), cancellable = true)
-    private void damagemixin(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    private void damageMixin(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
 
         if (this.level() instanceof ServerLevel world) {
 
-            if (source.getEntity() instanceof LivingEntity entity) {
+            if (source.getDirectEntity() instanceof LivingEntity entity) {
                 //若攻击者主手没有物品，则无法击穿藤甲
-                if (inrattan(player)) {
+                if (dabaoSword$inrattan(dabaoSword$player)) {
                     if (entity.getMainHandItem().isEmpty()) cir.setReturnValue(false);
-                    else if (getShanSlot(player) != -1 && !this.hasEffect(ModItems.COOLDOWN2)) {
+                    else if (dabaoSword$getShanSlot(dabaoSword$player) != -1 && !dabaoSword$player.hasEffect(ModItems.COOLDOWN2)) {
                         cir.setReturnValue(false);
-                        shan(player,false);//闪的额外判断
+                        dabaoSword$shan(dabaoSword$player,false);//闪的额外判断
                     }
                 }
             }
             //弹射物对藤甲无效
-            if (source.is(DamageTypeTags.IS_PROJECTILE) && inrattan(player)) {cir.setReturnValue(false);}
+            if (source.is(DamageTypeTags.IS_PROJECTILE) && dabaoSword$inrattan(dabaoSword$player)) cir.setReturnValue(false);
 
             if (source.getEntity() instanceof Wolf dog && dog.hasEffect(ModItems.INVULNERABLE)) {
                 //被南蛮入侵的狗打中可以消耗杀以免疫伤害
                 if (dog.getOwner() != this) {
-                    if (getShaSlot(player) != -1) {
-                        ItemStack stack = shaStack(player);
+                    if (getShaSlot(dabaoSword$player) != -1) {
+                        ItemStack stack = shaStack(dabaoSword$player);
                         cir.setReturnValue(false);
-                        if (stack.getItem() == ModItems.SHA.get()) voice(player, Sounds.SHA.get());
-                        if (stack.getItem() == ModItems.FIRE_SHA.get()) voice(player, Sounds.SHA_FIRE.get());
-                        if (stack.getItem() == ModItems.THUNDER_SHA.get()) voice(player, Sounds.SHA_THUNDER.get());
+                        if (stack.getItem() == ModItems.SHA.get()) voice(dabaoSword$player, Sounds.SHA.get());
+                        if (stack.getItem() == ModItems.FIRE_SHA.get()) voice(dabaoSword$player, Sounds.SHA_FIRE.get());
+                        if (stack.getItem() == ModItems.THUNDER_SHA.get()) voice(dabaoSword$player, Sounds.SHA_THUNDER.get());
                         stack.shrink(1);
                     }
                     dog.setHealth(0);
@@ -79,14 +80,14 @@ public abstract class PlayerMixin extends LivingEntity {
 
             if (source.getEntity() instanceof LivingEntity) {
 
-                final boolean trigger = baguaTrigger(player);
-                boolean hasShan = getShanSlot(player) != -1 || trigger;
-                boolean shouldShan = !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !getTags().contains("juedou") && hasShan && !isCreative() && !hasEffect(ModItems.COOLDOWN2) && !hasEffect(ModItems.INVULNERABLE) && !hasTrinket(SkillCards.LIULI.get(), player) && !hasTrinket(ModItems.RATTAN_ARMOR.get(), player);
+                final boolean trigger = dabaoSword$baguaTrigger(dabaoSword$player);
+                boolean hasShan = dabaoSword$getShanSlot(dabaoSword$player) != -1 || trigger;
+                boolean shouldShan = !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !getTags().contains("juedou") && hasShan && !dabaoSword$player.isCreative() && !dabaoSword$player.hasEffect(ModItems.COOLDOWN2) && !dabaoSword$player.hasEffect(ModItems.INVULNERABLE) && !hasTrinket(SkillCards.LIULI.get(), dabaoSword$player) && !dabaoSword$inrattan(dabaoSword$player);
 
                 //闪的被动效果
                 if (shouldShan) {
                     cir.setReturnValue(false);
-                    shan(player, trigger);
+                    dabaoSword$shan(dabaoSword$player, trigger);
                     //虽然没有因为杀而触发闪，但如果攻击者的杀处于自动触发状态，则仍会消耗
                     if (source.getDirectEntity() instanceof Player player1 && getShaSlot(player1) != -1) {
                         ItemStack stack = shaStack(player1);
@@ -101,28 +102,28 @@ public abstract class PlayerMixin extends LivingEntity {
             }
 
             //流离
-            if (hasTrinket(SkillCards.LIULI.get(), player) && source.getEntity() instanceof LivingEntity attacker && hasItemInTag(Tags.CARD, player) && !this.hasEffect(ModItems.INVULNERABLE) && !this.isCreative()) {
-                ItemStack stack = stackInTag(Tags.CARD, player);
-                AABB box = new AABB(this.getOnPos()).inflate(10);
+            if (hasTrinket(SkillCards.LIULI.get(), dabaoSword$player) && source.getEntity() instanceof LivingEntity attacker && getSlotInTag(Tags.CARD, dabaoSword$player) != -1 && !dabaoSword$player.hasEffect(ModItems.COOLDOWN2) && !dabaoSword$player.isCreative()) {
+                ItemStack stack = stackInTag(Tags.CARD, dabaoSword$player);
+                AABB box = new AABB(dabaoSword$player.getOnPos()).inflate(10);
                 int i = 0;
-                for (LivingEntity nearbyEntity : world.getEntitiesOfClass(LivingEntity.class, box, LivingEntity -> LivingEntity != attacker && LivingEntity != this)) {
+                for (LivingEntity nearbyEntity : world.getEntitiesOfClass(LivingEntity.class, box, LivingEntity -> LivingEntity != attacker && LivingEntity != dabaoSword$player)) {
                     if (nearbyEntity != null) {
                         cir.setReturnValue(false);
-                        this.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 10,0,false,false,false));
-                        this.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 10,0,false,false,false));
+                        dabaoSword$player.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 10,0,false,false,false));
+                        dabaoSword$player.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 10,0,false,false,false));
                         stack.shrink(1);
-                        if (new Random().nextFloat() < 0.5) {voice(player, Sounds.LIULI1.get());} else {voice(player, Sounds.LIULI2.get());}
+                        if (new Random().nextFloat() < 0.5) {voice(dabaoSword$player, Sounds.LIULI1.get());} else {voice(dabaoSword$player, Sounds.LIULI2.get());}
                         nearbyEntity.invulnerableTime = 0;
                         nearbyEntity.hurt(source, amount); i++; break;
                     }
                 }
                 //避免闪自动触发，因此在这里额外判断
-                if (i == 0 && !this.hasEffect(ModItems.COOLDOWN2)) {
-                    final boolean trigger = baguaTrigger(player);
-                    boolean hasShan = getShanSlot(player) != -1 || trigger;
+                if (i == 0 && !dabaoSword$player.hasEffect(ModItems.COOLDOWN2)) {
+                    final boolean trigger = dabaoSword$baguaTrigger(dabaoSword$player);
+                    boolean hasShan = dabaoSword$getShanSlot(dabaoSword$player) != -1 || trigger;
                     if (hasShan) {
                         cir.setReturnValue(false);
-                        shan(player, trigger);
+                        dabaoSword$shan(dabaoSword$player, trigger);
                     }
                 }
             }
@@ -130,9 +131,9 @@ public abstract class PlayerMixin extends LivingEntity {
         }
     }
 
-    @Unique private int tick = 0;
-    @Unique private int tick2 = 0;
-    @Unique private int skillChange = 0;
+    @Unique private int dabaoSword$tick = 0;
+    @Unique private int dabaoSword$tick2 = 0;
+    @Unique private int dabaoSword$skillChange = 0;
 
     @Inject(at = @At("TAIL"), method = "tick")
     public void tick(CallbackInfo ci) {
@@ -141,67 +142,68 @@ public abstract class PlayerMixin extends LivingEntity {
             int skill = world.getGameRules().getInt(Gamerule.CHANGE_SKILL_INTERVAL) * 20;
             boolean enableLimit = world.getGameRules().getBoolean(Gamerule.ENABLE_CARDS_LIMIT);
 
-            if (++tick >= giveCard) { // 每分钟摸两张牌
-                tick = 0;
-                if (hasTrinket(ModItems.CARD_PILE.get(), player) && !player.isCreative() && !player.isSpectator()) {
-                    if (count(player, Tags.CARD) + count(player, ModItems.GAIN_CARD.get()) <= player.getMaxHealth()) {
-                        player.addItem(new ItemStack(ModItems.GAIN_CARD, 2));
-                        player.displayClientMessage(Component.translatable("dabaosword.draw"),true);
+            if (++dabaoSword$tick >= giveCard) { // 每分钟摸两张牌
+                dabaoSword$tick = 0;
+                if (hasTrinket(ModItems.CARD_PILE.get(), dabaoSword$player) && !dabaoSword$player.isCreative() && !dabaoSword$player.isSpectator()) {
+                    if (count(dabaoSword$player, Tags.CARD) + count(dabaoSword$player, ModItems.GAIN_CARD.get()) <= dabaoSword$player.getMaxHealth()) {
+                        dabaoSword$player.addItem(new ItemStack(ModItems.GAIN_CARD, 2));
+                        dabaoSword$player.displayClientMessage(Component.translatable("dabaosword.draw"),true);
                     } else if (!enableLimit) {//如果不限制摸牌就继续发牌
-                        player.addItem(new ItemStack(ModItems.GAIN_CARD, 2));
-                        player.displayClientMessage(Component.translatable("dabaosword.draw"),true);
+                        dabaoSword$player.addItem(new ItemStack(ModItems.GAIN_CARD, 2));
+                        dabaoSword$player.displayClientMessage(Component.translatable("dabaosword.draw"),true);
                     }
                 }
             }
 
             if (skill != -20) {
-                if (++skillChange >= skill) {//每5分钟可以切换技能
-                    skillChange = 0;
-                    player.addTag("change_skill");
+                if (++dabaoSword$skillChange >= skill) {//每5分钟可以切换技能
+                    dabaoSword$skillChange = 0;
+                    dabaoSword$player.addTag("change_skill");
                     if (skill >= 600) {
-                        player.displayClientMessage(Component.translatable("dabaosword.change_skill").withStyle(ChatFormatting.BOLD),false);
-                        player.displayClientMessage(Component.translatable("dabaosword.change_skill2"),false);
+                        dabaoSword$player.displayClientMessage(Component.translatable("dabaosword.change_skill").withStyle(ChatFormatting.BOLD),false);
+                        dabaoSword$player.displayClientMessage(Component.translatable("dabaosword.change_skill2"),false);
                     }
                 }
             }
 
-            if (++tick2 >= 2) {
-                tick2 = 0;
-                player.getTags().remove("quanji");
-                player.getTags().remove("sha");
-                player.getTags().remove("benxi");
-                player.getTags().remove("juedou");
-                player.getTags().remove("xingshang");
-                player.getTags().remove("kill_entity");
+            if (++dabaoSword$tick2 >= 2) {
+                dabaoSword$tick2 = 0;
+                dabaoSword$player.getTags().remove("quanji");
+                dabaoSword$player.getTags().remove("sha");
+                dabaoSword$player.getTags().remove("benxi");
+                dabaoSword$player.getTags().remove("juedou");
+                dabaoSword$player.getTags().remove("xingshang");
+                dabaoSword$player.getTags().remove("kill_entity");
 
                 //牌堆恢复饱食度
                 boolean food = world.getGameRules().getBoolean(Gamerule.CARD_PILE_HUNGERLESS);
-                if (hasTrinket(ModItems.CARD_PILE.get(), player) && food) {player.getFoodData().setFoodLevel(20);}
+                if (hasTrinket(ModItems.CARD_PILE.get(), dabaoSword$player) && food) {
+                    dabaoSword$player.getFoodData().setFoodLevel(20);}
             }
 
-            AABB box = new AABB(player.getOnPos()).inflate(20); // 检测范围，根据需要修改
+            AABB box = new AABB(dabaoSword$player.getOnPos()).inflate(20); // 检测范围，根据需要修改
             for (LivingEntity nearbyPlayer : world.getEntitiesOfClass(Player.class, box, playerEntity -> playerEntity.hasEffect(ModItems.DEFEND))) {
                 //实现沈佳宜的效果：若玩家看到的玩家有近战防御效果，则给当前玩家攻击范围缩短效果
                 int amplifier = Objects.requireNonNull(nearbyPlayer.getEffect(ModItems.DEFEND)).getAmplifier();
-                int attack = (int) player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
+                int attack = (int) dabaoSword$player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
                 int defensed = Math.min(amplifier, attack);
-                if (player != nearbyPlayer && islooking(player, nearbyPlayer)) {
-                    player.addEffect(new MobEffectInstance(ModItems.DEFENDED, 1,defensed,false,false,false));
+                if (dabaoSword$player != nearbyPlayer && dabaoSword$isLooking(dabaoSword$player, nearbyPlayer)) {
+                    dabaoSword$player.addEffect(new MobEffectInstance(ModItems.DEFENDED, 1,defensed,false,false,false));
                 }
             }
 
             //马术和飞影的效果
-            if (shouldMashu(player)) {
-                if (hasTrinket(ModItems.CHITU.get(), player) && hasTrinket(SkillCards.MASHU.get(), player)) {
-                    player.addEffect(new MobEffectInstance(ModItems.REACH, 10,2,false,false,true));
-                } else if (hasTrinket(ModItems.CHITU.get(), player) || hasTrinket(SkillCards.MASHU.get(), player)) {
-                    player.addEffect(new MobEffectInstance(ModItems.REACH, 10,1,false,false,true));
+            if (dabaoSword$shouldMashu(dabaoSword$player)) {
+                if (hasTrinket(ModItems.CHITU.get(), dabaoSword$player) && hasTrinket(SkillCards.MASHU.get(), dabaoSword$player)) {
+                    dabaoSword$player.addEffect(new MobEffectInstance(ModItems.REACH, 10,2,false,false,true));
+                } else if (hasTrinket(ModItems.CHITU.get(), dabaoSword$player) || hasTrinket(SkillCards.MASHU.get(), dabaoSword$player)) {
+                    dabaoSword$player.addEffect(new MobEffectInstance(ModItems.REACH, 10,1,false,false,true));
                 }
             }
-            if (hasTrinket(ModItems.DILU.get(), player) && hasTrinket(SkillCards.FEIYING.get(), player)) {
-                player.addEffect(new MobEffectInstance(ModItems.DEFEND, 10,2,false,false,true));
-            } else if (hasTrinket(ModItems.DILU.get(), player) || hasTrinket(SkillCards.FEIYING.get(), player)) {
-                player.addEffect(new MobEffectInstance(ModItems.DEFEND, 10,1,false,false,true));
+            if (hasTrinket(ModItems.DILU.get(), dabaoSword$player) && hasTrinket(SkillCards.FEIYING.get(), dabaoSword$player)) {
+                dabaoSword$player.addEffect(new MobEffectInstance(ModItems.DEFEND, 10,2,false,false,true));
+            } else if (hasTrinket(ModItems.DILU.get(), dabaoSword$player) || hasTrinket(SkillCards.FEIYING.get(), dabaoSword$player)) {
+                dabaoSword$player.addEffect(new MobEffectInstance(ModItems.DEFEND, 10,1,false,false,true));
             }
 
             if (this.getTags().contains("px")) {
@@ -212,12 +214,12 @@ public abstract class PlayerMixin extends LivingEntity {
     }
 
     @Unique
-    boolean shouldMashu(Player player) {
+    boolean dabaoSword$shouldMashu(Player player) {
         return !hasTrinket(SkillCards.BENXI.get(), player) && player.getMainHandItem().getItem() != ModItems.JUEDOU.get() && player.getMainHandItem().getItem() != ModItems.DISCARD.get();
     }
 
     @Unique
-    boolean islooking(Player player, Entity entity) {
+    boolean dabaoSword$isLooking(Player player, Entity entity) {
         Vec3 vec3d = player.getViewVector(1.0f).normalize();
         Vec3 vec3d2 = new Vec3(entity.getX() - player.getX(), entity.getEyeY() - player.getEyeY(), entity.getZ() - player.getZ());
         double d = vec3d2.length();
@@ -228,16 +230,16 @@ public abstract class PlayerMixin extends LivingEntity {
         return false;
     }
 
-    @Unique boolean inrattan(Player player) {
+    @Unique boolean dabaoSword$inrattan(Player player) {
         return hasTrinket(ModItems.RATTAN_ARMOR.get(), player);
     }
 
-    @Unique boolean baguaTrigger(Player player) {
+    @Unique boolean dabaoSword$baguaTrigger(Player player) {
         return hasTrinket(ModItems.BAGUA.get(), player) && new Random().nextFloat() < 0.5;
     }
     @Unique
-    void shan(Player player, boolean bl) {
-        ItemStack stack = bl ? trinketItem(ModItems.BAGUA.get(), player) : shanStack(player);
+    void dabaoSword$shan(Player player, boolean bl) {
+        ItemStack stack = bl ? trinketItem(ModItems.BAGUA.get(), player) : dabaoSword$shanStack(player);
         int cd = bl ? 60 : 40;
         player.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 20,0,false,false,false));
         player.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, cd,0,false,false,false));
@@ -248,7 +250,7 @@ public abstract class PlayerMixin extends LivingEntity {
     }
 
     @Unique
-    int getShanSlot(Player player) {
+    int dabaoSword$getShanSlot(Player player) {
         for (int i = 0; i < 18; ++i) {
             ItemStack stack = player.getInventory().getItem(i);
             if (stack.isEmpty() || stack.getItem() != ModItems.SHAN.get()) continue;
@@ -258,7 +260,7 @@ public abstract class PlayerMixin extends LivingEntity {
     }
 
     @Unique
-    ItemStack shanStack(Player player) {
-        return player.getInventory().getItem(getShanSlot(player));
+    ItemStack dabaoSword$shanStack(Player player) {
+        return player.getInventory().getItem(dabaoSword$getShanSlot(player));
     }
 }

@@ -22,8 +22,8 @@ public class TooHappyItem extends CardItem {
                     removeItem(player, ModItems.WUXIE.get());
                     jizhi(player); benxi(player);
                     voice(player, Sounds.WUXIE.get());
-                } else {player.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 5));}
-            } else {entity.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 15));}
+                } else player.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 5));
+            } else entity.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 15));
             if (!user.isCreative()) {stack.shrink(1);}
             jizhi(user); benxi(user);
             voice(user, Sounds.LEBU.get());

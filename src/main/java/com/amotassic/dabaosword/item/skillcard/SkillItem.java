@@ -294,4 +294,12 @@ public class SkillItem extends Item implements ICurioItem {
         if (stack.getItem() != Items.AIR) voice(player, Sounds.GIFTBOX.get(),3);
         give(player, stack);
     }
+
+    public static class ActiveSkill extends SkillItem {
+        public ActiveSkill(Properties p_41383_) {super(p_41383_);}
+    }
+
+    public static class ActiveSkillWithTarget extends SkillItem {
+        public ActiveSkillWithTarget(Properties p_41383_) {super(p_41383_);}
+    }
 }

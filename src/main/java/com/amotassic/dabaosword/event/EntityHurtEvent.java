@@ -27,10 +27,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-import static com.amotassic.dabaosword.network.ServerNetworking.openInv;
-import static com.amotassic.dabaosword.network.ServerNetworking.targetInv;
 import static com.amotassic.dabaosword.util.ModTools.*;
-import static com.amotassic.dabaosword.util.ModTools.voice;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class EntityHurtEvent {
@@ -69,6 +66,7 @@ public class EntityHurtEvent {
                 if (hasTrinket(SkillCards.YIJI.get(), player) && !player.hasEffect(ModItems.COOLDOWN) && player.getHealth() <= 12) {
                     player.addItem(new ItemStack(ModItems.GAIN_CARD, 2));
                     player.addEffect(new MobEffectInstance(ModItems.COOLDOWN, 20 * 20, 0, false, false, true));
+                    trinketItem(SkillCards.YIJI.get(), player).set(ModItems.TAGS, 2);
                     if (new Random().nextFloat() < 0.5) {voice(player, Sounds.YIJI1.get());} else {voice(player, Sounds.YIJI2.get());}
                 }
 
@@ -92,7 +90,7 @@ public class EntityHurtEvent {
                                 List<ItemStack> candidate = new ArrayList<>();
                                 //把背包中的卡牌添加到待选物品中
                                 NonNullList<ItemStack> inventory = target.getInventory().items;
-                                List<Integer> cardSlots = IntStream.range(0, inventory.size()).filter(j -> inventory.get(j).is(Tags.CARD) || inventory.get(j).getItem() == ModItems.GAIN_CARD.get()).boxed().toList();
+                                List<Integer> cardSlots = IntStream.range(0, inventory.size()).filter(j -> isCard(inventory.get(j))).boxed().toList();
                                 for (Integer slot : cardSlots) {candidate.add(inventory.get(slot));}
                                 //把饰品栏的卡牌添加到待选物品中
                                 var component = CuriosApi.getCuriosInventory(player);
@@ -103,7 +101,7 @@ public class EntityHurtEvent {
                                     }
                                 }
                                 if(!candidate.isEmpty()) {
-                                    Random r = new Random(); int index = r.nextInt(candidate.size()); ItemStack chosen = candidate.get(index);
+                                    int index = new Random().nextInt(candidate.size()); ItemStack chosen = candidate.get(index);
                                     target.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("dabaosword.discard")).append(chosen.getDisplayName()),false);
                                     chosen.shrink(1);
                                 }
@@ -113,7 +111,7 @@ public class EntityHurtEvent {
                                 if (!attacker.getOffhandItem().isEmpty()) candidate.add(attacker.getOffhandItem());
                                 for (ItemStack armor : attacker.getArmorSlots()) {if (!armor.isEmpty()) candidate.add(armor);}
                                 if(!candidate.isEmpty()) {
-                                    Random r = new Random(); int index = r.nextInt(candidate.size()); ItemStack chosen = candidate.get(index);
+                                    int index = new Random().nextInt(candidate.size()); ItemStack chosen = candidate.get(index);
                                     chosen.shrink(1);
                                 }
                             }
@@ -126,7 +124,7 @@ public class EntityHurtEvent {
             if (source.getDirectEntity() instanceof LivingEntity attacker) {
                 //古锭刀对没有装备的生物伤害增加 限定版翻倍
                 if (attacker.getMainHandItem().getItem() == ModItems.GUDINGDAO.get() && !attacker.getTags().contains("guding")) {
-                    if (noArmor || hasTrinket(SkillCards.POJUN.get(), (Player) attacker)) {
+                    if (noArmor || hasTrinket(SkillCards.POJUN.get(), attacker)) {
                         attacker.addTag("guding");
                         entity.invulnerableTime = 0;
                         entity.hurt(source, amount);
@@ -147,7 +145,7 @@ public class EntityHurtEvent {
                 //擅专：我言既出，谁敢不从！
                 if (hasTrinket(SkillCards.SHANZHUAN.get(), player) && !player.hasEffect(ModItems.COOLDOWN)) {
                     var stack = trinketItem(SkillCards.SHANZHUAN.get(), player);
-                    if (entity instanceof Player target) openInv(player, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), targetInv(target, true, false, 1, stack));
+                    if (entity instanceof Player target) ActiveSkillEvent.openInv(player, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), ActiveSkillEvent.targetInv(target, true, false, 1, stack));
                     else {
                         if (new Random().nextFloat() < 0.5) {
                             voice(player, Sounds.SHANZHUAN1.get());
@@ -184,7 +182,7 @@ public class EntityHurtEvent {
                     player.addTag("sha");
                     if (stack.getItem() == ModItems.SHA.get()) {
                         voice(player, Sounds.SHA.get());
-                        if (!(entity instanceof Player && hasTrinket(ModItems.RATTAN_ARMOR.get(), (Player) entity))) {
+                        if (!hasTrinket(ModItems.RATTAN_ARMOR.get(), entity)) {
                             entity.invulnerableTime = 0; entity.hurt(source, 5);
                         }
                     }

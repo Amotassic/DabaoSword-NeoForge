@@ -8,6 +8,7 @@ import com.amotassic.dabaosword.util.Tags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
@@ -145,10 +146,14 @@ public class ForgeEvent {
     public static void BeforeDamage(LivingDamageEvent.Pre event){
         LivingEntity entity = event.getEntity();
         DamageSource source = event.getSource();
-        float amount = event.getNewDamage();
+        float origin = event.getOriginalDamage();
+        float after = event.getNewDamage();
         if (entity.level() instanceof ServerLevel world) {
 
+            if (!source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && source.getEntity() instanceof LivingEntity && hasTrinket(ModItems.BAIYIN.get(), entity)) event.setNewDamage(0.4f * origin);
+
             if (entity instanceof Player player) {
+                float amount = source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) ? after : hasTrinket(ModItems.BAIYIN.get(), player) ? 0.4f * origin : after;
                 if (player.getHealth() <= amount) {
                     if (hasTrinket(SkillCards.BUQU.get(), player)) {
                         ItemStack stack = trinketItem(SkillCards.BUQU.get(), player);
@@ -157,6 +162,7 @@ public class ForgeEvent {
                         if (new Random().nextFloat() >= (float) c /13) {
                             player.displayClientMessage(Component.translatable("buqu.tip1").withStyle(ChatFormatting.GREEN).append(String.valueOf(c + 1)), false);
                             setTag(stack, c + 1);
+                            event.setNewDamage(0);
                             player.setHealth(5);
                         } else {
                             player.displayClientMessage(Component.translatable("buqu.tip2").withStyle(ChatFormatting.RED), false);

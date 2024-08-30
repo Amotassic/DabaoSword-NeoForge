@@ -1,224 +1,41 @@
 package com.amotassic.dabaosword.network;
 
 import com.amotassic.dabaosword.DabaoSword;
-import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.item.equipment.EquipmentItem;
-import com.amotassic.dabaosword.item.skillcard.SkillCards;
-import com.amotassic.dabaosword.ui.*;
-import com.amotassic.dabaosword.util.Sounds;
-import com.amotassic.dabaosword.util.Tags;
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.NonNullList;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.Container;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.EquipmentSlot;
+import com.amotassic.dabaosword.event.listener.ActiveSkillListener;
+import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import top.theillusivec4.curios.api.CuriosApi;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.stream.IntStream;
-
-import static com.amotassic.dabaosword.item.card.GainCardItem.draw;
-import static com.amotassic.dabaosword.util.ModTools.*;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class ServerNetworking {
 
     @SubscribeEvent
     public static void register(final RegisterPayloadHandlersEvent event) {
-        Item[] active_skills_with_target = {SkillCards.RENDE.get(), SkillCards.YIJI.get(), SkillCards.GONGXIN.get(), SkillCards.ZHIJIAN.get()};
-        Item[] active_skills = {SkillCards.ZHIHENG.get(), SkillCards.QICE.get(), SkillCards.TAOLUAN.get(), SkillCards.LUOSHEN.get(), SkillCards.KUROU.get()};
         final PayloadRegistrar registrar = event.registrar("1");
         registrar.playToServer(ActiveSkillPayload.ID, ActiveSkillPayload.CODEC, (payload, context) -> {
-            Player target = (Player) context.player().level().getEntity(payload.id());
-            var optional = CuriosApi.getCuriosInventory(target);
+            Player player = context.player();
+            Player target = (Player) player.level().getEntity(payload.id());
+            var optional = CuriosApi.getCuriosInventory(player);
             if (optional.isPresent()) {
                 var allEquipped = optional.get().getEquippedCurios();
                 for (int i = 0; i < allEquipped.getSlots(); i++) {
                     ItemStack stack = allEquipped.getStackInSlot(i);
-                    if(Arrays.stream(active_skills_with_target).toList().contains(stack.getItem()) && target != context.player()) {
-                        active(context.player(), stack, target);
+                    if(stack.getItem() instanceof SkillItem.ActiveSkillWithTarget && target != player) {
+                        NeoForge.EVENT_BUS.post(new ActiveSkillListener(player, stack, target));
                         return;
                     }
-                    if(Arrays.stream(active_skills).toList().contains(stack.getItem())) {
-                        active(context.player(), stack);
+                    if(stack.getItem() instanceof SkillItem.ActiveSkill && target == player) {
+                        NeoForge.EVENT_BUS.post(new ActiveSkillListener(player, stack, player));
                         return;
                     }
                 }
             }
         });
     }
-
-    public static void active(Player user, ItemStack stack, Player target) {
-        if (!user.level().isClientSide && !user.hasEffect(ModItems.TIEJI)) {
-
-            if (stack.getItem() == SkillCards.ZHIJIAN.get()) {
-                ItemStack itemStack = user.getMainHandItem();
-                if (itemStack.getItem() instanceof EquipmentItem && itemStack.getItem() != ModItems.CARD_PILE.get()) {
-                    EquipmentItem.equipItem(target, itemStack);
-                    if (new Random().nextFloat() < 0.5) {voice(user, Sounds.ZHIJIAN1.get());} else {voice(user, Sounds.ZHIJIAN2.get());}
-                    draw(user, 1);
-                } else user.displayClientMessage(Component.translatable("zhijian.fail").withStyle(ChatFormatting.RED), true);
-            }
-
-            if (stack.getItem() == SkillCards.GONGXIN.get()) {
-                int cd = getCD(stack);
-                if (cd > 0) user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(ChatFormatting.RED), true);
-                else {
-                    if (new Random().nextFloat() < 0.5) {voice(user, Sounds.GONGXIN1.get());} else {voice(user, Sounds.GONGXIN2.get());}
-                    openInv(user, target, Component.translatable("gongxin.title"), targetInv(target, false, false, 2, stack));
-                    setCD(stack, 30);
-                }
-            }
-
-            if (stack.getItem() == SkillCards.YIJI.get()) {
-                int i = getTag(stack);
-                if (i > 0 ) openInv(user, target, Component.translatable("give_card.title", stack.getDisplayName()), targetInv(user, false, false, 2, stack));
-            }
-
-            if (stack.getItem() == SkillCards.RENDE.get()) {
-                openInv(user, target, Component.translatable("give_card.title", stack.getDisplayName()), targetInv(user, false, false, 2, stack));
-            }
-        }
-
-    }
-
-    public static void active(Player user, ItemStack stack) {
-        if (!user.level().isClientSide && !user.hasEffect(ModItems.TIEJI)) {
-
-            if (stack.getItem() == SkillCards.ZHIHENG.get()) {
-                int z = getTag(stack);
-                if (z > 0) openInv(user, user, Component.translatable("zhiheng.title"), targetInv(user, true, false, 2, stack));
-                else user.displayClientMessage(Component.translatable("zhiheng.fail").withStyle(ChatFormatting.RED), true);
-            }
-
-            if (stack.getItem() == SkillCards.LUOSHEN.get()) {
-                int cd = getCD(stack);
-                if (cd > 0) user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(ChatFormatting.RED), true);
-                else {
-                    if (new Random().nextFloat() < 0.5) {voice(user, Sounds.LUOSHEN1.get());} else {voice(user, Sounds.LUOSHEN2.get());}
-                    if (new Random().nextFloat() < 0.5) {
-                        draw(user,1);
-                        user.displayClientMessage(Component.translatable("item.dabaosword.luoshen.win").withStyle(ChatFormatting.GREEN), true);
-                    } else {
-                        setCD(stack, 30);
-                        user.displayClientMessage(Component.translatable("item.dabaosword.luoshen.lose").withStyle(ChatFormatting.RED), true);
-                    }
-                }
-            }
-
-            if (stack.getItem() == SkillCards.KUROU.get()) {
-                if (user.getHealth() + 5 * count(user, Tags.RECOVER) > 4.99) {
-                    give(user, new ItemStack(ModItems.GAIN_CARD, 2));
-                    if (!user.isCreative()) {
-                        user.invulnerableTime = 0;
-                        user.hurt(user.damageSources().genericKill(), 4.99f);
-                    }
-                    if (new Random().nextFloat() < 0.5) {voice(user, Sounds.KUROU1.get());} else {voice(user, Sounds.KUROU2.get());}
-                } else {user.displayClientMessage(Component.translatable("item.dabaosword.kurou.tip").withStyle(ChatFormatting.RED), true);}
-            }
-
-            if (stack.getItem() == SkillCards.QICE.get()) {
-                ItemStack offStack = user.getItemInHand(InteractionHand.OFF_HAND);
-                int cd = getCD(stack);
-                if (!offStack.isEmpty() && offStack.is(Tags.CARD) && offStack.getCount() > 1) {
-                    if (cd == 0) {
-
-                        ItemStack[] stacks = {new ItemStack(ModItems.BINGLIANG_ITEM), new ItemStack(ModItems.TOO_HAPPY_ITEM), new ItemStack(ModItems.DISCARD), new ItemStack(ModItems.FIRE_ATTACK), new ItemStack(ModItems.JIEDAO), new ItemStack(ModItems.JUEDOU), new ItemStack(ModItems.NANMAN), new ItemStack(ModItems.STEAL), new ItemStack(ModItems.TAOYUAN), new ItemStack(ModItems.TIESUO), new ItemStack(ModItems.WANJIAN), new ItemStack(ModItems.WUXIE), new ItemStack(ModItems.WUZHONG)};
-                        Container inventory = new SimpleContainer(20);
-                        for (var stack1 : stacks) inventory.setItem(Arrays.stream(stacks).toList().indexOf(stack1), stack1);
-                        inventory.setItem(18, stack); //用于在Handler中找到原本的stack
-
-                        openSimpleMenu(user, user, inventory, Component.translatable("item.dabaosword.qice.screen"));
-                    }
-                    else {user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(ChatFormatting.RED), true);}
-                }
-                else {user.displayClientMessage(Component.translatable("item.dabaosword.qice.tip").withStyle(ChatFormatting.RED), true);}
-            }
-
-            if (stack.getItem() == SkillCards.TAOLUAN.get()) {
-                if (user.getHealth() + 5 * count(user, Tags.RECOVER) > 4.99) {
-
-                    ItemStack[] stacks = {new ItemStack(ModItems.THUNDER_SHA), new ItemStack(ModItems.FIRE_SHA), new ItemStack(ModItems.SHAN), new ItemStack(ModItems.PEACH), new ItemStack(ModItems.JIU), new ItemStack(ModItems.BINGLIANG_ITEM), new ItemStack(ModItems.TOO_HAPPY_ITEM), new ItemStack(ModItems.DISCARD), new ItemStack(ModItems.FIRE_ATTACK), new ItemStack(ModItems.JIEDAO), new ItemStack(ModItems.JUEDOU), new ItemStack(ModItems.NANMAN), new ItemStack(ModItems.STEAL), new ItemStack(ModItems.TAOYUAN), new ItemStack(ModItems.TIESUO), new ItemStack(ModItems.WANJIAN), new ItemStack(ModItems.WUXIE), new ItemStack(ModItems.WUZHONG)};
-                    Container inventory = new SimpleContainer(20);
-                    for (var stack1 : stacks) inventory.setItem(Arrays.stream(stacks).toList().indexOf(stack1), stack1);
-                    inventory.setItem(18, stack);
-
-                    openSimpleMenu(user, user, inventory, Component.translatable("item.dabaosword.taoluan.screen"));
-                }
-                else {user.displayClientMessage(Component.translatable("item.dabaosword.taoluan.tip").withStyle(ChatFormatting.RED), true);}
-            }
-        }
-    }
-
-    public static void openInv(Player player, Player target, Component title, Container targetInv) {
-        if (!player.level().isClientSide) {
-            player.openMenu(new SimpleMenuProvider((i, inv, player1) -> new PlayerInvScreenHandler(i, targetInv, target), title), (buf -> buf.writeInt(target.getId())));
-        }
-    }
-
-    public static Container targetInv(Player target, Boolean equip, Boolean armor, int cards, ItemStack eventStack) {
-        /*
-        Boolean equip: 是否显示装备牌
-        Boolean armor: 是否显示玩家的盔甲
-        int cards: 是否显示手牌。0：完全不显示；1：显示随机选取手牌；2：显示所有手牌；3：显示所有物品
-        int maxUse: 最大可操作次数，达到次数上限时关闭GUI
-        */
-        Container targetInv = new SimpleContainer(60);
-        var component = CuriosApi.getCuriosInventory(target);
-        if(component.isPresent() && equip) {
-            var allEquipped = component.get().getEquippedCurios();
-            for(int i = 0; i < allEquipped.getSlots(); i++) {
-                ItemStack stack = allEquipped.getStackInSlot(i);
-                if (stack.getTags().toList().equals(ModItems.GUDING_WEAPON.get().getDefaultInstance().getTags().toList())) targetInv.setItem(0, stack);
-                if (stack.getTags().toList().equals(ModItems.BAGUA.get().getDefaultInstance().getTags().toList())) targetInv.setItem(1, stack);
-                if (stack.getItem() == ModItems.DILU.get()) targetInv.setItem(2, stack);
-                if (stack.getItem() == ModItems.CHITU.get()) targetInv.setItem(3, stack);
-            }//四件装备占1~4格
-        }
-
-        List<ItemStack> armors = List.of(target.getItemBySlot(EquipmentSlot.HEAD), target.getItemBySlot(EquipmentSlot.CHEST), target.getItemBySlot(EquipmentSlot.LEGS), target.getItemBySlot(EquipmentSlot.FEET));
-        for (ItemStack stack : armors) {
-            if (armor && !stack.isEmpty()) targetInv.setItem(armors.indexOf(stack) + 4, stack);
-        }//4件盔甲占5~8格
-
-        NonNullList<ItemStack> targetInventory = target.getInventory().items;
-        List<Integer> cardSlots = IntStream.range(0, targetInventory.size()).filter(
-                        i -> targetInventory.get(i).is(Tags.CARD) || targetInventory.get(i).getItem() == ModItems.GAIN_CARD.get())
-                .boxed().toList();
-        if (cards == 2 && !cardSlots.isEmpty()) {
-            for(Integer i : cardSlots) {
-                targetInv.setItem(i + 9, targetInventory.get(i));
-            }
-        }//副手物品在第9格，其他背包中的物品依次排列
-        ItemStack off = target.getOffhandItem();
-        if (cards == 2 && (off.is(Tags.CARD) || off.getItem() == ModItems.GAIN_CARD.get())) targetInv.setItem(8, off);
-        if (cards == 3) {
-            for (ItemStack stack : targetInventory) {
-                if (!stack.isEmpty()) targetInv.setItem(targetInventory.indexOf(stack) + 9, stack);
-            }
-            targetInv.setItem(8, off);
-        }
-        targetInv.setItem(54, new ItemStack(ModItems.GAIN_CARD, cards));//用于传递显示卡牌信息
-        targetInv.setItem(55, eventStack);//用于传递stack信息
-        return targetInv;
-    }
-
-    public static void openSimpleMenu(Player player, Player target, Container inventory, Component title) {
-        if (!player.level().isClientSide) {
-            player.openMenu(new SimpleMenuProvider(((i, inv, player1) -> new SimpleMenuHandler(i, inventory, target)), title), (buf -> buf.writeInt(target.getId())));
-        }
-    }
-
 }

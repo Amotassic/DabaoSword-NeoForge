@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -35,7 +36,7 @@ import static com.amotassic.dabaosword.util.ModTools.*;
 public abstract class LivingEntityMixin extends Entity {
     public LivingEntityMixin(EntityType<?> p_19870_, Level p_19871_) {super(p_19870_, p_19871_);}
 
-    @Shadow public abstract boolean hurt(DamageSource source, float amount);
+    @Shadow public abstract boolean hurt(@NotNull DamageSource source, float amount);
 
     @Shadow public abstract boolean isAlive();
 
@@ -44,6 +45,8 @@ public abstract class LivingEntityMixin extends Entity {
     @Shadow public abstract boolean hasEffect(Holder<MobEffect> effect);
 
     @Shadow @Nullable public abstract MobEffectInstance getEffect(Holder<MobEffect> effect);
+
+    @Unique LivingEntity dabaoSword$living = (LivingEntity) (Object) this;
 
     @Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
     private void damageMixin(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
@@ -83,13 +86,13 @@ public abstract class LivingEntityMixin extends Entity {
 
                 if (entity instanceof Player player) {
 
-                    if (this.isCurrentlyGlowing() && shouldSha(player)) {//实现铁索连环的效果，大概是好了吧
+                    if (this.isCurrentlyGlowing() && dabaoSword$shouldSha(player)) {//实现铁索连环的效果，大概是好了吧
                         ItemStack stack = player.getMainHandItem().is(Tags.SHA) ? player.getMainHandItem() : shaStack(player);
                         player.addTag("sha");
                         if (stack.getItem() == ModItems.SHA.get()) {
                             voice(player, Sounds.SHA.get());
-                            if (!(livingEntity instanceof Player && hasTrinket(ModItems.RATTAN_ARMOR.get(), (Player) livingEntity))) {
-                                livingEntity.invulnerableTime = 0; livingEntity.hurt(source, 5);
+                            if (!hasTrinket(ModItems.RATTAN_ARMOR.get(), dabaoSword$living)) {
+                                dabaoSword$living.invulnerableTime = 0; dabaoSword$living.hurt(source, 5);
                             }
                         }
                         if (stack.getItem() == ModItems.FIRE_SHA.get()) voice(player, Sounds.SHA_FIRE.get());
@@ -148,21 +151,11 @@ public abstract class LivingEntityMixin extends Entity {
             }
         }
 
-        if (livingEntity instanceof Mob mob && mob.hasEffect(ModItems.TURNOVER)) mob.setTarget(null);
+        if (dabaoSword$living instanceof Mob mob && mob.hasEffect(ModItems.TURNOVER)) mob.setTarget(null);
     }
-    @Unique
-    LivingEntity livingEntity = (LivingEntity) (Object) this;
 
     @Unique
-    boolean shouldSha(Player player) {
+    boolean dabaoSword$shouldSha(Player player) {
         return getShaSlot(player) != -1 && !player.getTags().contains("sha") && !player.getTags().contains("juedou") && !player.getTags().contains("wanjian");
-    }
-
-    @Inject(method = "getDamageAfterMagicAbsorb", at = @At(value = "TAIL"), cancellable = true)
-    protected void modifyAppliedDamage(DamageSource source, float amount, CallbackInfoReturnable<Float> cir) {
-        //白银狮子减伤
-        if (!source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && source.getEntity() instanceof LivingEntity && livingEntity instanceof Player player && hasTrinket(ModItems.BAIYIN.get(), player)) {
-            cir.setReturnValue(0.4f * amount);
-        }
     }
 }

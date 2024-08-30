@@ -1,5 +1,6 @@
 package com.amotassic.dabaosword.item.card;
 
+import com.amotassic.dabaosword.event.ActiveSkillEvent;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.Sounds;
 import net.minecraft.network.chat.Component;
@@ -13,8 +14,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
-import static com.amotassic.dabaosword.network.ServerNetworking.openInv;
-import static com.amotassic.dabaosword.network.ServerNetworking.targetInv;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class DiscardItem extends CardItem {
@@ -39,7 +38,7 @@ public class DiscardItem extends CardItem {
                 if (!user.isCreative()) {stack.shrink(1);}
                 jizhi(user); benxi(user);
             } else {
-                openInv(user, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), targetInv(target, true, false, 1, user.getMainHandItem()));
+                ActiveSkillEvent.openInv(user, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), ActiveSkillEvent.targetInv(target, true, false, 1, user.getMainHandItem()));
             }
             return InteractionResult.SUCCESS;
         }

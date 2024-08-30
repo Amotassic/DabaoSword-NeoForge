@@ -7,7 +7,7 @@ import top.theillusivec4.curios.api.SlotContext;
 
 import static com.amotassic.dabaosword.util.ModTools.getTag;
 
-public class ZhihengSkill extends SkillItem {
+public class ZhihengSkill extends SkillItem.ActiveSkill {
     public ZhihengSkill(Properties p_41383_) {super(p_41383_);}
 
     @Override

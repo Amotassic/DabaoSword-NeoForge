@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -23,20 +22,18 @@ import java.util.Random;
 import static com.amotassic.dabaosword.item.card.GainCardItem.draw;
 
 public class ModTools {
-    public static boolean noTieji(LivingEntity entity) {
-        return !entity.hasEffect(ModItems.TIEJI);
-    }
+    public static boolean noTieji(LivingEntity entity) {return !entity.hasEffect(ModItems.TIEJI);}
 
     //判断是否有某个饰品
-    public static boolean hasTrinket(Item item, Player player) {
+    public static boolean hasTrinket(Item item, LivingEntity entity) {
         if (item instanceof SkillItem) {
-            if (item.getDefaultInstance().is(Tags.LOCK_SKILL)) return trinketItem(item, player) != null;
-            else return trinketItem(item, player) != null && noTieji(player);}
-        return trinketItem(item, player) != null;
+            if (item.getDefaultInstance().is(Tags.LOCK_SKILL)) return trinketItem(item, entity) != null;
+            else return trinketItem(item, entity) != null && noTieji(entity);}
+        return trinketItem(item, entity) != null;
     }
 
-    public static ItemStack trinketItem(Item item, Player player) {
-        var optional = CuriosApi.getCuriosInventory(player);
+    public static ItemStack trinketItem(Item item, LivingEntity entity) {
+        var optional = CuriosApi.getCuriosInventory(entity);
         if (optional.isPresent()) {
             var handler = optional.get().findFirstCurio(item);
             if (handler.isPresent()) {
@@ -44,14 +41,6 @@ public class ModTools {
             }
         }
         return null;
-    }
-
-    //判断是否有某些饰品（以数组形式判断）中的一个
-    public static boolean hasTrinkets(Item[] items, Player player) {
-        for (Item item : items) {
-            if (trinketItem(item, player) != null) return true;
-        }
-        return false;
     }
 
     //判断玩家是否有某个物品
@@ -73,6 +62,11 @@ public class ModTools {
     //判断是否是非基本牌
     public static boolean nonBasic(ItemStack stack) {
         return stack.is(Tags.CARD) && !stack.is(Tags.BASIC_CARD);
+    }
+
+    //判断是否是卡牌，包含GAIN_CARD
+    public static boolean isCard(ItemStack stack) {
+        return stack.is(Tags.CARD) || stack.getItem() == ModItems.GAIN_CARD.get();
     }
 
     //判断是否有含某个标签的物品
@@ -119,15 +113,6 @@ public class ModTools {
         }
     }
 
-    //视为类技能方法
-    public static void viewAs(@NotNull Player player, TagKey<Item> tag, Item item, SoundEvent sound1, SoundEvent sound2) {
-        ItemStack stack = player.getItemInHand(InteractionHand.OFF_HAND);
-        if (!stack.isEmpty() && stack.is(tag)) {
-            stack.shrink(1);
-            give(player, item.getDefaultInstance());
-            if (new Random().nextFloat() < 0.5) {voice(player, sound1);} else {voice(player, sound2);}
-        }
-    }
     //集智技能触发
     public static void jizhi(Player player) {
         if (hasTrinket(SkillCards.JIZHI.get(), player)) {

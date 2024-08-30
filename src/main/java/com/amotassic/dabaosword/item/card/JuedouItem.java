@@ -43,10 +43,10 @@ public class JuedouItem extends CardItem {
                     int userSha = count(user, tag);
                     int targetSha = count(target, tag);
                     if (userSha >= targetSha) { target.invulnerableTime = 0;
-                        target.addTag("juedou");
                         target.hurt(user.damageSources().sonicBoom(user),5f);
                         target.displayClientMessage(Component.literal(user.getScoreboardName()).append(Component.translatable("dabaosword.juedou2")),false);
-                    } else { user.invulnerableTime = 0;
+                    } else { target.addTag("juedou");
+                        user.invulnerableTime = 0;
                         user.hurt(target.damageSources().sonicBoom(target),5f);
                         user.displayClientMessage(Component.translatable("dabaosword.juedou1"),false);
                         if (targetSha != 0) {
