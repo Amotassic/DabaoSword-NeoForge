@@ -1,4 +1,13 @@
 {
+  "letmecc": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "dabaosword:letmecc"
+      }
+    ],
+    "subtitle": "sounds.dabaosword.letmecc"
+  },
   "longdan1": {
     "sounds": [
       {

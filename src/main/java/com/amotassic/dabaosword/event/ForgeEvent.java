@@ -1,6 +1,7 @@
 package com.amotassic.dabaosword.event;
 
 import com.amotassic.dabaosword.DabaoSword;
+import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.util.Sounds;
@@ -18,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
@@ -183,10 +185,12 @@ public class ForgeEvent {
             int tao = count(player, Tags.RECOVER);//数玩家背包中回血卡牌的数量（只包含酒、桃）
             if (tao >= need) {//如果剩余回血牌大于需要的桃的数量，则进行下一步，否则直接趋势
                 for (int i = 0; i < need; i++) {//循环移除背包中的酒、桃
-                    ItemStack stack = stackInTag(Tags.RECOVER, player);
-                    if (stack.getItem() == ModItems.PEACH.get()) voice(player, Sounds.RECOVER.get());
-                    if (stack.getItem() == ModItems.JIU.get()) voice(player, Sounds.JIU.get());
-                    stack.shrink(1);
+                    if (player.invulnerableTime > 9) {
+                        ItemStack stack = stackInTag(Tags.RECOVER, player);
+                        if (stack.getItem() == ModItems.PEACH.get()) voice(player, Sounds.RECOVER.get());
+                        if (stack.getItem() == ModItems.JIU.get()) voice(player, Sounds.JIU.get());
+                        NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, player));
+                    }
                 } event.setNewDamage(0);
                 //最后将玩家的体力设置为 受伤前生命值 - 伤害值 + 回复量
                 player.setHealth(player.getHealth() - amount + 5 * need);

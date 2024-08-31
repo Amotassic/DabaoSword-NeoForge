@@ -1,5 +1,6 @@
 package com.amotassic.dabaosword.item.card;
 
+import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.Sounds;
 import com.amotassic.dabaosword.util.Tags;
@@ -14,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
 
 import static com.amotassic.dabaosword.util.ModTools.*;
@@ -34,8 +36,7 @@ public class JuedouItem extends CardItem {
         if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND && entity.isAlive()) {
             user.addTag("juedou");
             if (entity instanceof Player player && hasItem(player, ModItems.WUXIE.get())) {
-                removeItem(player, ModItems.WUXIE.get());
-                jizhi(player); benxi(player);
+                NeoForge.EVENT_BUS.post(new CardUsePostListener(player, getItem(player, ModItems.WUXIE.get()), null));
                 voice(player, Sounds.WUXIE.get());
             } else {
                 if (entity instanceof Player target) {
@@ -45,7 +46,7 @@ public class JuedouItem extends CardItem {
                     if (userSha >= targetSha) { target.invulnerableTime = 0;
                         target.hurt(user.damageSources().sonicBoom(user),5f);
                         target.displayClientMessage(Component.literal(user.getScoreboardName()).append(Component.translatable("dabaosword.juedou2")),false);
-                    } else { target.addTag("juedou");
+                    } else { target.addTag("juedou"); //防止决斗触发杀
                         user.invulnerableTime = 0;
                         user.hurt(target.damageSources().sonicBoom(target),5f);
                         user.displayClientMessage(Component.translatable("dabaosword.juedou1"),false);
@@ -57,8 +58,7 @@ public class JuedouItem extends CardItem {
                 } else { entity.invulnerableTime = 0;
                     entity.hurt(user.damageSources().sonicBoom(user),5f);}
             }
-            if (!user.isCreative()) {stack.shrink(1);}
-            jizhi(user); benxi(user);
+            NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
             voice(user, Sounds.JUEDOU.get());
             return InteractionResult.SUCCESS;
         }

@@ -1,5 +1,8 @@
 package com.amotassic.dabaosword.ui;
 
+import com.amotassic.dabaosword.event.listener.CardDiscardListener;
+import com.amotassic.dabaosword.event.listener.CardMoveListener;
+import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.util.Sounds;
@@ -17,6 +20,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.common.NeoForge;
 import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.*;
@@ -56,10 +60,9 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
 
                 if (stack.getItem() == SkillCards.RENDE.get()) {
                     if (new Random().nextFloat() < 0.5) {voice(player, Sounds.RENDE1.get());} else {voice(player, Sounds.RENDE2.get());}
-                    give(target, selfStack.copyWithCount(1));
                     target.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("give_card.tip", stack.getDisplayName(), target.getDisplayName())), false);
                     player.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("give_card.tip", stack.getDisplayName(), target.getDisplayName())), false);
-                    selfStack.shrink(1);
+                    NeoForge.EVENT_BUS.post(new CardMoveListener(player, target, selfStack, 1, CardMoveListener.Type.INV_TO_INV));
                     int cd = getCD(stack);
                     if (player.getHealth() < player.getMaxHealth() && cd == 0 && new Random().nextFloat() < 0.5) {
                         player.heal(5); voice(player, Sounds.RECOVER.get());
@@ -70,10 +73,9 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
 
                 if (stack.getItem() == SkillCards.YIJI.get()) {
                     int i = getTag(stack);
-                    give(target, selfStack.copyWithCount(1));
                     target.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("give_card.tip", stack.getDisplayName(), target.getDisplayName())), false);
                     player.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("give_card.tip", stack.getDisplayName(), target.getDisplayName())), false);
-                    selfStack.shrink(1);
+                    NeoForge.EVENT_BUS.post(new CardMoveListener(player, target, selfStack, 1, CardMoveListener.Type.INV_TO_INV));
                     setTag(stack, i - 1);
                     if (i - 1 == 0) closeGUI(player);
                 }
@@ -86,20 +88,20 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
                     if (targetStack.is(Tags.BASIC_CARD)) target.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 5));
                     else target.addEffect(new MobEffectInstance(ModItems.BINGLIANG, MobEffectInstance.INFINITE_DURATION,1));
                     target.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("dabaosword.discard")).append(targetStack.getDisplayName()), false);
-                    targetStack.shrink(1);
+                    NeoForge.EVENT_BUS.post(new CardDiscardListener(target, targetStack, 1, slotIndex < 4));
                     player.addEffect(new MobEffectInstance(ModItems.COOLDOWN, 20 * 8,0,false,false,true));
                     closeGUI(player);
                 }
 
                 if (stack.getItem() == SkillCards.GONGXIN.get()) {
-                    targetStack.shrink(1);
+                    NeoForge.EVENT_BUS.post(new CardDiscardListener(target, targetStack, 1, false));
                     closeGUI(player);
                 }
 
                 if (stack.getItem() == SkillCards.ZHIHENG.get()) {
                     int z = getTag(stack);
                     if (new Random().nextFloat() < 0.5) {voice(player, Sounds.ZHIHENG1.get());} else {voice(player, Sounds.ZHIHENG2.get());}
-                    targetStack.shrink(1);
+                    NeoForge.EVENT_BUS.post(new CardDiscardListener(target, targetStack, 1, slotIndex < 4));
                     if (new Random().nextFloat() < 0.1) {
                         draw(player, 2);
                         player.displayClientMessage(Component.translatable("zhiheng.extra").withStyle(ChatFormatting.GREEN), true);
@@ -110,19 +112,21 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
 
                 if (stack.getItem() == ModItems.STEAL.get()) {
                     voice(player, Sounds.SHUNSHOU.get());
-                    if (!player.isCreative()) {stack.shrink(1);}
-                    jizhi(player); benxi(player);
                     target.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("dabaosword.steal")).append(targetStack.getDisplayName()), false);
-                    give(player, targetStack.copyWithCount(1)); /*顺手：复制一个物品*/ targetStack.shrink(1);
+                    CardMoveListener.Type type = slotIndex < 4 ? CardMoveListener.Type.EQUIP_TO_INV : CardMoveListener.Type.INV_TO_INV;
+                    if (isCard(targetStack)) NeoForge.EVENT_BUS.post(new CardMoveListener(target, player, targetStack, 1, type));
+                    //如果选择的物品是卡牌才触发事件
+                    else {give(player, targetStack.copyWithCount(1)); /*顺手：复制一个物品*/
+                        targetStack.shrink(1);}
+                    NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, target));
                     closeGUI(player);
                 }
 
                 if (stack.getItem() == ModItems.DISCARD.get()) {
                     voice(player, Sounds.GUOHE.get());
-                    if (!player.isCreative()) {stack.shrink(1);}
-                    jizhi(player); benxi(player);
                     target.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("dabaosword.discard")).append(targetStack.getDisplayName()), false);
-                    targetStack.shrink(1);
+                    NeoForge.EVENT_BUS.post(new CardDiscardListener(target, targetStack, 1, slotIndex < 4));
+                    NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, target));
                     closeGUI(player);
                 }
             }
@@ -154,7 +158,7 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
                 }
                 if (player.getOffhandItem().equals(itemStack)) return player.getOffhandItem();
             }
-        } else if (cards == 1) {
+        } else if (cards == 1 && slotIndex >= 8) {
             List<ItemStack> candidate = new ArrayList<>();
             NonNullList<ItemStack> inventory = player.getInventory().items;
             List<Integer> cardSlots = IntStream.range(0, inventory.size()).filter(i -> isCard(inventory.get(i))).boxed().toList();

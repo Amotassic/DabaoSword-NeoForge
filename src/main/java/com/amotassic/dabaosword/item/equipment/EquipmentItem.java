@@ -1,5 +1,7 @@
 package com.amotassic.dabaosword.item.equipment;
 
+import com.amotassic.dabaosword.event.listener.CardDiscardListener;
+import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
@@ -29,6 +31,7 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.NeoForge;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
@@ -145,13 +148,14 @@ public class EquipmentItem extends Item implements ICurioItem {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
         ItemStack stack = player.getItemInHand(usedHand);
-        equipItem(player, stack);
-        return InteractionResultHolder.success(stack);
+        if (equipItem(player, stack)) return InteractionResultHolder.success(stack);
+        return super.use(level, player, usedHand);
     }
 
-    public static void equipItem(Player player, ItemStack stack) {
-        CuriosApi.getCuriosInventory(player).ifPresent(handler -> {
-            Map<String, ICurioStacksHandler> curios = handler.getCurios();
+    public static boolean equipItem(Player player, ItemStack stack) {
+        var optional = CuriosApi.getCuriosInventory(player);
+        if (optional.isPresent()) {
+            Map<String, ICurioStacksHandler> curios = optional.get().getCurios();
             Tuple<IDynamicStackHandler, SlotContext> firstSlot = null;
 
             for (Map.Entry<String, ICurioStacksHandler> entry : curios.entrySet()) {
@@ -167,8 +171,8 @@ public class EquipmentItem extends Item implements ICurioItem {
 
                         if (present.isEmpty()) {
                             stackHandler.setStackInSlot(i, stack.copy());
-                            if (!player.isCreative()) stack.setCount(0);
-                            return;
+                            NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, player));
+                            return true;
                         } else if (firstSlot == null) firstSlot = new Tuple<>(stackHandler, slotContext);
                     }
                 }
@@ -179,11 +183,12 @@ public class EquipmentItem extends Item implements ICurioItem {
                 SlotContext slotContext = firstSlot.getB();
                 int i = slotContext.index();
                 ItemStack present = stackHandler.getStackInSlot(i);
-                if (present.getItem() != stack.getItem()) {
-                    stackHandler.setStackInSlot(i, stack.copy());
-                    if (!player.isCreative()) stack.setCount(0);
-                }
+                NeoForge.EVENT_BUS.post(new CardDiscardListener(player, present, present.getCount(), true));
+                stackHandler.setStackInSlot(i, stack.copy());
+                NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, player));
+                return true;
             }
-        });
+        }
+        return false;
     }
 }

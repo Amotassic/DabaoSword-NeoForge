@@ -1,5 +1,6 @@
 package com.amotassic.dabaosword.mixin;
 
+import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.util.Gamerule;
@@ -21,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -94,8 +96,7 @@ public abstract class PlayerMixin extends LivingEntity {
                         if (stack.getItem() == ModItems.SHA.get()) voice(player1, Sounds.SHA.get());
                         if (stack.getItem() == ModItems.FIRE_SHA.get()) voice(player1, Sounds.SHA_FIRE.get());
                         if (stack.getItem() == ModItems.THUNDER_SHA.get()) voice(player1, Sounds.SHA_THUNDER.get());
-                        benxi(player1);
-                        if (!player1.isCreative()) stack.shrink(1);
+                        NeoForge.EVENT_BUS.post(new CardUsePostListener(player1, stack, dabaoSword$player));
                     }
                 }
 
@@ -177,8 +178,7 @@ public abstract class PlayerMixin extends LivingEntity {
 
                 //牌堆恢复饱食度
                 boolean food = world.getGameRules().getBoolean(Gamerule.CARD_PILE_HUNGERLESS);
-                if (hasTrinket(ModItems.CARD_PILE.get(), dabaoSword$player) && food) {
-                    dabaoSword$player.getFoodData().setFoodLevel(20);}
+                if (hasTrinket(ModItems.CARD_PILE.get(), dabaoSword$player) && food) dabaoSword$player.getFoodData().setFoodLevel(20);
             }
 
             AABB box = new AABB(dabaoSword$player.getOnPos()).inflate(20); // 检测范围，根据需要修改
@@ -192,19 +192,15 @@ public abstract class PlayerMixin extends LivingEntity {
                 }
             }
 
-            //马术和飞影的效果
+            int level1 = 0; int level2 = 0; //马术和飞影的效果
             if (dabaoSword$shouldMashu(dabaoSword$player)) {
-                if (hasTrinket(ModItems.CHITU.get(), dabaoSword$player) && hasTrinket(SkillCards.MASHU.get(), dabaoSword$player)) {
-                    dabaoSword$player.addEffect(new MobEffectInstance(ModItems.REACH, 10,2,false,false,true));
-                } else if (hasTrinket(ModItems.CHITU.get(), dabaoSword$player) || hasTrinket(SkillCards.MASHU.get(), dabaoSword$player)) {
-                    dabaoSword$player.addEffect(new MobEffectInstance(ModItems.REACH, 10,1,false,false,true));
-                }
+                if (hasTrinket(ModItems.CHITU.get(), dabaoSword$player)) level1++;
+                if (hasTrinket(SkillCards.MASHU.get(), dabaoSword$player)) level1++;
+                if (level1 > 0) dabaoSword$player.addEffect(new MobEffectInstance(ModItems.REACH, 10,level1,false,false,true));
             }
-            if (hasTrinket(ModItems.DILU.get(), dabaoSword$player) && hasTrinket(SkillCards.FEIYING.get(), dabaoSword$player)) {
-                dabaoSword$player.addEffect(new MobEffectInstance(ModItems.DEFEND, 10,2,false,false,true));
-            } else if (hasTrinket(ModItems.DILU.get(), dabaoSword$player) || hasTrinket(SkillCards.FEIYING.get(), dabaoSword$player)) {
-                dabaoSword$player.addEffect(new MobEffectInstance(ModItems.DEFEND, 10,1,false,false,true));
-            }
+            if (hasTrinket(ModItems.DILU.get(), dabaoSword$player)) level2++;
+            if (hasTrinket(SkillCards.FEIYING.get(), dabaoSword$player)) level2++;
+            if (level2 > 0) dabaoSword$player.addEffect(new MobEffectInstance(ModItems.DEFEND, 10,level2,false,false,true));
 
             if (this.getTags().contains("px")) {
                 this.attackStrengthTicker = 1145;
@@ -230,23 +226,20 @@ public abstract class PlayerMixin extends LivingEntity {
         return false;
     }
 
-    @Unique boolean dabaoSword$inrattan(Player player) {
-        return hasTrinket(ModItems.RATTAN_ARMOR.get(), player);
-    }
+    @Unique boolean dabaoSword$inrattan(Player player) {return hasTrinket(ModItems.RATTAN_ARMOR.get(), player);}
 
     @Unique boolean dabaoSword$baguaTrigger(Player player) {
         return hasTrinket(ModItems.BAGUA.get(), player) && new Random().nextFloat() < 0.5;
     }
     @Unique
     void dabaoSword$shan(Player player, boolean bl) {
-        ItemStack stack = bl ? trinketItem(ModItems.BAGUA.get(), player) : dabaoSword$shanStack(player);
+        ItemStack stack = bl ? ItemStack.EMPTY : dabaoSword$shanStack(player);
         int cd = bl ? 60 : 40;
         player.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 20,0,false,false,false));
         player.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, cd,0,false,false,false));
         voice(player, Sounds.SHAN.get());
-        benxi(player);
+        NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, null));
         if (bl) player.displayClientMessage(Component.translatable("dabaosword.bagua"),true);
-        else stack.shrink(1);
     }
 
     @Unique

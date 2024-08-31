@@ -1,6 +1,8 @@
 package com.amotassic.dabaosword.event;
 
 import com.amotassic.dabaosword.DabaoSword;
+import com.amotassic.dabaosword.event.listener.CardDiscardListener;
+import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.util.Sounds;
@@ -19,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import top.theillusivec4.curios.api.CuriosApi;
 
@@ -93,17 +96,19 @@ public class EntityHurtEvent {
                                 List<Integer> cardSlots = IntStream.range(0, inventory.size()).filter(j -> isCard(inventory.get(j))).boxed().toList();
                                 for (Integer slot : cardSlots) {candidate.add(inventory.get(slot));}
                                 //把饰品栏的卡牌添加到待选物品中
+                                int equip = 0; //用于标记装备区牌的数量
                                 var component = CuriosApi.getCuriosInventory(player);
                                 if(component.isPresent()) {
                                     var allEquipped = component.get().getEquippedCurios();
                                     for(int j = 0; j < allEquipped.getSlots(); j++) {
-                                        candidate.add(allEquipped.getStackInSlot(j));
+                                        ItemStack stack1 = allEquipped.getStackInSlot(j);
+                                        if (stack1.is(Tags.CARD)) candidate.add(stack1); equip++;
                                     }
                                 }
                                 if(!candidate.isEmpty()) {
                                     int index = new Random().nextInt(candidate.size()); ItemStack chosen = candidate.get(index);
                                     target.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("dabaosword.discard")).append(chosen.getDisplayName()),false);
-                                    chosen.shrink(1);
+                                    NeoForge.EVENT_BUS.post(new CardDiscardListener(player, chosen, 1, index > candidate.size() - equip));
                                 }
                             } else {//如果来源不是玩家则随机弃置它的主副手物品和装备
                                 List<ItemStack> candidate = new ArrayList<>();
@@ -199,8 +204,8 @@ public class EntityHurtEvent {
                             lightningEntity.setVisualOnly(true);
                             world.addFreshEntity(lightningEntity);
                         }
-                    } benxi(player);
-                    if (!player.isCreative()) {stack.shrink(1);}
+                    }
+                    NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, entity));
                 }
 
                 //排异技能：攻击伤害增加

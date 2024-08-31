@@ -19,7 +19,6 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 import java.util.Random;
 
-import static com.amotassic.dabaosword.item.card.GainCardItem.selectRandomEntry;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class GiftBoxItem extends Item {
@@ -53,7 +52,7 @@ public class GiftBoxItem extends Item {
     public void giftBox(Player player, float chance) {
         if (new Random().nextFloat() < chance) {
             List<LootEntry> lootEntries = LootTableParser.parseLootTable(ResourceLocation.fromNamespaceAndPath("dabaosword", "loot_tables/draw_skill.json"));
-            LootEntry selectedEntry = selectRandomEntry(lootEntries);
+            LootEntry selectedEntry = GainCardItem.selectRandomEntry(lootEntries);
 
             ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(selectedEntry.item()));
             if (stack.getItem() != Items.AIR) voice(player, Sounds.GIFTBOX.get(),3);

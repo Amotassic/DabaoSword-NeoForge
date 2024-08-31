@@ -1,5 +1,6 @@
 package com.amotassic.dabaosword.item.card;
 
+import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.LootEntry;
 import com.amotassic.dabaosword.util.LootTableParser;
@@ -12,6 +13,7 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.List;
 import java.util.Random;
@@ -34,9 +36,8 @@ public class GainCardItem extends CardItem {
             //无中生有
             if (user.getItemInHand(hand).getItem() == ModItems.WUZHONG.get()) {
                 draw(user,2);
-                if (!user.isCreative()) user.getItemInHand(hand).shrink(1);
+                NeoForge.EVENT_BUS.post(new CardUsePostListener(user, user.getItemInHand(hand), user));
                 voice(user, Sounds.WUZHONG.get());
-                jizhi(user); benxi(user);
             }
         }
         return InteractionResultHolder.success(user.getItemInHand(hand));

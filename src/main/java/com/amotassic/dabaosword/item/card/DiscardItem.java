@@ -1,6 +1,7 @@
 package com.amotassic.dabaosword.item.card;
 
 import com.amotassic.dabaosword.event.ActiveSkillEvent;
+import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.Sounds;
 import net.minecraft.network.chat.Component;
@@ -12,7 +13,12 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import static com.amotassic.dabaosword.util.ModTools.*;
 
@@ -29,16 +35,26 @@ public class DiscardItem extends CardItem {
 
     @Override
     public @NotNull InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
-        if (entity instanceof Player target && !user.level().isClientSide && hand == InteractionHand.MAIN_HAND) {
-            if (hasItem(target, ModItems.WUXIE.get())) {
-                voice(target, Sounds.WUXIE.get());
-                removeItem(target, ModItems.WUXIE.get());
-                jizhi(target); benxi(target);
-                voice(user, Sounds.GUOHE.get());
-                if (!user.isCreative()) {stack.shrink(1);}
-                jizhi(user); benxi(user);
+        if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND) {
+            if (entity instanceof Player target) {
+                if (hasItem(target, ModItems.WUXIE.get())) {
+                    NeoForge.EVENT_BUS.post(new CardUsePostListener(target, getItem(target, ModItems.WUXIE.get()), null));
+                    voice(target, Sounds.WUXIE.get());
+                    NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
+                    voice(user, Sounds.GUOHE.get());
+                } else {
+                    ActiveSkillEvent.openInv(user, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), ActiveSkillEvent.targetInv(target, true, false, 1, user.getMainHandItem()));
+                }
             } else {
-                ActiveSkillEvent.openInv(user, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), ActiveSkillEvent.targetInv(target, true, false, 1, user.getMainHandItem()));
+                List<ItemStack> stacks = new ArrayList<>();
+                if (isCard(entity.getMainHandItem())) stacks.add(entity.getMainHandItem());
+                if (isCard(entity.getOffhandItem())) stacks.add(entity.getOffhandItem());
+                if (!stacks.isEmpty()) {
+                    ItemStack chosen = stacks.get(new Random().nextInt(stacks.size()));
+                    voice(user, Sounds.GUOHE.get());
+                    chosen.shrink(1);
+                    NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
+                }
             }
             return InteractionResult.SUCCESS;
         }

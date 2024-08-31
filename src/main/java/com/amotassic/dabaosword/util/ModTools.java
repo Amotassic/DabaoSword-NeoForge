@@ -1,7 +1,6 @@
 package com.amotassic.dabaosword.util;
 
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -17,9 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.Objects;
-import java.util.Random;
-
-import static com.amotassic.dabaosword.item.card.GainCardItem.draw;
 
 public class ModTools {
     public static boolean noTieji(LivingEntity entity) {return !entity.hasEffect(ModItems.TIEJI);}
@@ -45,18 +41,15 @@ public class ModTools {
 
     //判断玩家是否有某个物品
     public static boolean hasItem(@NotNull Player player, @NotNull Item item) {
+        return getItem(player, item) != ItemStack.EMPTY;
+    }
+
+    public static ItemStack getItem(@NotNull Player player, Item item) {
         for (int i = 0; i < player.getInventory().getContainerSize(); ++i) {
             ItemStack stack = player.getInventory().getItem(i);
-            if (stack.isEmpty() || stack.getItem() != item) continue;
-            return true;
+            if (stack.getItem() == item) return stack;
         }
-        return false;
-    }
-    //移除玩家的1个物品
-    public static void removeItem(@NotNull Player player, @NotNull Item item) {
-        Inventory inv = player.getInventory();
-        int i = inv.getSlotWithRemainingSpace(item.getDefaultInstance());
-        inv.removeItem(i, 1);
+        return ItemStack.EMPTY;
     }
 
     //判断是否是非基本牌
@@ -110,25 +103,6 @@ public class ModTools {
     public static void voice(@NotNull LivingEntity entity, SoundEvent sound, float volume) {
         if (entity.level() instanceof ServerLevel world) {
             world.playSound(null, entity.getX(), entity.getY(), entity.getZ(), sound, SoundSource.PLAYERS, volume, 1.0F);
-        }
-    }
-
-    //集智技能触发
-    public static void jizhi(Player player) {
-        if (hasTrinket(SkillCards.JIZHI.get(), player)) {
-            draw(player, 1);
-            if (new Random().nextFloat() < 0.5) {voice(player, Sounds.JIZHI1.get());} else {voice(player, Sounds.JIZHI2.get());}
-        }
-    }
-    //奔袭技能触发
-    public static void benxi(Player player) {
-        if (hasTrinket(SkillCards.BENXI.get(), player)) {
-            ItemStack stack = trinketItem(SkillCards.BENXI.get(), player);
-            int benxi = getTag(stack);
-            if (benxi < 5) {
-                setTag(stack, benxi + 1);
-                if (new Random().nextFloat() < 0.5) {voice(player, Sounds.BENXI1.get());} else {voice(player, Sounds.BENXI2.get());}
-            }
         }
     }
 

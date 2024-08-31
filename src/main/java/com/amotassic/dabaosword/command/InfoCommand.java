@@ -38,7 +38,7 @@ public class InfoCommand {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("info")
+        dispatcher.register(Commands.literal("information")
                 .then(Commands.argument("target", EntityArgument.entity())
                         .executes(c -> run(EntityArgument.getEntity(c, "target"), c, false))
                         .then(Commands.argument("editable", BoolArgumentType.bool())

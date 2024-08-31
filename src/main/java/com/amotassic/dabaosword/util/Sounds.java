@@ -8,6 +8,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class Sounds {
     public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(BuiltInRegistries.SOUND_EVENT, "dabaosword");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LET_ME_CC = SOUNDS.register("letmecc", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("dabaosword", "letmecc")));
     public static final DeferredHolder<SoundEvent, SoundEvent> LONGDAN1 = SOUNDS.register("longdan1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("dabaosword", "longdan1")));
     public static final DeferredHolder<SoundEvent, SoundEvent> LONGDAN2 = SOUNDS.register("longdan2", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("dabaosword", "longdan2")));
     public static final DeferredHolder<SoundEvent, SoundEvent> GONGXIN1 = SOUNDS.register("gongxin1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("dabaosword", "gongxin1")));

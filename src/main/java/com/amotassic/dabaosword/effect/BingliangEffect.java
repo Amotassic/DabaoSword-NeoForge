@@ -22,7 +22,7 @@ public class BingliangEffect extends MobEffect {
             //清除玩家的牌
             if(amp == 1) {
                 if (hasItem(player, ModItems.GAIN_CARD.get())) {
-                    removeItem(player, ModItems.GAIN_CARD.get());
+                    getItem(player, ModItems.GAIN_CARD.get()).shrink(1);
                     //将2级效果换成1级
                     player.removeEffect(ModItems.BINGLIANG);
                     player.addEffect(new MobEffectInstance(ModItems.BINGLIANG, MobEffectInstance.INFINITE_DURATION));
@@ -30,7 +30,7 @@ public class BingliangEffect extends MobEffect {
             }
             if (amp == 0) {
                 if (hasItem(player, ModItems.GAIN_CARD.get())) {
-                    removeItem(player, ModItems.GAIN_CARD.get());
+                    getItem(player, ModItems.GAIN_CARD.get()).shrink(1);
                     player.removeEffect(ModItems.BINGLIANG);
                 }
             }

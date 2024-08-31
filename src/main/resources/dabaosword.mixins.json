@@ -8,6 +8,7 @@
     "ItemEntityMixin",
     "LargeFireballMixin",
     "LivingEntityMixin",
+    "MobEntityMixin",
     "PlayerMixin"
   ],
   "client": [

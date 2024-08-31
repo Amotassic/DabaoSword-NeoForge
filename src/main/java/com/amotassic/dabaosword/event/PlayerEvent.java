@@ -1,8 +1,10 @@
 package com.amotassic.dabaosword.event;
 
 import com.amotassic.dabaosword.DabaoSword;
+import com.amotassic.dabaosword.event.listener.CardDiscardListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
+import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.util.Gamerule;
 import com.amotassic.dabaosword.util.Sounds;
 import com.amotassic.dabaosword.util.Tags;
@@ -12,12 +14,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.Random;
 
-import static com.amotassic.dabaosword.item.skillcard.SkillItem.changeSkill;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
@@ -32,17 +34,8 @@ public class PlayerEvent {
                 Inventory inv = player.getInventory();
                 for (int i = 0; i < inv.getContainerSize(); ++i) {
                     ItemStack stack = inv.getItem(i);
-                    if (stack.is(Tags.CARD) || stack.getItem() == ModItems.GAIN_CARD.get()) {
-                        for (Player player1 : world.players()) {//行殇技能触发
-                            if (hasTrinket(SkillCards.XINGSHANG.get(), player1) && player1.distanceTo(player) <= 25 && player1 != player) {
-                                if (!player1.getTags().contains("xingshang")) {
-                                    if (new Random().nextFloat() < 0.5) voice(player1, Sounds.XINGSHANG1.get()); else voice(player1, Sounds.XINGSHANG2.get());
-                                }
-                                player1.addTag("xingshang");
-                                give(player1, stack); break;
-                            }
-                        }
-                        inv.removeItemNoUpdate(i);
+                    if (isCard(stack)) {
+                        if (XingshangTrigger(player, stack)) NeoForge.EVENT_BUS.post(new CardDiscardListener(player, stack, stack.getCount(), false));
                     }
                 }
 
@@ -52,16 +45,7 @@ public class PlayerEvent {
                     for(int i = 0; i < allEquipped.getSlots(); i++) {
                         ItemStack stack = allEquipped.getStackInSlot(i);
                         if(stack.is(Tags.CARD)) {
-                            for (Player player1 : world.players()) {//行殇技能触发
-                                if (hasTrinket(SkillCards.XINGSHANG.get(), player1) && player1.distanceTo(player) <= 25 && player1 != player) {
-                                    if (!player1.getTags().contains("xingshang")) {
-                                        if (new Random().nextFloat() < 0.5) voice(player1, Sounds.XINGSHANG1.get()); else voice(player1, Sounds.XINGSHANG2.get());
-                                    }
-                                    player1.addTag("xingshang");
-                                    give(player1, stack); break;
-                                }
-                            }
-                            stack.setCount(0);
+                            if (XingshangTrigger(player, stack)) NeoForge.EVENT_BUS.post(new CardDiscardListener(player, stack, stack.getCount(), true));
                         }
                     }
                 }
@@ -75,6 +59,21 @@ public class PlayerEvent {
                 if (c > 1) setTag(stack, (c+1)/2);
             }
         }
+    }
+
+    private static boolean XingshangTrigger(Player player, ItemStack stack) {
+        for (Player player1 : player.level().players()) {//行殇技能触发
+            if (hasTrinket(SkillCards.XINGSHANG.get(), player1) && player1.distanceTo(player) <= 25 && player1 != player) {
+                if (!player1.getTags().contains("xingshang")) {
+                    if (new Random().nextFloat() < 0.5) voice(player1, Sounds.XINGSHANG1.get()); else voice(player1, Sounds.XINGSHANG2.get());
+                }
+                player1.addTag("xingshang");
+                give(player1, stack.copy());
+                stack.setCount(0);
+                return false;
+            }
+        }//为了简便，触发行殇后返回false
+        return true;
     }
 
     @SubscribeEvent
@@ -96,7 +95,7 @@ public class PlayerEvent {
     public static void PlayerLogIn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
         Player player = event.getEntity();
         if (!player.getTags().contains("given_skill")) {
-            changeSkill(player);
+            SkillItem.changeSkill(player);
             player.addTag("given_skill");
         }
     }

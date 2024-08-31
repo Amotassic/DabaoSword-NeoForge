@@ -2,6 +2,7 @@ package com.amotassic.dabaosword.item.equipment;
 
 import com.amotassic.dabaosword.item.card.CardItem;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -29,21 +30,19 @@ public class ArrowRainItem extends CardItem {
     }
 
     public static void arrowRain(LivingEntity entity, float speed) {
-        ItemStack stack = new ItemStack(Items.ARROW);
-        Component a = Component.nullToEmpty("a");
-        Level world = entity.level();
-        Arrow arrow1 = new Arrow(world, entity, stack, null);arrow1.setCustomName(a);
-        Arrow arrow2 = new Arrow(world, entity, stack, null);arrow2.setCustomName(a);
-        Arrow arrow3 = new Arrow(world, entity, stack, null);arrow3.setCustomName(a);
-        Arrow arrow4 = new Arrow(world, entity, stack, null);arrow4.setCustomName(a);
-        Arrow arrow5 = new Arrow(world, entity, stack, null);arrow5.setCustomName(a);
-        arrow1.shootFromRotation(entity, entity.getXRot(), entity.getYRot()+10, 0.0F, speed, 1.0F);
-        arrow2.shootFromRotation(entity, entity.getXRot(), entity.getYRot()+5, 0.0F, speed, 1.0F);
-        arrow3.shootFromRotation(entity, entity.getXRot(), entity.getYRot(), 0.0F, speed, 1.0F);
-        arrow4.shootFromRotation(entity, entity.getXRot(), entity.getYRot()-5, 0.0F, speed, 1.0F);
-        arrow5.shootFromRotation(entity, entity.getXRot(), entity.getYRot()-10, 0.0F, speed, 1.0F);
-        arrow1.setCritArrow(true);arrow2.setCritArrow(true);arrow3.setCritArrow(true);arrow4.setCritArrow(true);arrow5.setCritArrow(true);
-        world.addFreshEntity(arrow1);world.addFreshEntity(arrow2);world.addFreshEntity(arrow3);world.addFreshEntity(arrow4);world.addFreshEntity(arrow5);
+        ServerLevel world = (ServerLevel) entity.level();
+        int[] angles = {10, 5, 0, -5, -10};
+        for (int angle : angles) {summonArrow(entity, angle, speed);}
         world.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F / (world.getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
+    }
+
+    private static void summonArrow(LivingEntity entity, int angle, float speed) {
+        ItemStack stack = new ItemStack(Items.ARROW);
+        ServerLevel world = (ServerLevel) entity.level();
+        Arrow arrow = new Arrow(world, entity, stack, null);
+        arrow.setCustomName(Component.nullToEmpty("a"));
+        arrow.shootFromRotation(entity, entity.getXRot(), entity.getYRot() + angle, 0.0F, speed, 1.0F);
+        arrow.setCritArrow(true);
+        world.addFreshEntity(arrow);
     }
 }

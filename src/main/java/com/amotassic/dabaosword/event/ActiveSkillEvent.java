@@ -2,6 +2,7 @@ package com.amotassic.dabaosword.event;
 
 import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.event.listener.ActiveSkillListener;
+import com.amotassic.dabaosword.event.listener.CardMoveListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.equipment.EquipmentItem;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
@@ -14,7 +15,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -22,6 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.NeoForge;
 import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.Arrays;
@@ -75,7 +76,7 @@ public class ActiveSkillEvent {
             }
 
             if (stack.getItem() == SkillCards.QICE.get()) {
-                ItemStack offStack = user.getItemInHand(InteractionHand.OFF_HAND);
+                ItemStack offStack = user.getOffhandItem();
                 int cd = getCD(stack);
                 if (!offStack.isEmpty() && offStack.is(Tags.CARD) && offStack.getCount() > 1) {
                     if (cd == 0) {
@@ -110,6 +111,7 @@ public class ActiveSkillEvent {
             if (stack.getItem() == SkillCards.ZHIJIAN.get()) {
                 ItemStack itemStack = user.getMainHandItem();
                 if (itemStack.getItem() instanceof EquipmentItem && itemStack.getItem() != ModItems.CARD_PILE.get()) {
+                    NeoForge.EVENT_BUS.post(new CardMoveListener(user, target, itemStack, itemStack.getCount(), CardMoveListener.Type.INV_TO_EQUIP));
                     EquipmentItem.equipItem(target, itemStack);
                     if (new Random().nextFloat() < 0.5) {voice(user, Sounds.ZHIJIAN1.get());} else {voice(user, Sounds.ZHIJIAN2.get());}
                     draw(user, 1);

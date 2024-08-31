@@ -1,6 +1,7 @@
 package com.amotassic.dabaosword.item.skillcard;
 
 import com.amotassic.dabaosword.item.ModItems;
+import com.amotassic.dabaosword.item.card.GainCardItem;
 import com.amotassic.dabaosword.util.LootEntry;
 import com.amotassic.dabaosword.util.LootTableParser;
 import com.amotassic.dabaosword.util.Sounds;
@@ -28,9 +29,7 @@ import top.theillusivec4.curios.api.type.capability.ICurioItem;
 import java.util.List;
 import java.util.Objects;
 
-import static com.amotassic.dabaosword.item.card.GainCardItem.selectRandomEntry;
 import static com.amotassic.dabaosword.util.ModTools.*;
-import static com.amotassic.dabaosword.util.ModTools.getTag;
 
 public class SkillItem extends Item implements ICurioItem {
     public SkillItem(Properties p_41383_) {super(p_41383_);}
@@ -288,7 +287,7 @@ public class SkillItem extends Item implements ICurioItem {
 
     public static void changeSkill(Player player) {
         List<LootEntry> lootEntries = LootTableParser.parseLootTable(ResourceLocation.fromNamespaceAndPath("dabaosword", "loot_tables/change_skill.json"));
-        LootEntry selectedEntry = selectRandomEntry(lootEntries);
+        LootEntry selectedEntry = GainCardItem.selectRandomEntry(lootEntries);
 
         ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(selectedEntry.item()));
         if (stack.getItem() != Items.AIR) voice(player, Sounds.GIFTBOX.get(),3);
