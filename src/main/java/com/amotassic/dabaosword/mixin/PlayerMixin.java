@@ -24,6 +24,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -32,8 +33,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 import static com.amotassic.dabaosword.util.ModTools.*;
 
@@ -105,18 +105,16 @@ public abstract class PlayerMixin extends LivingEntity {
             //流离
             if (hasTrinket(SkillCards.LIULI.get(), dabaoSword$player) && source.getEntity() instanceof LivingEntity attacker && getSlotInTag(Tags.CARD, dabaoSword$player) != -1 && !dabaoSword$player.hasEffect(ModItems.COOLDOWN2) && !dabaoSword$player.isCreative()) {
                 ItemStack stack = stackInTag(Tags.CARD, dabaoSword$player);
-                AABB box = new AABB(dabaoSword$player.getOnPos()).inflate(10);
                 int i = 0;
-                for (LivingEntity nearbyEntity : world.getEntitiesOfClass(LivingEntity.class, box, LivingEntity -> LivingEntity != attacker && LivingEntity != dabaoSword$player)) {
-                    if (nearbyEntity != null) {
-                        cir.setReturnValue(false);
-                        dabaoSword$player.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 10,0,false,false,false));
-                        dabaoSword$player.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 10,0,false,false,false));
-                        stack.shrink(1);
-                        if (new Random().nextFloat() < 0.5) {voice(dabaoSword$player, Sounds.LIULI1.get());} else {voice(dabaoSword$player, Sounds.LIULI2.get());}
-                        nearbyEntity.invulnerableTime = 0;
-                        nearbyEntity.hurt(source, amount); i++; break;
-                    }
+                LivingEntity nearEntity = dabaoSword$getLiuliEntity(dabaoSword$player, attacker);
+                if (nearEntity != null) {
+                    cir.setReturnValue(false);
+                    dabaoSword$player.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 10,0,false,false,false));
+                    dabaoSword$player.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 10,0,false,false,false));
+                    stack.shrink(1);
+                    if (new Random().nextFloat() < 0.5) {voice(dabaoSword$player, Sounds.LIULI1.get());} else {voice(dabaoSword$player, Sounds.LIULI2.get());}
+                    nearEntity.invulnerableTime = 0;
+                    nearEntity.hurt(source, amount); i++;
                 }
                 //避免闪自动触发，因此在这里额外判断
                 if (i == 0 && !dabaoSword$player.hasEffect(ModItems.COOLDOWN2)) {
@@ -130,6 +128,22 @@ public abstract class PlayerMixin extends LivingEntity {
             }
 
         }
+    }
+
+    @Unique @Nullable LivingEntity dabaoSword$getLiuliEntity(Entity entity, LivingEntity attacker) {
+        if (entity.level() instanceof ServerLevel world) {
+            AABB box = new AABB(entity.getOnPos()).inflate(10);
+            List<LivingEntity> entities = world.getEntitiesOfClass(LivingEntity.class, box, entity1 -> entity1 != entity && entity1 != attacker);
+            if (!entities.isEmpty()) {
+                Map<Float, LivingEntity> map = new HashMap<>();
+                for (var e : entities) {
+                    map.put(e.distanceTo(entity), e);
+                }
+                float min = Collections.min(map.keySet());
+                return map.values().stream().toList().get(map.keySet().stream().toList().indexOf(min));
+            }
+        }
+        return null;
     }
 
     @Unique private int dabaoSword$tick = 0;
@@ -146,7 +160,7 @@ public abstract class PlayerMixin extends LivingEntity {
             if (++dabaoSword$tick >= giveCard) { // 每分钟摸两张牌
                 dabaoSword$tick = 0;
                 if (hasTrinket(ModItems.CARD_PILE.get(), dabaoSword$player) && !dabaoSword$player.isCreative() && !dabaoSword$player.isSpectator()) {
-                    if (count(dabaoSword$player, Tags.CARD) + count(dabaoSword$player, ModItems.GAIN_CARD.get()) <= dabaoSword$player.getMaxHealth()) {
+                    if (countAllCard(dabaoSword$player) <= dabaoSword$player.getMaxHealth()) {
                         dabaoSword$player.addItem(new ItemStack(ModItems.GAIN_CARD, 2));
                         dabaoSword$player.displayClientMessage(Component.translatable("dabaosword.draw"),true);
                     } else if (!enableLimit) {//如果不限制摸牌就继续发牌
@@ -160,7 +174,7 @@ public abstract class PlayerMixin extends LivingEntity {
                 if (++dabaoSword$skillChange >= skill) {//每5分钟可以切换技能
                     dabaoSword$skillChange = 0;
                     dabaoSword$player.addTag("change_skill");
-                    if (skill >= 600) {
+                    if (skill >= 600 && hasTrinket(ModItems.CARD_PILE.get(), dabaoSword$player)) {
                         dabaoSword$player.displayClientMessage(Component.translatable("dabaosword.change_skill").withStyle(ChatFormatting.BOLD),false);
                         dabaoSword$player.displayClientMessage(Component.translatable("dabaosword.change_skill2"),false);
                     }
@@ -186,9 +200,9 @@ public abstract class PlayerMixin extends LivingEntity {
                 //实现沈佳宜的效果：若玩家看到的玩家有近战防御效果，则给当前玩家攻击范围缩短效果
                 int amplifier = Objects.requireNonNull(nearbyPlayer.getEffect(ModItems.DEFEND)).getAmplifier();
                 int attack = (int) dabaoSword$player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
-                int defensed = Math.min(amplifier, attack);
+                int defended = Math.min(amplifier, attack);
                 if (dabaoSword$player != nearbyPlayer && dabaoSword$isLooking(dabaoSword$player, nearbyPlayer)) {
-                    dabaoSword$player.addEffect(new MobEffectInstance(ModItems.DEFENDED, 1,defensed,false,false,false));
+                    dabaoSword$player.addEffect(new MobEffectInstance(ModItems.DEFENDED, 1,defended,false,false,false));
                 }
             }
 

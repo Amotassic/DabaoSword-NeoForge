@@ -9,15 +9,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -26,10 +23,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.NeoForge;
 import top.theillusivec4.curios.api.CuriosApi;
@@ -113,23 +106,11 @@ public class EquipmentItem extends Item implements ICurioItem {
     }
 
     @Override
-    public void curioTick(SlotContext slotContext, ItemStack stack) {
+    public boolean canUnequip(SlotContext slotContext, ItemStack stack) {
         LivingEntity entity = slotContext.entity();
-        if (!entity.level().isClientSide) {
-            if (stack.getItem() != ModItems.CARD_PILE.get() && !EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) {//给装备上绑定诅咒
-                var e = enchantment(entity, Enchantments.BINDING_CURSE);
-                stack.enchant(e, 1);
-            }
-        }
-        ICurioItem.super.curioTick(slotContext, stack);
-    }
-
-    public Holder<Enchantment> enchantment(Entity entity, ResourceKey<Enchantment> key) {
-        var enchantments = entity.level().registryAccess().registryOrThrow(Registries.ENCHANTMENT).holders().toList();
-        for (var enchant : enchantments) {
-            if (enchant.unwrapKey().isPresent() && enchant.unwrapKey().get() == key) return enchant;
-        }
-        return null;
+        if (entity instanceof Player player && player.isCreative()) return true;
+        if (stack.getItem() != ModItems.CARD_PILE.get()) return false;
+        return ICurioItem.super.canUnequip(slotContext, stack);
     }
 
     @Override

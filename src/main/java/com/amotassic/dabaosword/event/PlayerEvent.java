@@ -58,6 +58,11 @@ public class PlayerEvent {
                 int c = getTag(stack);
                 if (c > 1) setTag(stack, (c+1)/2);
             }
+
+            if (hasTrinket(SkillCards.LIANYING.get(), player)) {
+                ItemStack stack = trinketItem(SkillCards.LIANYING.get(), player);
+                if (stack != null) setCD(stack, 0);
+            }
         }
     }
 

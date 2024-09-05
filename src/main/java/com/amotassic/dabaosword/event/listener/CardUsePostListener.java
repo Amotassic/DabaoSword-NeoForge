@@ -20,6 +20,8 @@ public class CardUsePostListener extends PlayerEvent {
 
     public ItemStack getStack() {return this.stack;}
 
+    public ItemStack getCopy() {return this.stack.copy();}
+
     @Nullable
     public LivingEntity getTarget() {return this.target;}
 }

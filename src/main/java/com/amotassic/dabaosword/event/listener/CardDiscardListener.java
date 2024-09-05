@@ -19,6 +19,8 @@ public class CardDiscardListener extends PlayerEvent {
 
     public ItemStack getStack() {return this.stack;}
 
+    public ItemStack getCopy() {return this.stack.copyWithCount(count);}
+
     public int getCount() {return this.count;}
 
     public boolean isFromEquip() {return this.fromEquip;}

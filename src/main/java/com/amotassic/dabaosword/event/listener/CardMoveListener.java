@@ -24,6 +24,8 @@ public class CardMoveListener extends PlayerEvent {
 
     public ItemStack getStack() {return this.stack;}
 
+    public ItemStack getCopy() {return this.stack.copyWithCount(count);}
+
     public int getCount() {return this.count;}
 
     public Type getType() {return this.type;}

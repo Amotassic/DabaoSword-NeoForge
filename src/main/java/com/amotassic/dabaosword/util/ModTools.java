@@ -126,6 +126,8 @@ public class ModTools {
         return n;
     }
 
+    public static int countAllCard(Player player) {return count(player, Tags.CARD) + count(player, ModItems.GAIN_CARD.get());}
+
     public static void give(Player player, ItemStack stack) {
         ItemEntity item = player.drop(stack, false);
         if (item == null) return;

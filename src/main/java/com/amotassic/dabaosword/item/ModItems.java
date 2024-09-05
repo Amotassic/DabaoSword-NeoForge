@@ -175,6 +175,7 @@ public class ModItems {
                         o.accept(SkillCards.BUQU.get());
                         o.accept(SkillCards.GONGXIN.get());
                         o.accept(SkillCards.GUOSE.get());
+                        o.accept(SkillCards.LIANYING.get());
                         o.accept(SkillCards.LIULI.get());
                         o.accept(SkillCards.KUROU.get());
                         o.accept(SkillCards.POJUN.get());
