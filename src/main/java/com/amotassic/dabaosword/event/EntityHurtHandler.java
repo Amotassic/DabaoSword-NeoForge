@@ -5,24 +5,28 @@ import com.amotassic.dabaosword.event.listener.CardDiscardListener;
 import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
+import com.amotassic.dabaosword.util.ModifyDamage;
 import com.amotassic.dabaosword.util.Sounds;
 import com.amotassic.dabaosword.util.Tags;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.ArrayList;
@@ -33,28 +37,51 @@ import java.util.stream.IntStream;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
-public class EntityHurtEvent {
+public class EntityHurtHandler {
+
+    public static void save(Player player, float amount) {
+        if (hasItemInTag(Tags.RECOVER, player)) {
+            //濒死自动使用酒、桃结算：首先计算需要回复的体力为(受到的伤害amount - 玩家当前生命值）
+            float recover = amount - player.getHealth();
+            int need = (int) (recover / 5) + 1;
+            int tao = count(player, Tags.RECOVER);//数玩家背包中回血卡牌的数量（只包含酒、桃）
+            if (tao >= need) {//如果剩余回血牌大于需要的桃的数量，则进行下一步，否则直接趋势
+                for (int i = 0; i < need; i++) {//循环移除背包中的酒、桃
+                    if (player.invulnerableTime > 9) {
+                        ItemStack stack = stackInTag(Tags.RECOVER, player);
+                        if (stack.getItem() == ModItems.PEACH.get()) voice(player, Sounds.RECOVER.get());
+                        if (stack.getItem() == ModItems.JIU.get()) voice(player, Sounds.JIU.get());
+                        NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, player));
+                    }
+                }
+                //最后将玩家的体力设置为 受伤前生命值 - 伤害值 + 回复量
+                player.setHealth(player.getHealth() - amount + 5 * need);
+            }
+        }
+    }
 
     @SubscribeEvent
-    public static void EntityHurt(LivingDamageEvent.Post event){
-        LivingEntity entity = event.getEntity();
-        DamageSource source = event.getSource();
+    public static void EntityHurt(LivingDamageEvent.Post event) {
+        LivingEntity entity = event.getEntity(); DamageSource source = event.getSource();
         float amount = event.getNewDamage();
-        ItemStack head = entity.getItemBySlot(EquipmentSlot.HEAD);
-        ItemStack chest = entity.getItemBySlot(EquipmentSlot.CHEST);
-        ItemStack legs = entity.getItemBySlot(EquipmentSlot.LEGS);
-        ItemStack feet = entity.getItemBySlot(EquipmentSlot.FEET);
-        boolean noArmor = head.isEmpty() && chest.isEmpty() && legs.isEmpty() && feet.isEmpty();
 
         if (entity.level() instanceof ServerLevel world) {
-
             if (entity instanceof Player player) {
 
-                //穿藤甲时，若承受火焰伤害，则 战火燃尽，嘤熊胆！
-                if (source.is(DamageTypeTags.IS_FIRE) && hasTrinket(ModItems.RATTAN_ARMOR.get(), player) && !player.getTags().contains("rattan")) {
-                    player.addTag("rattan");
-                    player.invulnerableTime = 0; player.hurt(source, amount > 5 ? 5 : amount);
-                    player.getTags().remove("rattan");
+                if (player.getHealth() <= amount) {
+                    if (hasTrinket(SkillCards.BUQU.get(), player)) {
+                        ItemStack stack = trinketItem(SkillCards.BUQU.get(), player);
+                        int c = getTag(stack);
+                        if (new Random().nextFloat() < 0.5) {voice(player, Sounds.BUQU1.get());} else {voice(player, Sounds.BUQU2.get());}
+                        if (new Random().nextFloat() >= (float) c /13) {
+                            player.displayClientMessage(Component.translatable("buqu.tip1").withStyle(ChatFormatting.GREEN).append(String.valueOf(c + 1)), false);
+                            setTag(stack, c + 1);
+                            player.setHealth(5);
+                        } else {
+                            player.displayClientMessage(Component.translatable("buqu.tip2").withStyle(ChatFormatting.RED), false);
+                            save(player, amount);
+                        }
+                    } else save(player, amount);
                 }
 
                 //权计技能：受到生物伤害获得权
@@ -126,14 +153,32 @@ public class EntityHurtEvent {
 
             }
 
-            if (source.getDirectEntity() instanceof LivingEntity attacker) {
-                //古锭刀对没有装备的生物伤害增加 限定版翻倍
-                if (attacker.getMainHandItem().getItem() == ModItems.GUDINGDAO.get() && !attacker.getTags().contains("guding")) {
-                    if (noArmor || hasTrinket(SkillCards.POJUN.get(), attacker)) {
-                        attacker.addTag("guding");
-                        entity.invulnerableTime = 0;
-                        entity.hurt(source, amount);
-                        attacker.getTags().remove("guding");
+            //监听事件：若玩家杀死敌对生物，有概率摸牌，若杀死玩家，摸两张牌
+            if (source.getEntity() instanceof Player player && entity.getHealth() <= 0) {
+                if (entity instanceof Monster) {
+                    if (new Random().nextFloat() < 0.1) {
+                        player.addItem(new ItemStack(ModItems.GAIN_CARD));
+                        player.displayClientMessage(Component.translatable("dabaosword.draw.monster"),true);
+                    }
+                    //功獒技能触发
+                    if (hasTrinket(SkillCards.GONGAO.get(), player)) {
+                        ItemStack stack = trinketItem(SkillCards.GONGAO.get(), player);
+                        int extraHP = getTag(stack);
+                        stack.set(ModItems.TAGS, extraHP + 1);
+                        player.heal(1);
+                        if (new Random().nextFloat() < 0.5) {voice(player, Sounds.GONGAO1.get());} else {voice(player, Sounds.GONGAO2.get());}
+                    }
+                }
+                if (entity instanceof Player) {
+                    player.addItem(new ItemStack(ModItems.GAIN_CARD.get(), 2));
+                    player.displayClientMessage(Component.translatable("dabaosword.draw.player"),true);
+                    //功獒技能触发
+                    if (hasTrinket(SkillCards.GONGAO.get(), player)) {
+                        ItemStack stack = trinketItem(SkillCards.GONGAO.get(), player);
+                        int extraHP = getTag(stack);
+                        stack.set(ModItems.TAGS, extraHP + 5);
+                        player.heal(5);
+                        if (new Random().nextFloat() < 0.5) {voice(player, Sounds.GONGAO1.get());} else {voice(player, Sounds.GONGAO2.get());}
                     }
                 }
             }
@@ -150,7 +195,7 @@ public class EntityHurtEvent {
                 //擅专：我言既出，谁敢不从！
                 if (hasTrinket(SkillCards.SHANZHUAN.get(), player) && !player.hasEffect(ModItems.COOLDOWN)) {
                     var stack = trinketItem(SkillCards.SHANZHUAN.get(), player);
-                    if (entity instanceof Player target) ActiveSkillEvent.openInv(player, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), ActiveSkillEvent.targetInv(target, true, false, 1, stack));
+                    if (entity instanceof Player target) ActiveSkillHandler.openInv(player, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), ActiveSkillHandler.targetInv(target, true, false, 1, stack));
                     else {
                         if (new Random().nextFloat() < 0.5) {
                             voice(player, Sounds.SHANZHUAN1.get());
@@ -169,20 +214,11 @@ public class EntityHurtEvent {
             }
 
             if (source.getDirectEntity() instanceof Player player) {
-                //古锭刀对没有装备的生物伤害增加 卡牌版加5
-                if (hasTrinket(ModItems.GUDING_WEAPON.get(), player) && !player.getTags().contains("guding")) {
-                    if (noArmor || hasTrinket(SkillCards.POJUN.get(), player)) {
-                        player.addTag("guding");
-                        entity.invulnerableTime = 0; entity.hurt(source,5);
-                        player.getTags().remove("guding");
-                    }
-                }
-
                 //寒冰剑冻伤
                 if (hasTrinket(ModItems.HANBING.get(), player)) {entity.invulnerableTime = 0; entity.setTicksFrozen(500);}
 
                 //杀的相关结算
-                if (shouldSha(player) && !entity.isCurrentlyGlowing()) {
+                if (shouldSha(player)) {
                     ItemStack stack = player.getMainHandItem().is(Tags.SHA) ? player.getMainHandItem() : shaStack(player);
                     player.addTag("sha");
                     if (stack.getItem() == ModItems.SHA.get()) {
@@ -205,26 +241,27 @@ public class EntityHurtEvent {
                             world.addFreshEntity(lightningEntity);
                         }
                     }
-                    NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, entity));
-                }
-
-                //排异技能：攻击伤害增加
-                if (hasTrinket(SkillCards.QUANJI.get(), player) && !player.getTags().contains("quanji")) {
-                    ItemStack stack = trinketItem(SkillCards.QUANJI.get(), player);
-                    int quan = getTag(stack);
-                    if (quan > 0) {
-                        player.addTag("quanji");
-                        entity.invulnerableTime = 0; entity.hurt(source, quan);
-                        if (quan > 4 && entity instanceof Player) {
-                            give((Player) entity, new ItemStack(ModItems.GAIN_CARD.get(), 2));
+                    if (entity.isCurrentlyGlowing()) { //处理铁索连环的效果 铁索传导过去的伤害会触发2次加伤，这符合三国杀的逻辑，所以不改了
+                        if (stack.getItem() != ModItems.SHA.get()) entity.removeEffect(MobEffects.GLOWING);
+                        AABB box = new AABB(player.getOnPos()).inflate(20); // 检测范围，根据需要修改
+                        for (LivingEntity nearbyEntity : world.getEntitiesOfClass(LivingEntity.class, box, entities -> entities.isCurrentlyGlowing() && entities != entity)) {
+                            if (stack.getItem() == ModItems.FIRE_SHA.get()) {
+                                nearbyEntity.removeEffect(MobEffects.GLOWING); nearbyEntity.hurt(source, amount);
+                                nearbyEntity.invulnerableTime = 0; nearbyEntity.setRemainingFireTicks(100);
+                            }
+                            if (stack.getItem() == ModItems.THUNDER_SHA.get()) {
+                                nearbyEntity.removeEffect(MobEffects.GLOWING); nearbyEntity.hurt(source, amount);
+                                nearbyEntity.invulnerableTime = 0; nearbyEntity.hurt(player.damageSources().magic(), 5);
+                                LightningBolt lightningEntity = EntityType.LIGHTNING_BOLT.create(world);
+                                if (lightningEntity != null) {
+                                    lightningEntity.moveTo(nearbyEntity.getX(), nearbyEntity.getY(), nearbyEntity.getZ());
+                                    lightningEntity.setVisualOnly(true);
+                                    world.addFreshEntity(lightningEntity);
+                                }
+                            }
                         }
-                        int quan1 = quan/2; stack.set(ModItems.TAGS, quan1);
-                        float j = new Random().nextFloat();
-                        if (j < 0.25) {voice(player, Sounds.PAIYI1.get());
-                        } else if (0.25 <= j && j < 0.5) {voice(player, Sounds.PAIYI2.get(),3);
-                        } else if (0.5 <= j && j < 0.75) {voice(player, Sounds.PAIYI3.get());
-                        } else {voice(player, Sounds.PAIYI4.get(),3);}
                     }
+                    NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, entity));
                 }
 
                 //奔袭：命中后减少2手长，摸一张牌
@@ -244,5 +281,13 @@ public class EntityHurtEvent {
 
     static boolean shouldSha(Player player) {
         return getShaSlot(player) != -1 && !player.getTags().contains("sha") && !player.getTags().contains("juedou") && !player.getTags().contains("wanjian");
+    }
+
+    @SubscribeEvent
+    public static void cancel(LivingIncomingDamageEvent event) {
+        LivingEntity entity = event.getEntity();
+        DamageSource source = event.getSource();
+        float amount = event.getAmount();
+        if (ModifyDamage.shouldCancel(entity, source, amount)) event.setCanceled(true);
     }
 }

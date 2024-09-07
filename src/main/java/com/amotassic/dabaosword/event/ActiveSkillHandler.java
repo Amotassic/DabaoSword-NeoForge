@@ -34,7 +34,7 @@ import static com.amotassic.dabaosword.item.card.GainCardItem.draw;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
-public class ActiveSkillEvent {
+public class ActiveSkillHandler {
 
     @SubscribeEvent
     public static void ActiveSkill(ActiveSkillListener event) {

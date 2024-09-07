@@ -1,6 +1,6 @@
 package com.amotassic.dabaosword.item.card;
 
-import com.amotassic.dabaosword.event.ActiveSkillEvent;
+import com.amotassic.dabaosword.event.ActiveSkillHandler;
 import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.Sounds;
@@ -43,7 +43,7 @@ public class DiscardItem extends CardItem {
                     NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
                     voice(user, Sounds.GUOHE.get());
                 } else {
-                    ActiveSkillEvent.openInv(user, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), ActiveSkillEvent.targetInv(target, true, false, 1, user.getMainHandItem()));
+                    ActiveSkillHandler.openInv(user, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), ActiveSkillHandler.targetInv(target, true, false, 1, user.getMainHandItem()));
                 }
             } else {
                 List<ItemStack> stacks = new ArrayList<>();

@@ -23,7 +23,7 @@ import java.util.Random;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
-public class PlayerEvent {
+public class PlayerEvents {
 
     @SubscribeEvent
     public static void PlayerDie(LivingDeathEvent event) {
