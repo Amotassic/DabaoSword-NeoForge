@@ -59,7 +59,11 @@ public class CardEvents {
         stack.shrink(count);
 
         //弃置牌后，玩家的死亡判断是有必要的
-        if (hasTrinket(SkillCards.LIANYING.get(), player) && !fromEquip && player.isAlive() && countAllCard(player) == 0) lianyingTrigger(player);
+        if (player.isAlive()) {
+            if (hasTrinket(SkillCards.LIANYING.get(), player) && !fromEquip && countAllCard(player) == 0) lianyingTrigger(player);
+
+            if (hasTrinket(SkillCards.XIAOJI.get(), player) && fromEquip) xiaojiTrigger(player);
+        }
     }
 
     @SubscribeEvent
@@ -74,11 +78,22 @@ public class CardEvents {
             stack.shrink(count);
         }
 
-        if (from instanceof Player player && hasTrinket(SkillCards.LIANYING.get(), player) && (type == CardMoveListener.Type.INV_TO_EQUIP || type == CardMoveListener.Type.INV_TO_INV) && countAllCard(player) == 0) lianyingTrigger(player);
+        if (type == CardMoveListener.Type.INV_TO_EQUIP || type == CardMoveListener.Type.INV_TO_INV) {
+            if (from instanceof Player player && hasTrinket(SkillCards.LIANYING.get(), player) && countAllCard(player) == 0) lianyingTrigger(player);
+        }
+
+        if (type == CardMoveListener.Type.EQUIP_TO_INV || type == CardMoveListener.Type.EQUIP_TO_EQUIP) {
+            if (from instanceof Player player && hasTrinket(SkillCards.XIAOJI.get(), player)) xiaojiTrigger(player);
+        }
     }
 
     private static void lianyingTrigger(Player player) {
         ItemStack stack = trinketItem(SkillCards.LIANYING.get(), player);
         if (stack != null) setCD(stack, 5);
+    }
+
+    private static void xiaojiTrigger(Player player) {
+        give(player, new ItemStack(ModItems.GAIN_CARD, 2));
+        if (new Random().nextFloat() < 0.5) {voice(player, Sounds.XIAOJI1.get());} else {voice(player, Sounds.XIAOJI2.get());}
     }
 }

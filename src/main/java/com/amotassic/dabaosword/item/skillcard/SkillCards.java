@@ -39,6 +39,7 @@ public class SkillCards {
     public static final DeferredHolder<Item, Item> KUROU = ITEMS.register("kurou", ()-> new SkillItem.ActiveSkill(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, Item> POJUN = ITEMS.register("pojun", ()-> new SkillItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, Item> QIXI = ITEMS.register("qixi", ()-> new QixiSkill(new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<Item, Item> XIAOJI = ITEMS.register("xiaoji", ()-> new SkillItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, Item> ZHIHENG = ITEMS.register("zhiheng", ()-> new ZhihengSkill(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, Item> ZHIJIAN = ITEMS.register("zhijian", ()-> new SkillItem.ActiveSkillWithTarget(new Item.Properties().stacksTo(1)));
     //群

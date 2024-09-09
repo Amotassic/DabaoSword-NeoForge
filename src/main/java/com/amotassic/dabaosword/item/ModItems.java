@@ -180,6 +180,7 @@ public class ModItems {
                         o.accept(SkillCards.KUROU.get());
                         o.accept(SkillCards.POJUN.get());
                         o.accept(SkillCards.QIXI.get());
+                        o.accept(SkillCards.XIAOJI.get());
                         o.accept(SkillCards.ZHIHENG.get());
                         o.accept(SkillCards.ZHIJIAN.get());
                         //群
