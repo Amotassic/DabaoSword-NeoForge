@@ -3,6 +3,7 @@ package com.amotassic.dabaosword.util;
 import com.amotassic.dabaosword.event.listener.CardDiscardListener;
 import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
+import com.amotassic.dabaosword.item.skillcard.ShensuSkill;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -32,11 +33,14 @@ public class ModifyDamage {
         ItemStack feet = entity.getItemBySlot(EquipmentSlot.FEET);
         boolean noArmor = head.isEmpty() && chest.isEmpty() && legs.isEmpty() && feet.isEmpty();
 
+        float multiply = 0; //倍率增伤乘区
+        float add = 0; //固定数值加减伤害区
+
         if (source.getDirectEntity() instanceof LivingEntity attacker) {
             if (noArmor || hasTrinket(SkillCards.POJUN.get(), attacker)) {
                 //古锭刀对没有装备的生物伤害增加 限定版翻倍 卡牌版加5
-                if (attacker.getMainHandItem().getItem() == ModItems.GUDINGDAO.get()) value += value;
-                if (hasTrinket(ModItems.GUDING_WEAPON.get(), attacker)) value += 5;
+                if (attacker.getMainHandItem().getItem() == ModItems.GUDINGDAO.get()) multiply += 1;
+                if (hasTrinket(ModItems.GUDING_WEAPON.get(), attacker)) add += 5;
             }
 
             //排异技能：攻击伤害增加
@@ -44,12 +48,10 @@ public class ModifyDamage {
                 ItemStack stack = trinketItem(SkillCards.QUANJI.get(), attacker);
                 int quan = getTag(stack);
                 if (quan > 0) {
-                    if (quan > 4 && entity instanceof Player player) give(player, new ItemStack(ModItems.GAIN_CARD.get(), 2));
+                    if (quan > 4 && entity instanceof Player player) draw(player, 2);
                     setTag(stack, quan/2);
-                    float j = new Random().nextFloat();
-                    if (j < 0.25) {voice(attacker, Sounds.PAIYI1.get());} else if (0.25 <= j && j < 0.5) {voice(attacker, Sounds.PAIYI2.get(),3);}
-                    else if (0.5 <= j && j < 0.75) {voice(attacker, Sounds.PAIYI3.get());} else {voice(attacker, Sounds.PAIYI4.get(),3);}
-                    value += quan;
+                    voice(attacker, Sounds.PAIYI.get());
+                    add += quan;
                 }
             }
 
@@ -57,13 +59,28 @@ public class ModifyDamage {
             if (hasTrinket(SkillCards.LIEGONG.get(), attacker) && !attacker.hasEffect(ModItems.COOLDOWN)) {
                 float f = Math.max(13 - attacker.distanceTo(entity), 5);
                 attacker.addEffect(new MobEffectInstance(ModItems.COOLDOWN, (int) (40 * f),0,false,false,true));
-                if (new Random().nextFloat() < 0.5) {voice(attacker, Sounds.LIEGONG1.get());} else {voice(attacker, Sounds.LIEGONG2.get());}
-                value += f;
+                voice(attacker, Sounds.LIEGONG.get());
+                add += f;
+            }
+
+            if (hasTrinket(SkillCards.SHENSU.get(), attacker) && !attacker.hasEffect(ModItems.COOLDOWN)) {
+                float walkSpeed = 4.317f;
+                float speed = (float) ShensuSkill.speed;
+                if (speed > walkSpeed) {
+                    float m = (speed - walkSpeed) / walkSpeed / 2;
+                    attacker.addEffect(new MobEffectInstance(ModItems.COOLDOWN, (int) (5 * 20 * m),0,false,false,true));
+                    if (attacker instanceof Player player) player.displayClientMessage(Component.translatable("shensu.info", speed, m), false);
+                    voice(attacker, Sounds.SHENSU.get());
+                    multiply += m;
+                }
             }
         }
 
         //穿藤甲时，若承受火焰伤害，则 战火燃尽，嘤熊胆！（伤害大于5就只加5）
-        if (source.is(DamageTypeTags.IS_FIRE) && hasTrinket(ModItems.RATTAN_ARMOR.get(), entity)) value += value > 5 ? 5 : value;
+        if (source.is(DamageTypeTags.IS_FIRE) && hasTrinket(ModItems.RATTAN_ARMOR.get(), entity)) add += value > 5 ? 5 : value;
+
+        //增伤区伤害结算
+        value = value * (1 + multiply) + add;
 
         //白银狮子减伤
         if (!source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && source.getEntity() instanceof LivingEntity && hasTrinket(ModItems.BAIYIN.get(), entity)) value *= 0.4f;
@@ -133,7 +150,7 @@ public class ModifyDamage {
                     if (nearEntity != null) {
                         player.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 10,0,false,false,false));
                         player.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 10,0,false,false,false));
-                        if (new Random().nextFloat() < 0.5) {voice(player, Sounds.LIULI1.get());} else {voice(player, Sounds.LIULI2.get());}
+                        voice(player, Sounds.LIULI.get());
                         NeoForge.EVENT_BUS.post(new CardDiscardListener(player, stack, 1, false));
                         nearEntity.invulnerableTime = 0; nearEntity.hurt(source, amount);
                         return true;
@@ -163,7 +180,7 @@ public class ModifyDamage {
 
             if (hasTrinket(SkillCards.JUEQING.get(), attacker)) { //绝情效果
                 entity.hurt(entity.damageSources().genericKill(), Math.min(7, amount));
-                if (new Random().nextFloat() < 0.5) {voice(attacker, Sounds.JUEQING1.get(), 1);} else {voice(attacker, Sounds.JUEQING2.get(), 1);}
+                voice(attacker, Sounds.JUEQING.get(), 1);
                 return true;
             }
         }

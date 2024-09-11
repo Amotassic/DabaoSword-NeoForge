@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-import static com.amotassic.dabaosword.item.card.GainCardItem.draw;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
@@ -53,9 +52,9 @@ public class ActiveSkillHandler {
                 int cd = getCD(stack);
                 if (cd > 0) user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(ChatFormatting.RED), true);
                 else {
-                    if (new Random().nextFloat() < 0.5) {voice(user, Sounds.LUOSHEN1.get());} else {voice(user, Sounds.LUOSHEN2.get());}
+                    voice(user, Sounds.LUOSHEN.get());
                     if (new Random().nextFloat() < 0.5) {
-                        draw(user,1);
+                        draw(user);
                         user.displayClientMessage(Component.translatable("item.dabaosword.luoshen.win").withStyle(ChatFormatting.GREEN), true);
                     } else {
                         setCD(stack, 30);
@@ -66,12 +65,12 @@ public class ActiveSkillHandler {
 
             if (stack.getItem() == SkillCards.KUROU.get()) {
                 if (user.getHealth() + 5 * count(user, Tags.RECOVER) > 4.99) {
-                    give(user, new ItemStack(ModItems.GAIN_CARD, 2));
+                    draw(user, 2);
                     if (!user.isCreative()) {
                         user.invulnerableTime = 0;
                         user.hurt(user.damageSources().genericKill(), 4.99f);
                     }
-                    if (new Random().nextFloat() < 0.5) {voice(user, Sounds.KUROU1.get());} else {voice(user, Sounds.KUROU2.get());}
+                    voice(user, Sounds.KUROU.get());
                 } else {user.displayClientMessage(Component.translatable("item.dabaosword.kurou.tip").withStyle(ChatFormatting.RED), true);}
             }
 
@@ -113,8 +112,8 @@ public class ActiveSkillHandler {
                 if (itemStack.getItem() instanceof EquipmentItem && itemStack.getItem() != ModItems.CARD_PILE.get()) {
                     NeoForge.EVENT_BUS.post(new CardMoveListener(user, target, itemStack, itemStack.getCount(), CardMoveListener.Type.INV_TO_EQUIP));
                     EquipmentItem.equipItem(target, itemStack);
-                    if (new Random().nextFloat() < 0.5) {voice(user, Sounds.ZHIJIAN1.get());} else {voice(user, Sounds.ZHIJIAN2.get());}
-                    draw(user, 1);
+                    voice(user, Sounds.ZHIJIAN.get());
+                    draw(user);
                 } else user.displayClientMessage(Component.translatable("zhijian.fail").withStyle(ChatFormatting.RED), true);
             }
 
@@ -122,7 +121,7 @@ public class ActiveSkillHandler {
                 int cd = getCD(stack);
                 if (cd > 0) user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(ChatFormatting.RED), true);
                 else {
-                    if (new Random().nextFloat() < 0.5) {voice(user, Sounds.GONGXIN1.get());} else {voice(user, Sounds.GONGXIN2.get());}
+                    voice(user, Sounds.GONGXIN.get());
                     openInv(user, target, Component.translatable("gongxin.title"), targetInv(target, false, false, 2, stack));
                     setCD(stack, 30);
                 }

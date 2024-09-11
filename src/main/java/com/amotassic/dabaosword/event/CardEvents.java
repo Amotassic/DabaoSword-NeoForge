@@ -5,7 +5,6 @@ import com.amotassic.dabaosword.event.listener.CardDiscardListener;
 import com.amotassic.dabaosword.event.listener.CardMoveListener;
 import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.item.card.GainCardItem;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.util.Sounds;
 import com.amotassic.dabaosword.util.Tags;
@@ -14,8 +13,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-
-import java.util.Random;
 
 import static com.amotassic.dabaosword.util.ModTools.*;
 
@@ -32,8 +29,8 @@ public class CardEvents {
 
         //集智技能触发
         if (hasTrinket(SkillCards.JIZHI.get(), user) && copy.is(Tags.ARMOURY_CARD)) {
-            GainCardItem.draw(user, 1);
-            if (new Random().nextFloat() < 0.5) {voice(user, Sounds.JIZHI1.get());} else {voice(user, Sounds.JIZHI2.get());}
+            draw(user);
+            voice(user, Sounds.JIZHI.get());
         }
 
         //奔袭技能触发
@@ -42,11 +39,11 @@ public class CardEvents {
             int benxi = getTag(trinketItem);
             if (benxi < 5) {
                 benxi ++; setTag(trinketItem, benxi);
-                if (new Random().nextFloat() < 0.5) {voice(user, Sounds.BENXI1.get());} else {voice(user, Sounds.BENXI2.get());}
+                voice(user, Sounds.BENXI.get());
             }
         }
 
-        if (hasTrinket(SkillCards.LIANYING.get(), user) && countAllCard(user) == 0) lianyingTrigger(user);
+        if (hasTrinket(SkillCards.LIANYING.get(), user) && countCards(user) == 0) lianyingTrigger(user);
     }
 
     @SubscribeEvent
@@ -60,7 +57,7 @@ public class CardEvents {
 
         //弃置牌后，玩家的死亡判断是有必要的
         if (player.isAlive()) {
-            if (hasTrinket(SkillCards.LIANYING.get(), player) && !fromEquip && countAllCard(player) == 0) lianyingTrigger(player);
+            if (hasTrinket(SkillCards.LIANYING.get(), player) && !fromEquip && countCards(player) == 0) lianyingTrigger(player);
 
             if (hasTrinket(SkillCards.XIAOJI.get(), player) && fromEquip) xiaojiTrigger(player);
         }
@@ -79,7 +76,7 @@ public class CardEvents {
         }
 
         if (type == CardMoveListener.Type.INV_TO_EQUIP || type == CardMoveListener.Type.INV_TO_INV) {
-            if (from instanceof Player player && hasTrinket(SkillCards.LIANYING.get(), player) && countAllCard(player) == 0) lianyingTrigger(player);
+            if (from instanceof Player player && hasTrinket(SkillCards.LIANYING.get(), player) && countCards(player) == 0) lianyingTrigger(player);
         }
 
         if (type == CardMoveListener.Type.EQUIP_TO_INV || type == CardMoveListener.Type.EQUIP_TO_EQUIP) {
@@ -93,7 +90,7 @@ public class CardEvents {
     }
 
     private static void xiaojiTrigger(Player player) {
-        give(player, new ItemStack(ModItems.GAIN_CARD, 2));
-        if (new Random().nextFloat() < 0.5) {voice(player, Sounds.XIAOJI1.get());} else {voice(player, Sounds.XIAOJI2.get());}
+        draw(player, 2);
+        voice(player, Sounds.XIAOJI.get());
     }
 }

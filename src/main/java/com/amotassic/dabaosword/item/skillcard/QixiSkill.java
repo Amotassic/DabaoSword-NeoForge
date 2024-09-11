@@ -7,8 +7,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import top.theillusivec4.curios.api.SlotContext;
 
-import java.util.Random;
-
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class QixiSkill extends SkillItem {
@@ -24,7 +22,7 @@ public class QixiSkill extends SkillItem {
                 setCD(stack, 5);
                 stack1.shrink(1);
                 give(player, ModItems.DISCARD.get().getDefaultInstance());
-                if (new Random().nextFloat() < 0.5) {voice(player, Sounds.QIXI1.get());} else {voice(player, Sounds.QIXI2.get());}
+                voice(player, Sounds.QIXI.get());
             }
         }
         super.curioTick(slotContext, stack);

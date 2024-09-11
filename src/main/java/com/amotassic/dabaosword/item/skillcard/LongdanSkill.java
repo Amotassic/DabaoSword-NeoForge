@@ -8,8 +8,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import top.theillusivec4.curios.api.SlotContext;
 
-import java.util.Random;
-
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class LongdanSkill extends SkillItem {
@@ -25,7 +23,7 @@ public class LongdanSkill extends SkillItem {
                 if (stack1.getItem() == ModItems.SHAN.get()) give(player, new ItemStack(ModItems.SHA.get()));
                 if (stack1.getItem() == ModItems.PEACH.get()) give(player, new ItemStack(ModItems.JIU.get()));
                 if (stack1.getItem() == ModItems.JIU.get()) give(player, new ItemStack(ModItems.PEACH.get()));
-                if (new Random().nextFloat() < 0.5) {voice(player, Sounds.LONGDAN1.get());} else {voice(player, Sounds.LONGDAN2.get());}
+                voice(player, Sounds.LONGDAN.get());
             }
         }
         super.curioTick(slotContext, stack);

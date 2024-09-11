@@ -50,7 +50,7 @@ public class SimpleMenuHandler extends AbstractContainerMenu {
                 give(player, itemStack);
                 if (!player.isCreative()) player.getOffhandItem().shrink(2);
                 setCD(stack, 20);
-                if (new Random().nextFloat() < 0.5) {voice(player, Sounds.QICE1.get());} else {voice(player, Sounds.QICE2.get());}
+                voice(player, Sounds.QICE.get());
                 closeGUI(player);
             }
 
@@ -60,7 +60,7 @@ public class SimpleMenuHandler extends AbstractContainerMenu {
                     player.invulnerableTime = 0;
                     player.hurt(player.damageSources().genericKill(), 4.99f);
                 }
-                if (new Random().nextFloat() < 0.5) {voice(player, Sounds.TAOLUAN1.get());} else {voice(player, Sounds.TAOLUAN2.get());}
+                voice(player, Sounds.TAOLUAN.get());
                 closeGUI(player);
             }
         }

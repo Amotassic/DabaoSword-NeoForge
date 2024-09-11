@@ -1,11 +1,16 @@
 package com.amotassic.dabaosword.util;
 
 import com.amotassic.dabaosword.item.ModItems;
+import com.amotassic.dabaosword.item.card.GainCardItem;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -15,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.curios.api.CuriosApi;
 
+import java.util.List;
 import java.util.Objects;
 
 public class ModTools {
@@ -97,9 +103,7 @@ public class ModTools {
     }
 
     //播放语音
-    public static void voice(@NotNull LivingEntity entity, SoundEvent sound) {
-        voice(entity, sound, 2);
-    }
+    public static void voice(@NotNull LivingEntity entity, SoundEvent sound) {voice(entity, sound, 2);}
     public static void voice(@NotNull LivingEntity entity, SoundEvent sound, float volume) {
         if (entity.level() instanceof ServerLevel world) {
             world.playSound(null, entity.getX(), entity.getY(), entity.getZ(), sound, SoundSource.PLAYERS, volume, 1.0F);
@@ -126,7 +130,28 @@ public class ModTools {
         return n;
     }
 
-    public static int countAllCard(Player player) {return count(player, Tags.CARD) + count(player, ModItems.GAIN_CARD.get());}
+    //改了摸牌物品之后，应该不用这样了，但是它就是方便，暂且保留吧
+    public static int countCards(Player player) {return count(player, Tags.CARD) + count(player, ModItems.GAIN_CARD.get());}
+
+    public static void draw(Player player) {draw(player, 1);}
+    public static void draw(Player player, int count) {
+        for (int n = 0; n<count; n++) {
+            List<LootEntry> lootEntries = LootTableParser.parseLootTable(ResourceLocation.fromNamespaceAndPath("dabaosword", "loot_tables/draw.json"));
+            LootEntry selectedEntry = GainCardItem.selectRandomEntry(lootEntries);
+
+            if (player.hasEffect(ModItems.BINGLIANG)) {
+                int amplifier = Objects.requireNonNull(player.getEffect(ModItems.BINGLIANG)).getAmplifier();
+                player.removeEffect(ModItems.BINGLIANG);
+                voice(player, SoundEvents.VILLAGER_NO,1);
+                if (amplifier != 0) {
+                    player.addEffect(new MobEffectInstance(ModItems.BINGLIANG, -1, amplifier - 1));
+                } //如果有兵粮寸断效果就不摸牌，改为将debuff等级减一
+            } else {
+                give(player, new ItemStack(BuiltInRegistries.ITEM.get(selectedEntry.item())));
+                voice(player, SoundEvents.EXPERIENCE_ORB_PICKUP,1);
+            }
+        }
+    }
 
     public static void give(Player player, ItemStack stack) {
         ItemEntity item = player.drop(stack, false);

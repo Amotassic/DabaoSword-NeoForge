@@ -28,7 +28,7 @@ public class GongaoSkill extends SkillItem {
             if (entity.level().getGameTime() % 600 == 0) { // 每30s触发扣体力上限
                 if (entity instanceof Player player) {
                     if (extraHP >= 5 && !player.isCreative() && !player.isSpectator()) {
-                        give(player, new ItemStack(ModItems.GAIN_CARD.get(), 2));
+                        draw(player, 2);
                         stack.set(ModItems.TAGS, extraHP - 5);
                         voice(player, Sounds.WEIZHONG.get());
                     }

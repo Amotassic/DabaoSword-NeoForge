@@ -14,7 +14,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;
-import java.util.Random;
 
 import static com.amotassic.dabaosword.util.ModTools.*;
 
@@ -34,13 +33,7 @@ public class BBjiItem extends Item {
                 nearbyEntity.invulnerableTime = 0;
                 nearbyEntity.hurt(user.damageSources().sonicBoom(user),2);
             }
-            float i = new Random().nextFloat();
-            if (i < (float) 1/6) {voice(user, Sounds.CHENGLVE1.get());
-            } else if (i < (float) 1/3) {voice(user, Sounds.CHENGLVE2.get());
-            } else if (i < 0.5) {voice(user, Sounds.CUNMU1.get());
-            } else if (i < (float) 2/3) {voice(user, Sounds.CUNMU2.get());
-            } else if (i < (float) 5/6) {voice(user, Sounds.SHICAI1.get());
-            } else {voice(user, Sounds.SHICAI2.get());}
+            voice(user, Sounds.BBJI.get());
             ItemStack stack = user.getItemInHand(hand);
             EquipmentSlot slot = hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
             stack.hurtAndBreak(1, user, slot);

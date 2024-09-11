@@ -46,11 +46,11 @@ public abstract class PlayerMixin extends LivingEntity {
             if (++dabaoSword$tick >= giveCard) { // 每分钟摸两张牌
                 dabaoSword$tick = 0;
                 if (hasTrinket(ModItems.CARD_PILE.get(), dabaoSword$player) && !dabaoSword$player.isCreative() && !dabaoSword$player.isSpectator()) {
-                    if (countAllCard(dabaoSword$player) <= dabaoSword$player.getMaxHealth()) {
-                        dabaoSword$player.addItem(new ItemStack(ModItems.GAIN_CARD, 2));
+                    if (countCards(dabaoSword$player) <= dabaoSword$player.getMaxHealth()) {
+                        draw(dabaoSword$player, 2);
                         dabaoSword$player.displayClientMessage(Component.translatable("dabaosword.draw"),true);
                     } else if (!enableLimit) {//如果不限制摸牌就继续发牌
-                        dabaoSword$player.addItem(new ItemStack(ModItems.GAIN_CARD, 2));
+                        draw(dabaoSword$player, 2);
                         dabaoSword$player.displayClientMessage(Component.translatable("dabaosword.draw"),true);
                     }
                 }

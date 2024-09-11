@@ -50,7 +50,7 @@ public class AttackEntityHandler {
                         if (!legs.isEmpty()) {target.spawnAtLocation(legs.copy());legs.setCount(0);}
                         if (!feet.isEmpty()) {target.spawnAtLocation(feet.copy());feet.setCount(0);}
                     }
-                    if (new Random().nextFloat() < 0.5) {voice(player, Sounds.POJUN1.get());} else {voice(player, Sounds.POJUN2.get());}
+                    voice(player, Sounds.POJUN.get());
                     int i = target instanceof Player ? 200 : 40;
                     player.addEffect(new MobEffectInstance(ModItems.COOLDOWN, i, 0, false, false, true));
                 }
@@ -85,7 +85,7 @@ public class AttackEntityHandler {
                 }
 
                 if (hasTrinket(SkillCards.TIEJI.get(), player) && getShaSlot(player) != -1) {
-                    if (new Random().nextFloat() < 0.5) {voice(player, Sounds.TIEJI1.get());} else {voice(player, Sounds.TIEJI2.get());}
+                    voice(player, Sounds.TIEJI.get());
                     target.addEffect(new MobEffectInstance(ModItems.TIEJI, 200, 0, false, true, true));
                     if (new Random().nextFloat() < 0.75)
                         target.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 2, 0, false, false, false));

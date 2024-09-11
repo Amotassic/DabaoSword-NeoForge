@@ -37,6 +37,11 @@ public class SkillItem extends Item implements ICurioItem {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
 
+        if (stack.getItem() == SkillCards.SHENSU.get()) {
+            tooltip.add(Component.translatable("item.dabaosword.shensu.tooltip1").withStyle(ChatFormatting.BLUE));
+            tooltip.add(Component.translatable("item.dabaosword.shensu.tooltip2").withStyle(ChatFormatting.BLUE));
+        }
+
         if (stack.getItem() == SkillCards.XIAOJI.get()) {
             tooltip.add(Component.translatable("item.dabaosword.xiaoji.tooltip").withStyle(ChatFormatting.GREEN));
         }

@@ -7,8 +7,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import top.theillusivec4.curios.api.SlotContext;
 
-import java.util.Random;
-
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class GuoseSkill extends SkillItem {
@@ -24,7 +22,7 @@ public class GuoseSkill extends SkillItem {
                 setCD(stack, 15);
                 stack1.shrink(1);
                 give(player, ModItems.TOO_HAPPY_ITEM.get().getDefaultInstance());
-                if (new Random().nextFloat() < 0.5) {voice(player, Sounds.GUOSE1.get());} else {voice(player, Sounds.GUOSE2.get());}
+                voice(player, Sounds.GUOSE.get());
             }
         }
         super.curioTick(slotContext, stack);

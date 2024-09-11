@@ -13,7 +13,6 @@ import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.Random;
 
 import static com.amotassic.dabaosword.item.equipment.ArrowRainItem.arrowRain;
 import static com.amotassic.dabaosword.util.ModTools.*;
@@ -45,7 +44,7 @@ public class Cooldown2Effect extends MobEffect {
     public void onEffectAdded(LivingEntity entity, int amplifier) {
         if (entity instanceof Player player && !player.level().isClientSide && hasTrinket(SkillCards.LEIJI.get(), player) && amplifier == 3) {
             //雷击语音播放
-            if (new Random().nextFloat() < 0.5) {voice(player, Sounds.LEIJI1.get());} else {voice(player, Sounds.LEIJI2.get());}
+            voice(player, Sounds.LEIJI.get());
         }
         super.onEffectAdded(entity, amplifier);
     }

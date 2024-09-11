@@ -7,11 +7,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import top.theillusivec4.curios.api.SlotContext;
 
-import java.util.Random;
-
-import static com.amotassic.dabaosword.item.card.GainCardItem.draw;
-import static com.amotassic.dabaosword.util.ModTools.getCD;
-import static com.amotassic.dabaosword.util.ModTools.voice;
+import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class LianyingSkill extends SkillItem {
     public LianyingSkill(Properties p_41383_) {super(p_41383_);}
@@ -23,7 +19,7 @@ public class LianyingSkill extends SkillItem {
             int cd = getCD(stack);
             if (world.getGameTime() % 20 == 0 && cd == 1) { //确保一秒内只触发一次
                 draw(player, 1);
-                if (new Random().nextFloat() < 0.5) {voice(player, Sounds.LIANYING1.get());} else {voice(player, Sounds.LIANYING2.get());}
+                voice(player, Sounds.LIANYING.get());
             }
         }
         super.curioTick(slotContext, stack);

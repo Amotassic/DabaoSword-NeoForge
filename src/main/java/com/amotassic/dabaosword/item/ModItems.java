@@ -74,7 +74,7 @@ public class ModItems {
 
     //状态效果注册
     public static final DeferredRegister<MobEffect> EFFECTS = DeferredRegister.create(BuiltInRegistries.MOB_EFFECT, "dabaosword");
-    public static final DeferredHolder<MobEffect, MobEffect> BINGLIANG = EFFECTS.register("bingliang", () -> new BingliangEffect(MobEffectCategory.HARMFUL, 0x46F732).addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.parse("bing"),-4, AttributeModifier.Operation.ADD_VALUE));
+    public static final DeferredHolder<MobEffect, MobEffect> BINGLIANG = EFFECTS.register("bingliang", () -> new CommonEffect(MobEffectCategory.HARMFUL, 0x46F732).addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.parse("bing"),-4, AttributeModifier.Operation.ADD_VALUE));
     public static final DeferredHolder<MobEffect, MobEffect> TOO_HAPPY = EFFECTS.register("too_happy", () -> new TooHappyEffect(MobEffectCategory.HARMFUL, 0xF73C0A).addAttributeModifier(Attributes.MOVEMENT_SPEED, ResourceLocation.parse("le"),-10, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
     //触及距离增加
     public static final DeferredHolder<MobEffect, MobEffect> REACH = EFFECTS.register("reach", () -> new CommonEffect(MobEffectCategory.BENEFICIAL, 0xFFFFFF)
@@ -160,6 +160,7 @@ public class ModItems {
                         o.accept(SkillCards.QICE.get());
                         o.accept(SkillCards.QUANJI.get());
                         o.accept(SkillCards.SHANZHUAN.get());
+                        o.accept(SkillCards.SHENSU.get());
                         o.accept(SkillCards.YIJI.get());
                         //蜀
                         o.accept(SkillCards.BENXI.get());

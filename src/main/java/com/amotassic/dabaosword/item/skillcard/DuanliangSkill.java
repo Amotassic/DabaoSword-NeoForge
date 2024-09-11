@@ -7,8 +7,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import top.theillusivec4.curios.api.SlotContext;
 
-import java.util.Random;
-
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class DuanliangSkill extends SkillItem {
@@ -24,7 +22,7 @@ public class DuanliangSkill extends SkillItem {
                 setCD(stack, 5);
                 stack1.shrink(1);
                 give(player, ModItems.BINGLIANG_ITEM.get().getDefaultInstance());
-                if (new Random().nextFloat() < 0.5) {voice(player, Sounds.DUANLIANG1.get());} else {voice(player, Sounds.DUANLIANG2.get());}
+                voice(player, Sounds.DUANLIANG.get());
             }
         }
         super.curioTick(slotContext, stack);

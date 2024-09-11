@@ -26,7 +26,6 @@ import top.theillusivec4.curios.api.CuriosApi;
 import java.util.*;
 import java.util.stream.IntStream;
 
-import static com.amotassic.dabaosword.item.card.GainCardItem.draw;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class PlayerInvScreenHandler extends AbstractContainerMenu {
@@ -59,7 +58,7 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
             if (selfStack != ItemStack.EMPTY) {
 
                 if (stack.getItem() == SkillCards.RENDE.get()) {
-                    if (new Random().nextFloat() < 0.5) {voice(player, Sounds.RENDE1.get());} else {voice(player, Sounds.RENDE2.get());}
+                    voice(player, Sounds.RENDE.get());
                     target.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("give_card.tip", stack.getDisplayName(), target.getDisplayName())), false);
                     player.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("give_card.tip", stack.getDisplayName(), target.getDisplayName())), false);
                     NeoForge.EVENT_BUS.post(new CardMoveListener(player, target, selfStack, 1, CardMoveListener.Type.INV_TO_INV));
@@ -84,7 +83,7 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
             if (targetStack != ItemStack.EMPTY) {
 
                 if (stack.getItem() == SkillCards.SHANZHUAN.get()) {
-                    if (new Random().nextFloat() < 0.5) {voice(player, Sounds.SHANZHUAN1.get());} else {voice(player, Sounds.SHANZHUAN2.get());}
+                    voice(player, Sounds.SHANZHUAN.get());
                     if (targetStack.is(Tags.BASIC_CARD)) target.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 5));
                     else target.addEffect(new MobEffectInstance(ModItems.BINGLIANG, MobEffectInstance.INFINITE_DURATION,1));
                     target.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("dabaosword.discard")).append(targetStack.getDisplayName()), false);
@@ -100,12 +99,12 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
 
                 if (stack.getItem() == SkillCards.ZHIHENG.get()) {
                     int z = getTag(stack);
-                    if (new Random().nextFloat() < 0.5) {voice(player, Sounds.ZHIHENG1.get());} else {voice(player, Sounds.ZHIHENG2.get());}
+                    voice(player, Sounds.ZHIHENG.get());
                     NeoForge.EVENT_BUS.post(new CardDiscardListener(target, targetStack, 1, slotIndex < 4));
                     if (new Random().nextFloat() < 0.1) {
                         draw(player, 2);
                         player.displayClientMessage(Component.translatable("zhiheng.extra").withStyle(ChatFormatting.GREEN), true);
-                    } else draw(player, 1);
+                    } else draw(player);
                     setTag(stack, z - 1);
                     if (z - 1 == 0) closeGUI(player);
                 }

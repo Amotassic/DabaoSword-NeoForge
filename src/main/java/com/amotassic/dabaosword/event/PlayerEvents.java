@@ -18,8 +18,6 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import top.theillusivec4.curios.api.CuriosApi;
 
-import java.util.Random;
-
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
@@ -69,9 +67,7 @@ public class PlayerEvents {
     private static boolean XingshangTrigger(Player player, ItemStack stack) {
         for (Player player1 : player.level().players()) {//行殇技能触发
             if (hasTrinket(SkillCards.XINGSHANG.get(), player1) && player1.distanceTo(player) <= 25 && player1 != player) {
-                if (!player1.getTags().contains("xingshang")) {
-                    if (new Random().nextFloat() < 0.5) voice(player1, Sounds.XINGSHANG1.get()); else voice(player1, Sounds.XINGSHANG2.get());
-                }
+                if (!player1.getTags().contains("xingshang")) voice(player1, Sounds.XINGSHANG.get());
                 player1.addTag("xingshang");
                 give(player1, stack.copy());
                 stack.setCount(0);

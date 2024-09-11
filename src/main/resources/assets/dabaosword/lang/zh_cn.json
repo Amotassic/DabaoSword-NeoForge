@@ -245,9 +245,14 @@
   "item.dabaosword.lianying.tooltip": "当你失去最后的一张手牌5秒后，你摸一张牌",
   "item.dabaosword.xiaoji": "枭姬",
   "item.dabaosword.xiaoji.tooltip": "当你失去已装备的装备牌后，你摸两张牌",
+  "item.dabaosword.shensu": "神速",
+  "item.dabaosword.shensu.tooltip1": "你的背包空余空间越多，移速越高（最高到1.5倍）",
+  "item.dabaosword.shensu.tooltip2": "若不处于CD中，你的攻击伤害随当前速度而增加",
+  "shensu.info": "神速：当前速度：%1$s 增伤倍率：%2$s",
 
   //"配音"
   "sounds.dabaosword.nahida": "纳西妲：所闻遍计",
+  "sounds.dabaosword.shensu": "神速：发动",
   "sounds.dabaosword.lianying": "连营：发动",
   "sounds.dabaosword.xiaoji": "枭姬：发动",
   "sounds.dabaosword.letmecc": "杰哥：让我看看！",
