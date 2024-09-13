@@ -43,16 +43,19 @@ public class JuedouItem extends CardItem {
                     TagKey<Item> tag = Tags.SHA;
                     int userSha = count(user, tag);
                     int targetSha = count(target, tag);
-                    if (userSha >= targetSha) { target.invulnerableTime = 0;
+                    if (userSha >= targetSha) {
+                        target.addEffect(new MobEffectInstance(ModItems.COOLDOWN2,2,0,false,false,false));
+                        target.invulnerableTime = 0;
                         target.hurt(user.damageSources().sonicBoom(user),5f);
                         target.displayClientMessage(Component.literal(user.getScoreboardName()).append(Component.translatable("dabaosword.juedou2")),false);
                     } else { target.addTag("juedou"); //防止决斗触发杀
+                        user.addEffect(new MobEffectInstance(ModItems.COOLDOWN2,2,0,false,false,false));
                         user.invulnerableTime = 0;
                         user.hurt(target.damageSources().sonicBoom(target),5f);
                         user.displayClientMessage(Component.translatable("dabaosword.juedou1"),false);
-                        if (targetSha != 0) {
+                        if (targetSha != 0) { //如果目标的杀比使用者的杀多，反击使用者，则目标减少一张杀
                             ItemStack sha = stackInTag(tag, target);
-                            sha.shrink(1);
+                            NeoForge.EVENT_BUS.post(new CardUsePostListener(target, sha, user));
                         }
                     }
                 } else { entity.invulnerableTime = 0;

@@ -29,7 +29,6 @@ public class AttackEntityHandler {
     public static void AttackEntity(AttackEntityEvent event) {
         Player player = event.getEntity();
         Entity entity = event.getTarget();
-
         if (player.level() instanceof ServerLevel && entity instanceof LivingEntity target) {
             if (!(player.getMainHandItem().getItem() == ModItems.JUEDOU.get() || player.getMainHandItem().getItem() == ModItems.DISCARD.get())) {
 
@@ -58,16 +57,16 @@ public class AttackEntityHandler {
                 if (hasTrinket(ModItems.QINGGANG.get(), player)) {//青釭剑额外伤害
                     float extraDamage = Math.min(20, 0.2f * target.getMaxHealth());
                     target.hurt(player.damageSources().genericKill(), extraDamage); target.invulnerableTime = 0;
+                    voice(player, Sounds.QINGGANG.get());
                 }
 
                 if (hasTrinket(ModItems.QINGLONG.get(), player) && player.getAttackStrengthScale(0) >= 0.9) {
+                    voice(player, Sounds.QINGLONG.get());
                     player.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 10, 0, false, false, false));
                     player.teleportTo(target.getX(), target.getY(), target.getZ());
                     Vec3 momentum = player.getForward().scale(2);
-                    target.hurtMarked = true;
-                    target.setDeltaMovement(momentum.x(), 0, momentum.z());
+                    target.hurtMarked = true; target.setDeltaMovement(momentum.x(), 0, momentum.z());
                 }
-
 
                 if (hasTrinket(ModItems.FANGTIAN.get(), player)) {
                     //方天画戟：打中生物后触发特效，给予CD和持续时间
@@ -75,6 +74,7 @@ public class AttackEntityHandler {
                     int cd = getCD(stack);
                     if (cd == 0) {
                         setCD(stack, 20);
+                        voice(player, Sounds.FANGTIAN.get());
                         player.displayClientMessage(Component.translatable("dabaosword.fangtian").withStyle(ChatFormatting.RED), true);
                     }
                 }
