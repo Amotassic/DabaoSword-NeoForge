@@ -53,6 +53,16 @@ public class Sounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> POJUN = register("pojun");
     public static final DeferredHolder<SoundEvent, SoundEvent> KUANGGU = register("kuanggu");
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> BAGUA = register("bagua");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BAIYIN = register("baiyin");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FANGTIAN = register("fangtian");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GUDING = register("guding");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HANBING = register("hanbing");
+    public static final DeferredHolder<SoundEvent, SoundEvent> QINGGANG = register("qinggang");
+    public static final DeferredHolder<SoundEvent, SoundEvent> QINGLONG = register("qinglong");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TENGJIA1 = register("tengjia1");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TENGJIA2 = register("tengjia2");
+
     public static final DeferredHolder<SoundEvent, SoundEvent> BINGLIANG = register("bingliang");
     public static final DeferredHolder<SoundEvent, SoundEvent> GUOHE = register("guohe");
     public static final DeferredHolder<SoundEvent, SoundEvent> HUOGONG = register("huogong");

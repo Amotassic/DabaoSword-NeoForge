@@ -3,22 +3,15 @@ package com.amotassic.dabaosword.item.equipment;
 import com.amotassic.dabaosword.event.listener.CardDiscardListener;
 import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -111,19 +104,6 @@ public class EquipmentItem extends Item implements ICurioItem {
         if (entity instanceof Player player && player.isCreative()) return true;
         if (stack.getItem() != ModItems.CARD_PILE.get()) return false;
         return ICurioItem.super.canUnequip(slotContext, stack);
-    }
-
-    @Override
-    public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(SlotContext slotContext, ResourceLocation id, ItemStack stack) {
-        int v = armorTrinket(stack) ? 5 : 0;
-        Multimap<Holder<Attribute>, AttributeModifier> multimap = LinkedHashMultimap.create();
-        AttributeModifier Modifier = new AttributeModifier(id, v, AttributeModifier.Operation.ADD_VALUE);
-        multimap.put(Attributes.ARMOR, Modifier);
-        return multimap;
-    }
-
-    private boolean armorTrinket(ItemStack stack) {
-        return stack.getItem() == ModItems.BAIYIN.get() || stack.getItem() == ModItems.RATTAN_ARMOR.get() || stack.getItem() == ModItems.BAGUA.get();
     }
 
     @Override

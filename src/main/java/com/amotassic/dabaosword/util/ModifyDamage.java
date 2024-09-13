@@ -5,6 +5,7 @@ import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.ShensuSkill;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
@@ -36,11 +37,14 @@ public class ModifyDamage {
         float multiply = 0; //倍率增伤乘区
         float add = 0; //固定数值加减伤害区
 
-        if (source.getDirectEntity() instanceof LivingEntity attacker) {
+        if (source.getDirectEntity() instanceof LivingEntity attacker && !attacker.getTags().contains("sha")) {
             if (noArmor || hasTrinket(SkillCards.POJUN.get(), attacker)) {
                 //古锭刀对没有装备的生物伤害增加 限定版翻倍 卡牌版加5
                 if (attacker.getMainHandItem().getItem() == ModItems.GUDINGDAO.get()) multiply += 1;
-                if (hasTrinket(ModItems.GUDING_WEAPON.get(), attacker)) add += 5;
+                if (hasTrinket(ModItems.GUDING_WEAPON.get(), attacker)) {
+                    voice(entity, Sounds.GUDING.get());
+                    add += 5;
+                }
             }
 
             //排异技能：攻击伤害增加
@@ -65,7 +69,7 @@ public class ModifyDamage {
 
             if (hasTrinket(SkillCards.SHENSU.get(), attacker) && !attacker.hasEffect(ModItems.COOLDOWN)) {
                 float walkSpeed = 4.317f;
-                float speed = (float) ShensuSkill.speed;
+                float speed = trinketItem(SkillCards.SHENSU.get(), attacker).get(DataComponents.CUSTOM_DATA).copyTag().getFloat("speed");
                 if (speed > walkSpeed) {
                     float m = (speed - walkSpeed) / walkSpeed / 2;
                     attacker.addEffect(new MobEffectInstance(ModItems.COOLDOWN, (int) (5 * 20 * m),0,false,false,true));
@@ -77,13 +81,19 @@ public class ModifyDamage {
         }
 
         //穿藤甲时，若承受火焰伤害，则 战火燃尽，嘤熊胆！（伤害大于5就只加5）
-        if (source.is(DamageTypeTags.IS_FIRE) && hasTrinket(ModItems.RATTAN_ARMOR.get(), entity)) add += value > 5 ? 5 : value;
+        if (source.is(DamageTypeTags.IS_FIRE) && hasTrinket(ModItems.RATTAN_ARMOR.get(), entity)) {
+            voice(entity, Sounds.TENGJIA2.get());
+            add += value > 5 ? 5 : value;
+        }
 
         //增伤区伤害结算
         value = value * (1 + multiply) + add;
 
         //白银狮子减伤
-        if (!source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && source.getEntity() instanceof LivingEntity && hasTrinket(ModItems.BAIYIN.get(), entity)) value *= 0.4f;
+        if (!source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && source.getEntity() instanceof LivingEntity && hasTrinket(ModItems.BAIYIN.get(), entity)) {
+            voice(entity, Sounds.BAIYIN.get());
+            value *= 0.4f;
+        }
 
         return value;
     }
@@ -94,6 +104,7 @@ public class ModifyDamage {
 
         //弹射物对藤甲无效
         if (source.is(DamageTypeTags.IS_PROJECTILE) && inrattan(entity)) {
+            voice(entity, Sounds.TENGJIA1.get());
             if (source.getDirectEntity() != null) source.getDirectEntity().discard();
             return true;
         }
@@ -105,7 +116,10 @@ public class ModifyDamage {
             }
 
             //若攻击者主手没有物品，则无法击穿藤甲
-            if (inrattan(entity) && sourceEntity.getMainHandItem().isEmpty()) return true;
+            if (inrattan(entity) && sourceEntity.getMainHandItem().isEmpty()) {
+                voice(entity, Sounds.TENGJIA1.get());
+                return true;
+            }
 
             //决斗等物品虽然手长，但过远时普通伤害无效
             if (!source.is(DamageTypeTags.BYPASSES_ARMOR) && entity.distanceTo(sourceEntity) > 5) {
@@ -133,9 +147,6 @@ public class ModifyDamage {
         }
 
         if (source.getEntity() instanceof LivingEntity attacker) {
-
-            //翻面的生物（除了玩家）无法造成伤害
-            if (!(attacker instanceof Player) && attacker.hasEffect(ModItems.TURNOVER)) return true;
 
             if (source.is(DamageTypeTags.IS_PROJECTILE)) {
                 //被乐的生物的弹射物无法造成伤害
@@ -215,6 +226,7 @@ public class ModifyDamage {
         int cd = bl ? 60 : 40;
         entity.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 20,0,false,false,false));
         entity.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, cd,0,false,false,false));
+        if (bl) voice(entity, Sounds.BAGUA.get());
         voice(entity, Sounds.SHAN.get());
         if (entity instanceof Player player) {
             NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, null));

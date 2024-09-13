@@ -68,7 +68,7 @@ public class ModItems {
     public static final DeferredHolder<Item, Item> WANJIAN = ITEMS.register("wanjian", ()-> new WanjianItem(new Item.Properties()));
     public static final DeferredHolder<Item, Item> WUXIE = ITEMS.register("wuxie", ()-> new CardItem(new Item.Properties()));
     public static final DeferredHolder<Item, Item> WUZHONG = ITEMS.register("wuzhong", ()-> new GainCardItem(new Item.Properties()));
-    public static final DeferredHolder<Item, Item> GIFT_BOX = ITEMS.register("gift_box", ()-> new GiftBoxItem(new Item.Properties()));
+    public static final DeferredHolder<Item, Item> GIFT_BOX = ITEMS.register("gift_box", ()-> new GiftBoxItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
     public static final DeferredHolder<Item, Item> BBJI = ITEMS.register("bbji", ()-> new BBjiItem(new Item.Properties().durability(250)));
     public static final DeferredHolder<Item, Item> LET_ME_CC = ITEMS.register("let_me_cc", ()-> new LetMeCCItem(new Item.Properties().stacksTo(1)));
 

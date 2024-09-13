@@ -8,6 +8,7 @@
     "ItemEntityMixin",
     "LargeFireballMixin",
     "LivingEntityMixin",
+    "MixinReachAttributes",
     "MobEntityMixin",
     "PlayerMixin"
   ],

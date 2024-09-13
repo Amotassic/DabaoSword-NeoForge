@@ -76,7 +76,7 @@ public class EntityHurtHandler {
                         if (new Random().nextFloat() >= (float) c /13) {
                             player.displayClientMessage(Component.translatable("buqu.tip1").withStyle(ChatFormatting.GREEN).append(String.valueOf(c + 1)), false);
                             setTag(stack, c + 1);
-                            player.setHealth(5);
+                            player.setHealth(1);
                         } else {
                             player.displayClientMessage(Component.translatable("buqu.tip2").withStyle(ChatFormatting.RED), false);
                             save(player, amount);
@@ -153,6 +153,10 @@ public class EntityHurtHandler {
 
             }
 
+            if (source.getEntity() instanceof LivingEntity living) {
+                if (living.getTags().contains("px")) entity.invulnerableTime = 0;
+            }
+
             //监听事件：若玩家杀死敌对生物，有概率摸牌，若杀死玩家，摸两张牌
             if (source.getEntity() instanceof Player player && entity.getHealth() <= 0) {
                 if (entity instanceof Monster) {
@@ -206,15 +210,15 @@ public class EntityHurtHandler {
                         player.addEffect(new MobEffectInstance(ModItems.COOLDOWN, 20 * 5,0,false,false,true));
                     }
                 }
-
-                if (player.getTags().contains("px")) {
-                    entity.invulnerableTime = 0;
-                }
             }
 
             if (source.getDirectEntity() instanceof Player player) {
                 //寒冰剑冻伤
-                if (hasTrinket(ModItems.HANBING.get(), player)) {entity.invulnerableTime = 0; entity.setTicksFrozen(500);}
+                if (hasTrinket(ModItems.HANBING.get(), player)) {
+                    voice(player, Sounds.HANBING.get());
+                    entity.invulnerableTime = 0;
+                    entity.setTicksFrozen(500);
+                }
 
                 //杀的相关结算
                 if (shouldSha(player)) {
@@ -224,7 +228,7 @@ public class EntityHurtHandler {
                         voice(player, Sounds.SHA.get());
                         if (!hasTrinket(ModItems.RATTAN_ARMOR.get(), entity)) {
                             entity.invulnerableTime = 0; entity.hurt(source, 5);
-                        }
+                        } else voice(entity, Sounds.TENGJIA1.get());
                     }
                     if (stack.getItem() == ModItems.FIRE_SHA.get()) {
                         voice(player, Sounds.SHA_FIRE.get());
