@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "dabaosword.refmap.json",
   "mixins": [
+    "ArrowEntityMixin",
     "ItemEntityMixin",
     "LargeFireballMixin",
     "LivingEntityMixin",

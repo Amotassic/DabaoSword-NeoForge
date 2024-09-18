@@ -3,7 +3,6 @@ package com.amotassic.dabaosword.util;
 import com.amotassic.dabaosword.event.listener.CardDiscardListener;
 import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.item.skillcard.ShensuSkill;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;

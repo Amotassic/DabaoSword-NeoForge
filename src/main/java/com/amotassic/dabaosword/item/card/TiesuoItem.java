@@ -13,7 +13,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.common.NeoForge;
 
-import static com.amotassic.dabaosword.util.ModTools.*;
+import static com.amotassic.dabaosword.util.ModTools.voice;
 
 public class TiesuoItem extends CardItem {
     public TiesuoItem(Properties p_41383_) {super(p_41383_);}

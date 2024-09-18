@@ -13,7 +13,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
 
-import static com.amotassic.dabaosword.util.ModTools.*;
+import static com.amotassic.dabaosword.util.ModTools.hasTrinket;
+import static com.amotassic.dabaosword.util.ModTools.voice;
 
 public class ShanItem extends CardItem {
     public ShanItem(Properties p_41383_) {super(p_41383_);}

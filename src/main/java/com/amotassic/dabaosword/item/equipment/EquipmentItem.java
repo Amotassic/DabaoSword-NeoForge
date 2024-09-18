@@ -24,7 +24,8 @@ import top.theillusivec4.curios.api.type.capability.ICurioItem;
 import top.theillusivec4.curios.api.type.inventory.ICurioStacksHandler;
 import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 public class EquipmentItem extends Item implements ICurioItem {
     public EquipmentItem(Properties p_41383_) {super(p_41383_);}

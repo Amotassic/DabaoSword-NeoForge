@@ -15,7 +15,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 import static com.amotassic.dabaosword.item.equipment.ArrowRainItem.arrowRain;
-import static com.amotassic.dabaosword.util.ModTools.*;
+import static com.amotassic.dabaosword.util.ModTools.hasTrinket;
+import static com.amotassic.dabaosword.util.ModTools.voice;
 
 public class Cooldown2Effect extends MobEffect {
     public Cooldown2Effect(MobEffectCategory category, int color) {super(category, color);}

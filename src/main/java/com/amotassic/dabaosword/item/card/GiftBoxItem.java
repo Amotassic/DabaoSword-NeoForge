@@ -19,7 +19,8 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 import java.util.Random;
 
-import static com.amotassic.dabaosword.util.ModTools.*;
+import static com.amotassic.dabaosword.util.ModTools.give;
+import static com.amotassic.dabaosword.util.ModTools.voice;
 
 public class GiftBoxItem extends Item {
     public GiftBoxItem(Properties p_41383_) {super(p_41383_);}

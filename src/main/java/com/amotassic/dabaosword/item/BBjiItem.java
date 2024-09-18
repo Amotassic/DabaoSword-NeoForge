@@ -15,7 +15,7 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 
-import static com.amotassic.dabaosword.util.ModTools.*;
+import static com.amotassic.dabaosword.util.ModTools.voice;
 
 public class BBjiItem extends Item {
     public BBjiItem(Properties p_41383_) {super(p_41383_);}

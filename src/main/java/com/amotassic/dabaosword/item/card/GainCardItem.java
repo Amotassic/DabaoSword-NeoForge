@@ -15,7 +15,8 @@ import net.neoforged.neoforge.common.NeoForge;
 import java.util.List;
 import java.util.Random;
 
-import static com.amotassic.dabaosword.util.ModTools.*;
+import static com.amotassic.dabaosword.util.ModTools.draw;
+import static com.amotassic.dabaosword.util.ModTools.voice;
 
 public class GainCardItem extends CardItem {
     public GainCardItem(Properties p_41383_) {super(p_41383_);}
