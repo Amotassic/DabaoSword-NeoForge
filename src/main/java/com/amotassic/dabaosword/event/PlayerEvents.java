@@ -83,7 +83,7 @@ public class PlayerEvents {
         if (player.level() instanceof ServerLevel world) {
 
             boolean card = world.getGameRules().getBoolean(Gamerule.CLEAR_CARDS_AFTER_DEATH);
-            if (card) {
+            if (card && hasTrinket(ModItems.CARD_PILE.get(), player)) {
                 give(player, new ItemStack(ModItems.SHA.get()));
                 give(player, new ItemStack(ModItems.SHAN.get()));
                 give(player, new ItemStack(ModItems.PEACH.get()));
