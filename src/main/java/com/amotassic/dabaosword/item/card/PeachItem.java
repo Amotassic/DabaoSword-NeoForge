@@ -23,7 +23,7 @@ public class PeachItem extends CardItem {
         if (!world.isClientSide && player.getHealth() < player.getMaxHealth() && !player.isShiftKeyDown() && hand == InteractionHand.MAIN_HAND) {
             player.heal(5);
             NeoForge.EVENT_BUS.post(new CardUsePostListener(player, player.getItemInHand(hand), player));
-            voice(player, Sounds.RECOVER.get());
+            voice(player, Sounds.RECOVER);
             return InteractionResultHolder.success(stack);
         }
         return InteractionResultHolder.pass(stack);
@@ -34,7 +34,7 @@ public class PeachItem extends CardItem {
         if (!user.level().isClientSide && user.isShiftKeyDown() && hand == InteractionHand.MAIN_HAND) {
             if (entity.getHealth() < entity.getMaxHealth()) {
                 entity.heal(5);
-                entity.playSound(Sounds.RECOVER.get(),1.0F,1.0F);
+                entity.playSound(Sounds.RECOVER,1.0F,1.0F);
                 NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, user));
                 return InteractionResultHolder.success(!user.level().isClientSide).getResult();
             }

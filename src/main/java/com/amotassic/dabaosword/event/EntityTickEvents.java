@@ -56,7 +56,7 @@ public class EntityTickEvents {
             boolean limit = world.getGameRules().getBoolean(Gamerule.ENABLE_CARDS_LIMIT);
 
             if (time % giveCard == 0) { // 每分钟摸两张牌
-                if (hasTrinket(ModItems.CARD_PILE.get(), player) && !player.isCreative() && !player.isSpectator()) {
+                if (hasTrinket(ModItems.CARD_PILE.get(), player) && !player.isCreative() && !player.isSpectator() && player.isAlive()) {
                     if (countCards(player) > player.getMaxHealth() && limit) return;
                     else { //如果不限制摸牌就继续发牌
                         draw(player, 2);
@@ -101,18 +101,18 @@ public class EntityTickEvents {
             int level1 = 0; int level2 = 0; //马术和飞影的效果
             if (shouldMashu(player)) {
                 if (hasTrinket(ModItems.CHITU.get(), player)) level1++;
-                if (hasTrinket(SkillCards.MASHU.get(), player)) level1++;
+                if (hasTrinket(SkillCards.MASHU, player)) level1++;
                 if (level1 > 0) player.addEffect(new MobEffectInstance(ModItems.REACH, 10,level1,false,false,true));
             }
             if (hasTrinket(ModItems.DILU.get(), player)) level2++;
-            if (hasTrinket(SkillCards.FEIYING.get(), player)) level2++;
+            if (hasTrinket(SkillCards.FEIYING, player)) level2++;
             if (level2 > 0) player.addEffect(new MobEffectInstance(ModItems.DEFEND, 10,level2,false,false,true));
 
         }
     }
 
     static boolean shouldMashu(Player player) {
-        return !hasTrinket(SkillCards.BENXI.get(), player) && player.getMainHandItem().getItem() != ModItems.JUEDOU.get() && player.getMainHandItem().getItem() != ModItems.DISCARD.get();
+        return !hasTrinket(SkillCards.BENXI, player) && player.getMainHandItem().getItem() != ModItems.JUEDOU.get() && player.getMainHandItem().getItem() != ModItems.DISCARD.get();
     }
 
     static boolean isLooking(Player player, Entity entity) {

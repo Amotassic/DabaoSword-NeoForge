@@ -33,7 +33,7 @@ public class BBjiItem extends Item {
                 nearbyEntity.invulnerableTime = 0;
                 nearbyEntity.hurt(user.damageSources().sonicBoom(user),2);
             }
-            voice(user, Sounds.BBJI.get());
+            voice(user, Sounds.BBJI);
             ItemStack stack = user.getItemInHand(hand);
             EquipmentSlot slot = hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
             stack.hurtAndBreak(1, user, slot);

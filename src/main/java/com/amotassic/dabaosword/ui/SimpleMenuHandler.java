@@ -48,21 +48,21 @@ public class SimpleMenuHandler extends AbstractContainerMenu {
         ItemStack itemStack = inventory.getItem(slotIndex);
         if (!itemStack.isEmpty()) {
 
-            if (stack.getItem() == SkillCards.QICE.get()) {
+            if (stack.getItem() == SkillCards.QICE) {
                 give(player, itemStack);
                 if (!player.isCreative()) player.getOffhandItem().shrink(2);
                 setCD(stack, 20);
-                voice(player, Sounds.QICE.get());
+                voice(player, Sounds.QICE);
                 closeGUI(player);
             }
 
-            if (stack.getItem() == SkillCards.TAOLUAN.get()) {
+            if (stack.getItem() == SkillCards.TAOLUAN) {
                 give(player, itemStack);
                 if (!player.isCreative()) {
                     player.invulnerableTime = 0;
                     player.hurt(player.damageSources().genericKill(), 4.99f);
                 }
-                voice(player, Sounds.TAOLUAN.get());
+                voice(player, Sounds.TAOLUAN);
                 closeGUI(player);
             }
         }

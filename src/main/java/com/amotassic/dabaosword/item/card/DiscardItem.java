@@ -39,9 +39,9 @@ public class DiscardItem extends CardItem {
             if (entity instanceof Player target) {
                 if (hasItem(target, ModItems.WUXIE.get())) {
                     NeoForge.EVENT_BUS.post(new CardUsePostListener(target, getItem(target, ModItems.WUXIE.get()), null));
-                    voice(target, Sounds.WUXIE.get());
+                    voice(target, Sounds.WUXIE);
                     NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
-                    voice(user, Sounds.GUOHE.get());
+                    voice(user, Sounds.GUOHE);
                 } else {
                     ActiveSkillHandler.openInv(user, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), ActiveSkillHandler.targetInv(target, true, false, 1, user.getMainHandItem()));
                 }
@@ -51,7 +51,7 @@ public class DiscardItem extends CardItem {
                 if (isCard(entity.getOffhandItem())) stacks.add(entity.getOffhandItem());
                 if (!stacks.isEmpty()) {
                     ItemStack chosen = stacks.get(new Random().nextInt(stacks.size()));
-                    voice(user, Sounds.GUOHE.get());
+                    voice(user, Sounds.GUOHE);
                     chosen.shrink(1);
                     NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
                 }

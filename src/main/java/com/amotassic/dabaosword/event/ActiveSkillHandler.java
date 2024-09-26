@@ -4,7 +4,7 @@ import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.event.listener.ActiveSkillListener;
 import com.amotassic.dabaosword.event.listener.CardMoveListener;
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.item.equipment.EquipmentItem;
+import com.amotassic.dabaosword.item.equipment.Equipment;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.ui.PlayerInvScreenHandler;
 import com.amotassic.dabaosword.ui.SimpleMenuHandler;
@@ -42,17 +42,17 @@ public class ActiveSkillHandler {
         Player target = event.getTarget();
         if (user.level() instanceof ServerLevel && noTieji(user)) {
 
-            if (stack.getItem() == SkillCards.ZHIHENG.get()) {
+            if (stack.getItem() == SkillCards.ZHIHENG) {
                 int z = getTag(stack);
                 if (z > 0) openInv(user, user, Component.translatable("zhiheng.title"), targetInv(user, true, false, 2, stack));
                 else user.displayClientMessage(Component.translatable("zhiheng.fail").withStyle(ChatFormatting.RED), true);
             }
 
-            if (stack.getItem() == SkillCards.LUOSHEN.get()) {
+            if (stack.getItem() == SkillCards.LUOSHEN) {
                 int cd = getCD(stack);
                 if (cd > 0) user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(ChatFormatting.RED), true);
                 else {
-                    voice(user, Sounds.LUOSHEN.get());
+                    voice(user, Sounds.LUOSHEN);
                     if (new Random().nextFloat() < 0.5) {
                         draw(user);
                         user.displayClientMessage(Component.translatable("item.dabaosword.luoshen.win").withStyle(ChatFormatting.GREEN), true);
@@ -63,18 +63,18 @@ public class ActiveSkillHandler {
                 }
             }
 
-            if (stack.getItem() == SkillCards.KUROU.get()) {
+            if (stack.getItem() == SkillCards.KUROU) {
                 if (user.getHealth() + 5 * count(user, Tags.RECOVER) > 4.99) {
                     draw(user, 2);
                     if (!user.isCreative()) {
                         user.invulnerableTime = 0;
                         user.hurt(user.damageSources().genericKill(), 4.99f);
                     }
-                    voice(user, Sounds.KUROU.get());
+                    voice(user, Sounds.KUROU);
                 } else {user.displayClientMessage(Component.translatable("item.dabaosword.kurou.tip").withStyle(ChatFormatting.RED), true);}
             }
 
-            if (stack.getItem() == SkillCards.QICE.get()) {
+            if (stack.getItem() == SkillCards.QICE) {
                 ItemStack offStack = user.getOffhandItem();
                 int cd = getCD(stack);
                 if (!offStack.isEmpty() && offStack.is(Tags.CARD) && offStack.getCount() > 1) {
@@ -92,7 +92,7 @@ public class ActiveSkillHandler {
                 else {user.displayClientMessage(Component.translatable("item.dabaosword.qice.tip").withStyle(ChatFormatting.RED), true);}
             }
 
-            if (stack.getItem() == SkillCards.TAOLUAN.get()) {
+            if (stack.getItem() == SkillCards.TAOLUAN) {
                 if (user.getHealth() + 5 * count(user, Tags.RECOVER) > 4.99) {
 
                     ItemStack[] stacks = {new ItemStack(ModItems.THUNDER_SHA), new ItemStack(ModItems.FIRE_SHA), new ItemStack(ModItems.SHAN), new ItemStack(ModItems.PEACH), new ItemStack(ModItems.JIU), new ItemStack(ModItems.BINGLIANG_ITEM), new ItemStack(ModItems.TOO_HAPPY_ITEM), new ItemStack(ModItems.DISCARD), new ItemStack(ModItems.FIRE_ATTACK), new ItemStack(ModItems.JIEDAO), new ItemStack(ModItems.JUEDOU), new ItemStack(ModItems.NANMAN), new ItemStack(ModItems.STEAL), new ItemStack(ModItems.TAOYUAN), new ItemStack(ModItems.TIESUO), new ItemStack(ModItems.WANJIAN), new ItemStack(ModItems.WUXIE), new ItemStack(ModItems.WUZHONG)};
@@ -107,32 +107,32 @@ public class ActiveSkillHandler {
 
             //==============================以下技能需要target==============================
 
-            if (stack.getItem() == SkillCards.ZHIJIAN.get()) {
+            if (stack.getItem() == SkillCards.ZHIJIAN) {
                 ItemStack itemStack = user.getMainHandItem();
-                if (itemStack.getItem() instanceof EquipmentItem && itemStack.getItem() != ModItems.CARD_PILE.get()) {
+                if (itemStack.getItem() instanceof Equipment && itemStack.getItem() != ModItems.CARD_PILE.get()) {
                     NeoForge.EVENT_BUS.post(new CardMoveListener(user, target, itemStack, itemStack.getCount(), CardMoveListener.Type.INV_TO_EQUIP));
-                    EquipmentItem.equipItem(target, itemStack);
-                    voice(user, Sounds.ZHIJIAN.get());
+                    Equipment.equipItem(target, itemStack);
+                    voice(user, Sounds.ZHIJIAN);
                     draw(user);
                 } else user.displayClientMessage(Component.translatable("zhijian.fail").withStyle(ChatFormatting.RED), true);
             }
 
-            if (stack.getItem() == SkillCards.GONGXIN.get()) {
+            if (stack.getItem() == SkillCards.GONGXIN) {
                 int cd = getCD(stack);
                 if (cd > 0) user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(ChatFormatting.RED), true);
                 else {
-                    voice(user, Sounds.GONGXIN.get());
+                    voice(user, Sounds.GONGXIN);
                     openInv(user, target, Component.translatable("gongxin.title"), targetInv(target, false, false, 2, stack));
                     setCD(stack, 30);
                 }
             }
 
-            if (stack.getItem() == SkillCards.YIJI.get()) {
+            if (stack.getItem() == SkillCards.YIJI) {
                 int i = getTag(stack);
                 if (i > 0 ) openInv(user, target, Component.translatable("give_card.title", stack.getDisplayName()), targetInv(user, false, false, 2, stack));
             }
 
-            if (stack.getItem() == SkillCards.RENDE.get()) {
+            if (stack.getItem() == SkillCards.RENDE) {
                 openInv(user, target, Component.translatable("give_card.title", stack.getDisplayName()), targetInv(user, false, false, 2, stack));
             }
         }

@@ -22,7 +22,7 @@ public class WanjianItem extends CardItem {
             user.addTag("wanjian");
             user.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 15,1,false,false,false));
             NeoForge.EVENT_BUS.post(new CardUsePostListener(user, user.getItemInHand(hand), user));
-            voice(user, Sounds.WANJIAN.get());
+            voice(user, Sounds.WANJIAN);
         }
         return InteractionResultHolder.success(user.getItemInHand(hand));
     }

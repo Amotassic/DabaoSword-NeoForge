@@ -22,11 +22,11 @@ public class TooHappyItem extends CardItem {
             if (entity instanceof Player player) {
                 if (hasItem(player, ModItems.WUXIE.get())) {
                     NeoForge.EVENT_BUS.post(new CardUsePostListener(player, getItem(player, ModItems.WUXIE.get()), null));
-                    voice(player, Sounds.WUXIE.get());
+                    voice(player, Sounds.WUXIE);
                 } else player.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 5));
             } else entity.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 15));
             NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
-            voice(user, Sounds.LEBU.get());
+            voice(user, Sounds.LEBU);
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;

@@ -37,7 +37,7 @@ public class JuedouItem extends CardItem {
             user.addTag("juedou");
             if (entity instanceof Player player && hasItem(player, ModItems.WUXIE.get())) {
                 NeoForge.EVENT_BUS.post(new CardUsePostListener(player, getItem(player, ModItems.WUXIE.get()), null));
-                voice(player, Sounds.WUXIE.get());
+                voice(player, Sounds.WUXIE);
             } else {
                 if (entity instanceof Player target) {
                     TagKey<Item> tag = Tags.SHA;
@@ -62,7 +62,7 @@ public class JuedouItem extends CardItem {
                     entity.hurt(user.damageSources().sonicBoom(user),5f);}
             }
             NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
-            voice(user, Sounds.JUEDOU.get());
+            voice(user, Sounds.JUEDOU);
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;

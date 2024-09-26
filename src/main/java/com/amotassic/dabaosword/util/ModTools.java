@@ -3,6 +3,7 @@ package com.amotassic.dabaosword.util;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.card.GainCardItem;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
+import com.google.common.base.Predicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -174,5 +175,19 @@ public class ModTools {
 
     public static void setTag(ItemStack stack, int value) { //设置物品的标签的数量
         stack.set(ModItems.TAGS, value);
+    }
+
+    //转化卡牌技能通用方法
+    public static void viewAs(Player player, ItemStack skill, int CD, Predicate<ItemStack> predicate, ItemStack result, SoundEvent sound) {viewAs(player, skill,CD, predicate, 1, result, sound);}
+    public static void viewAs(Player player, ItemStack skill, int CD, Predicate<ItemStack> predicate, int count, ItemStack result, SoundEvent sound) {
+        if (!player.level().isClientSide && noTieji(player) && getCD(skill) == 0) {
+            ItemStack stack = player.getOffhandItem();
+            if (predicate.test(stack)) {
+                setCD(skill, CD);
+                stack.shrink(count);
+                give(player, result);
+                voice(player, sound);
+            }
+        }
     }
 }

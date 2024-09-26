@@ -22,12 +22,12 @@ public class JiedaoItem extends CardItem {
         if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND && !stack1.isEmpty()) {
             if (entity instanceof Player player && hasItem(player, ModItems.WUXIE.get())) {
                 NeoForge.EVENT_BUS.post(new CardUsePostListener(player, getItem(player, ModItems.WUXIE.get()), null));
-                voice(player, Sounds.WUXIE.get());
+                voice(player, Sounds.WUXIE);
             } else {
                 if (isCard(stack1)) NeoForge.EVENT_BUS.post(new CardMoveListener(entity, user, stack1, stack1.getCount(), CardMoveListener.Type.INV_TO_INV));
                 else give(user, stack1.copy()); stack1.setCount(0);
             }
-            voice(user, Sounds.JIEDAO.get());
+            voice(user, Sounds.JIEDAO);
             NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
             return InteractionResult.SUCCESS;
         }

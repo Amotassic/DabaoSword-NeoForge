@@ -28,9 +28,9 @@ public class StealItem extends CardItem {
             if (entity instanceof Player target) {
                 if (hasItem(target, ModItems.WUXIE.get())) {
                     NeoForge.EVENT_BUS.post(new CardUsePostListener(target, getItem(target, ModItems.WUXIE.get()), null));
-                    voice(target, Sounds.WUXIE.get());
+                    voice(target, Sounds.WUXIE);
                     NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
-                    voice(user, Sounds.SHUNSHOU.get());
+                    voice(user, Sounds.SHUNSHOU);
                 } else {
                     ActiveSkillHandler.openInv(user, target, Component.translatable("dabaosword.steal.title"), ActiveSkillHandler.targetInv(target, true, true, 1, user.getMainHandItem()));
                 }
@@ -40,7 +40,7 @@ public class StealItem extends CardItem {
                 if (isCard(entity.getOffhandItem())) stacks.add(entity.getOffhandItem());
                 if (!stacks.isEmpty()) {
                     ItemStack chosen = stacks.get(new Random().nextInt(stacks.size()));
-                    voice(user, Sounds.SHUNSHOU.get());
+                    voice(user, Sounds.SHUNSHOU);
                     NeoForge.EVENT_BUS.post(new CardMoveListener(entity, user, chosen, 1, CardMoveListener.Type.INV_TO_INV));
                     NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
                 }

@@ -26,7 +26,7 @@ public class TiesuoItem extends CardItem {
                 nearbyEntity.addEffect(new MobEffectInstance(MobEffects.GLOWING, MobEffectInstance.INFINITE_DURATION, 0, false, true,false));
             }
             NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
-            voice(user, Sounds.TIESUO.get());
+            voice(user, Sounds.TIESUO);
             user.removeEffect(MobEffects.GLOWING);
         }
         return InteractionResult.PASS;

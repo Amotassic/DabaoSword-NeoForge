@@ -21,7 +21,7 @@ public class JiuItem extends CardItem {
         if (!user.hasEffect(MobEffects.DAMAGE_BOOST) && !world.isClientSide && hand == InteractionHand.MAIN_HAND) {
             user.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 20 * 10, 0));
             NeoForge.EVENT_BUS.post(new CardUsePostListener(user, user.getItemInHand(hand), user));
-            voice(user, Sounds.JIU.get());
+            voice(user, Sounds.JIU);
         }
         return InteractionResultHolder.success(user.getItemInHand(hand));
     }

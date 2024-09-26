@@ -19,7 +19,7 @@ public class TaoyuanItem extends CardItem {
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         if (!world.isClientSide && hand == InteractionHand.MAIN_HAND) {
             ((ServerLevel) world).players().forEach(player -> player.heal(5.0F));
-            ((ServerLevel) world).players().forEach(player -> voice(player, Sounds.TAOYUAN.get()));
+            ((ServerLevel) world).players().forEach(player -> voice(player, Sounds.TAOYUAN));
             NeoForge.EVENT_BUS.post(new CardUsePostListener(user, user.getItemInHand(hand), user));
         }
         return InteractionResultHolder.success(user.getItemInHand(hand));

@@ -24,7 +24,7 @@ public class FireAttackItem extends CardItem {
             fireballEntity.setPos(user.getX(), user.getY(0.5) + 0.5, user.getZ());
             world.addFreshEntity(fireballEntity);
             NeoForge.EVENT_BUS.post(new CardUsePostListener(user, user.getItemInHand(hand), user));
-            voice(user, Sounds.HUOGONG.get());
+            voice(user, Sounds.HUOGONG);
         }
         return InteractionResultHolder.success(user.getItemInHand(hand));
     }

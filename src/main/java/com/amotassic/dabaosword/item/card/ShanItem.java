@@ -26,11 +26,11 @@ public class ShanItem extends CardItem {
         if (!world.isClientSide && !user.hasEffect(ModItems.COOLDOWN2) && hand == InteractionHand.MAIN_HAND) {
             Vec3 momentum = user.getForward().scale(3);
             user.hurtMarked = true; user.setDeltaMovement(momentum.x,0 ,momentum.z);
-            int i = hasTrinket(SkillCards.LEIJI.get(), user) ? 3 : 0;
+            int i = hasTrinket(SkillCards.LEIJI, user) ? 3 : 0;
             user.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 20,0,false,false,false));
             user.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 20,i,false,false,false));
             NeoForge.EVENT_BUS.post(new CardUsePostListener(user, user.getItemInHand(hand), user));
-            voice(user, Sounds.SHAN.get());
+            voice(user, Sounds.SHAN);
         }
         return  InteractionResultHolder.success(user.getItemInHand(hand));
     }

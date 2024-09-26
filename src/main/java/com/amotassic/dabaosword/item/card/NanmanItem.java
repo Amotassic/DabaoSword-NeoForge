@@ -34,7 +34,7 @@ public class NanmanItem extends CardItem {
             for (Component name : names) {summonDog(world, user, name);}
 
             NeoForge.EVENT_BUS.post(new CardUsePostListener(user, user.getItemInHand(hand), null));
-            voice(user, Sounds.NANMAN.get());
+            voice(user, Sounds.NANMAN);
             return InteractionResultHolder.success(user.getItemInHand(hand));
         }
         return InteractionResultHolder.pass(user.getItemInHand(hand));

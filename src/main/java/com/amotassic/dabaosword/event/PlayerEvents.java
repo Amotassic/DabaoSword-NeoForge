@@ -49,16 +49,16 @@ public class PlayerEvents {
                 }
             }
 
-            if (hasItem(player, ModItems.BBJI.get())) voice(player, Sounds.XUYOU.get());
+            if (hasItem(player, ModItems.BBJI.get())) voice(player, Sounds.XUYOU);
 
-            if (hasTrinket(SkillCards.BUQU.get(), player)) {
-                ItemStack stack = trinketItem(SkillCards.BUQU.get(), player);
+            if (hasTrinket(SkillCards.BUQU, player)) {
+                ItemStack stack = trinketItem(SkillCards.BUQU, player);
                 int c = getTag(stack);
                 if (c > 1) setTag(stack, (c+1)/2);
             }
 
-            if (hasTrinket(SkillCards.LIANYING.get(), player)) {
-                ItemStack stack = trinketItem(SkillCards.LIANYING.get(), player);
+            if (hasTrinket(SkillCards.LIANYING, player)) {
+                ItemStack stack = trinketItem(SkillCards.LIANYING, player);
                 if (stack != null) setCD(stack, 0);
             }
         }
@@ -66,8 +66,8 @@ public class PlayerEvents {
 
     private static boolean XingshangTrigger(Player player, ItemStack stack) {
         for (Player player1 : player.level().players()) {//行殇技能触发
-            if (hasTrinket(SkillCards.XINGSHANG.get(), player1) && player1.distanceTo(player) <= 25 && player1 != player) {
-                if (!player1.getTags().contains("xingshang")) voice(player1, Sounds.XINGSHANG.get());
+            if (hasTrinket(SkillCards.XINGSHANG, player1) && player1.distanceTo(player) <= 25 && player1 != player) {
+                if (!player1.getTags().contains("xingshang")) voice(player1, Sounds.XINGSHANG);
                 player1.addTag("xingshang");
                 give(player1, stack.copy());
                 stack.setCount(0);

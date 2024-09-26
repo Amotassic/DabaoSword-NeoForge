@@ -45,7 +45,7 @@ public class GainCardItem extends CardItem {
             if (user.getItemInHand(hand).getItem() == ModItems.WUZHONG.get()) {
                 draw(user,2);
                 NeoForge.EVENT_BUS.post(new CardUsePostListener(user, user.getItemInHand(hand), user));
-                voice(user, Sounds.WUZHONG.get());
+                voice(user, Sounds.WUZHONG);
             }
         }
         return InteractionResultHolder.success(user.getItemInHand(hand));

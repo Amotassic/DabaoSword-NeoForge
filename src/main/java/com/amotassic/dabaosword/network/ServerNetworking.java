@@ -47,7 +47,7 @@ public class ServerNetworking {
         registrar.playToServer(ShensuPayload.ID, ShensuPayload.CODEC, (p, c) -> {
             Player player = c.player();
             float speed = p.f();
-            ItemStack stack = trinketItem(SkillCards.SHENSU.get(), player);
+            ItemStack stack = trinketItem(SkillCards.SHENSU, player);
             if (stack != null) {
                 CustomData component = stack.get(DataComponents.CUSTOM_DATA);
                 if (component != null) {

@@ -28,22 +28,22 @@ public class CardEvents {
         else if (!user.isCreative()) stack.shrink(1);
 
         //集智技能触发
-        if (hasTrinket(SkillCards.JIZHI.get(), user) && copy.is(Tags.ARMOURY_CARD)) {
+        if (hasTrinket(SkillCards.JIZHI, user) && copy.is(Tags.ARMOURY_CARD)) {
             draw(user);
-            voice(user, Sounds.JIZHI.get());
+            voice(user, Sounds.JIZHI);
         }
 
         //奔袭技能触发
-        if (hasTrinket(SkillCards.BENXI.get(), user)) {
-            ItemStack trinketItem = trinketItem(SkillCards.BENXI.get(), user);
+        if (hasTrinket(SkillCards.BENXI, user)) {
+            ItemStack trinketItem = trinketItem(SkillCards.BENXI, user);
             int benxi = getTag(trinketItem);
             if (benxi < 5) {
                 benxi ++; setTag(trinketItem, benxi);
-                voice(user, Sounds.BENXI.get());
+                voice(user, Sounds.BENXI);
             }
         }
 
-        if (hasTrinket(SkillCards.LIANYING.get(), user) && countCards(user) == 0) lianyingTrigger(user);
+        if (hasTrinket(SkillCards.LIANYING, user) && countCards(user) == 0) lianyingTrigger(user);
     }
 
     @SubscribeEvent
@@ -57,9 +57,9 @@ public class CardEvents {
 
         //弃置牌后，玩家的死亡判断是有必要的
         if (player.isAlive()) {
-            if (hasTrinket(SkillCards.LIANYING.get(), player) && !fromEquip && countCards(player) == 0) lianyingTrigger(player);
+            if (hasTrinket(SkillCards.LIANYING, player) && !fromEquip && countCards(player) == 0) lianyingTrigger(player);
 
-            if (hasTrinket(SkillCards.XIAOJI.get(), player) && fromEquip) xiaojiTrigger(player);
+            if (hasTrinket(SkillCards.XIAOJI, player) && fromEquip) xiaojiTrigger(player);
         }
     }
 
@@ -76,21 +76,21 @@ public class CardEvents {
         }
 
         if (type == CardMoveListener.Type.INV_TO_EQUIP || type == CardMoveListener.Type.INV_TO_INV) {
-            if (from instanceof Player player && hasTrinket(SkillCards.LIANYING.get(), player) && countCards(player) == 0) lianyingTrigger(player);
+            if (from instanceof Player player && hasTrinket(SkillCards.LIANYING, player) && countCards(player) == 0) lianyingTrigger(player);
         }
 
         if (type == CardMoveListener.Type.EQUIP_TO_INV || type == CardMoveListener.Type.EQUIP_TO_EQUIP) {
-            if (from instanceof Player player && hasTrinket(SkillCards.XIAOJI.get(), player)) xiaojiTrigger(player);
+            if (from instanceof Player player && hasTrinket(SkillCards.XIAOJI, player)) xiaojiTrigger(player);
         }
     }
 
     private static void lianyingTrigger(Player player) {
-        ItemStack stack = trinketItem(SkillCards.LIANYING.get(), player);
+        ItemStack stack = trinketItem(SkillCards.LIANYING, player);
         if (stack != null) setCD(stack, 5);
     }
 
     private static void xiaojiTrigger(Player player) {
         draw(player, 2);
-        voice(player, Sounds.XIAOJI.get());
+        voice(player, Sounds.XIAOJI);
     }
 }

@@ -56,7 +56,7 @@ public class GiftBoxItem extends Item {
             LootEntry selectedEntry = GainCardItem.selectRandomEntry(lootEntries);
 
             ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(selectedEntry.item()));
-            if (stack.getItem() != Items.AIR) voice(player, Sounds.GIFTBOX.get(),3);
+            if (stack.getItem() != Items.AIR) voice(player, Sounds.GIFTBOX,3);
             give(player, stack);
         }
     }

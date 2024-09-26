@@ -35,7 +35,7 @@ public class LetMeCCItem extends Item {
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand usedHand) {
         if (!user.level().isClientSide && usedHand == InteractionHand.MAIN_HAND) {
-            voice(user, Sounds.LET_ME_CC.get());
+            voice(user, Sounds.LET_ME_CC);
             openFullInv(user, entity, true);
             return InteractionResult.SUCCESS;
         }
@@ -48,12 +48,12 @@ public class LetMeCCItem extends Item {
             if (!user.isShiftKeyDown()) {
                 LivingEntity closest = getClosestEntity(user, 10);
                 if (closest != null) {
-                    voice(user, Sounds.LET_ME_CC.get());
+                    voice(user, Sounds.LET_ME_CC);
                     openFullInv(user, closest, true);
                     return InteractionResultHolder.success(user.getItemInHand(usedHand));
                 }
             } else {
-                voice(user, Sounds.LET_ME_CC.get());
+                voice(user, Sounds.LET_ME_CC);
                 openFullInv(user, user, true);
                 return InteractionResultHolder.success(user.getItemInHand(usedHand));
             }

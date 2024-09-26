@@ -1,9 +1,8 @@
 package com.amotassic.dabaosword;
 
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.item.skillcard.SkillCards;
+import com.amotassic.dabaosword.util.AllRegs;
 import com.amotassic.dabaosword.util.Gamerule;
-import com.amotassic.dabaosword.util.Sounds;
 import com.amotassic.dabaosword.util.Tags;
 import com.mojang.logging.LogUtils;
 import net.minecraft.world.item.CreativeModeTab;
@@ -21,13 +20,13 @@ public class DabaoSword {
 
     public DabaoSword(IEventBus modEventBus) {
         LOGGER.info("Ciallo～(∠·ω< )⌒★");
-        SkillCards.ITEMS.register(modEventBus);
+        AllRegs.Skills.ITEMS.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         ModItems.EFFECTS.register(modEventBus);
         ModItems.DATA_COMPONENT.register(modEventBus);
         ModItems.MENU.register(modEventBus);
         ModItems.TABS.register(modEventBus);
-        Sounds.SOUNDS.register(modEventBus);
+        AllRegs.Sounds.SOUNDS.register(modEventBus);
         Gamerule.registerGamerules();
         Tags.Tag();
 

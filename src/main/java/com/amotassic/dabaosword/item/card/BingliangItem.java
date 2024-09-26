@@ -22,10 +22,10 @@ public class BingliangItem extends CardItem {
         if (!user.level().isClientSide) {
             if (entity instanceof Player player && hasItem(player, ModItems.WUXIE.get())) {
                 NeoForge.EVENT_BUS.post(new CardUsePostListener(player, getItem(player, ModItems.WUXIE.get()), null));
-                voice(player, Sounds.WUXIE.get());
+                voice(player, Sounds.WUXIE);
             } else entity.addEffect(new MobEffectInstance(ModItems.BINGLIANG, MobEffectInstance.INFINITE_DURATION,1));
             NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
-            voice(user, Sounds.BINGLIANG.get());
+            voice(user, Sounds.BINGLIANG);
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;

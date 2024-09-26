@@ -34,7 +34,7 @@ public class Cooldown2Effect extends MobEffect {
                 if (restTime <= 1) entity.getTags().remove("wanjian");
             }
 
-            if (amplifier == 3 && hasTrinket(SkillCards.LEIJI.get(), entity) && restTime >= 15) {//雷击的效果
+            if (amplifier == 3 && hasTrinket(SkillCards.LEIJI, entity) && restTime >= 15) {//雷击的效果
                 EntityType.LIGHTNING_BOLT.spawn(world, new BlockPos((int) entity.getX(), (int) entity.getY(), (int) entity.getZ()),null);
             }
         }
@@ -43,9 +43,9 @@ public class Cooldown2Effect extends MobEffect {
 
     @Override
     public void onEffectAdded(LivingEntity entity, int amplifier) {
-        if (entity instanceof Player player && !player.level().isClientSide && hasTrinket(SkillCards.LEIJI.get(), player) && amplifier == 3) {
+        if (entity instanceof Player player && !player.level().isClientSide && hasTrinket(SkillCards.LEIJI, player) && amplifier == 3) {
             //雷击语音播放
-            voice(player, Sounds.LEIJI.get());
+            voice(player, Sounds.LEIJI);
         }
         super.onEffectAdded(entity, amplifier);
     }
