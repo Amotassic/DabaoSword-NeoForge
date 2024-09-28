@@ -1,8 +1,6 @@
 package com.amotassic.dabaosword.item.card;
 
-import com.amotassic.dabaosword.event.ActiveSkillHandler;
-import com.amotassic.dabaosword.event.listener.CardMoveListener;
-import com.amotassic.dabaosword.event.listener.CardUsePostListener;
+import com.amotassic.dabaosword.event.listener.CardCBs;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.Sounds;
 import net.minecraft.network.chat.Component;
@@ -11,7 +9,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,12 +24,12 @@ public class StealItem extends CardItem {
         if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND) {
             if (entity instanceof Player target) {
                 if (hasItem(target, ModItems.WUXIE.get())) {
-                    NeoForge.EVENT_BUS.post(new CardUsePostListener(target, getItem(target, ModItems.WUXIE.get()), null));
+                    cardUsePost(target, getItem(target, ModItems.WUXIE.get()), null);
                     voice(target, Sounds.WUXIE);
-                    NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
+                    cardUsePost(user, stack, entity);
                     voice(user, Sounds.SHUNSHOU);
                 } else {
-                    ActiveSkillHandler.openInv(user, target, Component.translatable("dabaosword.steal.title"), ActiveSkillHandler.targetInv(target, true, true, 1, user.getMainHandItem()));
+                    openInv(user, target, Component.translatable("dabaosword.steal.title"), targetInv(target, true, true, 1, user.getMainHandItem()));
                 }
             } else {
                 List<ItemStack> stacks = new ArrayList<>();
@@ -41,8 +38,8 @@ public class StealItem extends CardItem {
                 if (!stacks.isEmpty()) {
                     ItemStack chosen = stacks.get(new Random().nextInt(stacks.size()));
                     voice(user, Sounds.SHUNSHOU);
-                    NeoForge.EVENT_BUS.post(new CardMoveListener(entity, user, chosen, 1, CardMoveListener.Type.INV_TO_INV));
-                    NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
+                    cardMove(entity, user, chosen, 1, CardCBs.T.INV_TO_INV);
+                    cardUsePost(user, stack, entity);
                 }
             }
             return InteractionResult.SUCCESS;

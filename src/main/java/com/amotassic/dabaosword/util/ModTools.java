@@ -1,28 +1,42 @@
 package com.amotassic.dabaosword.util;
 
+import com.amotassic.dabaosword.event.listener.CardCBs;
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.item.card.GainCardItem;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
+import com.amotassic.dabaosword.ui.PlayerInvScreenHandler;
+import com.amotassic.dabaosword.ui.SimpleMenuHandler;
 import com.google.common.base.Predicate;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import top.theillusivec4.curios.api.CuriosApi;
 
-import java.util.List;
-import java.util.Objects;
+import java.io.InputStreamReader;
+import java.util.*;
+import java.util.stream.IntStream;
 
 public class ModTools {
     public static boolean noTieji(LivingEntity entity) {return !entity.hasEffect(ModItems.TIEJI);}
@@ -30,9 +44,9 @@ public class ModTools {
     //判断是否有某个饰品
     public static boolean hasTrinket(Item item, LivingEntity entity) {
         if (item instanceof SkillItem) {
-            if (item.getDefaultInstance().is(Tags.LOCK_SKILL)) return trinketItem(item, entity) != null;
-            else return trinketItem(item, entity) != null && noTieji(entity);}
-        return trinketItem(item, entity) != null;
+            if (item.getDefaultInstance().is(Tags.LOCK_SKILL)) return trinketItem(item, entity) != ItemStack.EMPTY;
+            else return trinketItem(item, entity) != ItemStack.EMPTY && noTieji(entity);}
+        return trinketItem(item, entity) != ItemStack.EMPTY;
     }
 
     public static ItemStack trinketItem(Item item, LivingEntity entity) {
@@ -43,7 +57,25 @@ public class ModTools {
                 return handler.get().stack();
             }
         }
-        return null;
+        return ItemStack.EMPTY;
+    }
+
+    public static List<ItemStack> allTrinkets(LivingEntity entity) {
+        var optional = CuriosApi.getCuriosInventory(entity);
+        if (optional.isEmpty()) return Collections.emptyList();
+        List<ItemStack> list = new ArrayList<>();
+        var handler = optional.get().getEquippedCurios();
+        for (int i = 0; i < handler.getSlots(); i++) {
+            ItemStack stack = handler.getStackInSlot(i);
+            list.add(stack);
+        }
+        return list;
+    }
+
+    //判断技能是否能触发（依据是否为锁定技和是否有铁骑效果）
+    public static boolean canTrigger(Item item, LivingEntity entity) {
+        if (item.getDefaultInstance().is(Tags.LOCK_SKILL)) return true;
+        return noTieji(entity);
     }
 
     //判断玩家是否有某个物品
@@ -134,12 +166,30 @@ public class ModTools {
     //改了摸牌物品之后，应该不用这样了，但是它就是方便，暂且保留吧
     public static int countCards(Player player) {return count(player, Tags.CARD) + count(player, ModItems.GAIN_CARD.get());}
 
+    //自定义战利品表解析
+    public static ResourceLocation parseLootTable(ResourceLocation lootTableId) {
+        Gson gson = new Gson();
+        InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(ModTools.class.getResourceAsStream("/data/dabaosword/" + lootTableId.getPath())));
+        JsonObject o = gson.fromJson(reader, JsonObject.class);
+        double totalWeight = 0;
+        for (var element : o.getAsJsonArray("results")) {
+            totalWeight += element.getAsJsonObject().get("weight").getAsDouble();
+        }
+        double randomValue = new Random().nextDouble() * totalWeight;
+        double currentWeight = 0;
+        for (JsonElement element : o.getAsJsonArray("results")) {
+            JsonObject result = element.getAsJsonObject();
+            currentWeight += result.get("weight").getAsDouble();
+            if (randomValue < currentWeight) {
+                return ResourceLocation.parse(result.get("item").getAsString());
+            }
+        }
+        return ResourceLocation.parse("minecraft:air");
+    }
+
     public static void draw(Player player) {draw(player, 1);}
     public static void draw(Player player, int count) {
         for (int n = 0; n<count; n++) {
-            List<LootEntry> lootEntries = LootTableParser.parseLootTable(ResourceLocation.fromNamespaceAndPath("dabaosword", "loot_tables/draw.json"));
-            LootEntry selectedEntry = GainCardItem.selectRandomEntry(lootEntries);
-
             if (player.hasEffect(ModItems.BINGLIANG)) {
                 int amplifier = Objects.requireNonNull(player.getEffect(ModItems.BINGLIANG)).getAmplifier();
                 player.removeEffect(ModItems.BINGLIANG);
@@ -148,7 +198,8 @@ public class ModTools {
                     player.addEffect(new MobEffectInstance(ModItems.BINGLIANG, -1, amplifier - 1));
                 } //如果有兵粮寸断效果就不摸牌，改为将debuff等级减一
             } else {
-                give(player, new ItemStack(BuiltInRegistries.ITEM.get(selectedEntry.item())));
+                var selectedId = parseLootTable(ResourceLocation.fromNamespaceAndPath("dabaosword", "loot_tables/draw.json"));
+                give(player, new ItemStack(BuiltInRegistries.ITEM.get(selectedId)));
                 voice(player, SoundEvents.EXPERIENCE_ORB_PICKUP,1);
             }
         }
@@ -189,5 +240,70 @@ public class ModTools {
                 voice(player, sound);
             }
         }
+    }
+
+    public static void openInv(Player player, Player target, Component title, Container targetInv) {
+        if (!player.level().isClientSide) {
+            player.openMenu(new SimpleMenuProvider((i, inv, player1) -> new PlayerInvScreenHandler(i, targetInv, target), title), (buf -> buf.writeInt(target.getId())));
+        }
+    }
+
+    public static Container targetInv(Player target, Boolean equip, Boolean armor, int cards, ItemStack eventStack) {
+        /*
+        Boolean equip: 是否显示装备牌
+        Boolean armor: 是否显示玩家的盔甲
+        int cards: 是否显示手牌。0：完全不显示；1：显示随机选取手牌；2：显示所有手牌；3：显示所有物品
+        */
+        Container targetInv = new SimpleContainer(60);
+        if(equip) {
+            for(var stack : allTrinkets(target)) {
+                if (stack.getTags().toList().equals(ModItems.GUDING_WEAPON.get().getDefaultInstance().getTags().toList())) targetInv.setItem(0, stack);
+                if (stack.getTags().toList().equals(ModItems.BAGUA.get().getDefaultInstance().getTags().toList())) targetInv.setItem(1, stack);
+                if (stack.getItem() == ModItems.DILU.get()) targetInv.setItem(2, stack);
+                if (stack.getItem() == ModItems.CHITU.get()) targetInv.setItem(3, stack);
+            }//四件装备占1~4格
+        }
+
+        List<ItemStack> armors = List.of(target.getItemBySlot(EquipmentSlot.HEAD), target.getItemBySlot(EquipmentSlot.CHEST), target.getItemBySlot(EquipmentSlot.LEGS), target.getItemBySlot(EquipmentSlot.FEET));
+        for (ItemStack stack : armors) {
+            if (armor && !stack.isEmpty()) targetInv.setItem(armors.indexOf(stack) + 4, stack);
+        }//4件盔甲占5~8格
+
+        NonNullList<ItemStack> targetInventory = target.getInventory().items;
+        List<Integer> cardSlots = IntStream.range(0, targetInventory.size()).filter(i -> isCard(targetInventory.get(i))).boxed().toList();
+        if (cards == 2 && !cardSlots.isEmpty()) {
+            for(Integer i : cardSlots) {
+                targetInv.setItem(i + 9, targetInventory.get(i));
+            }
+        }//副手物品在第9格，其他背包中的物品依次排列
+        ItemStack off = target.getOffhandItem();
+        if (cards == 2 && isCard(off)) targetInv.setItem(8, off);
+        if (cards == 3) {
+            for (ItemStack stack : targetInventory) {
+                if (!stack.isEmpty()) targetInv.setItem(targetInventory.indexOf(stack) + 9, stack);
+            }
+            targetInv.setItem(8, off);
+        }
+        targetInv.setItem(54, new ItemStack(ModItems.GAIN_CARD, cards));//用于传递显示卡牌信息
+        targetInv.setItem(55, eventStack);//用于传递stack信息
+        return targetInv;
+    }
+
+    public static void openSimpleMenu(Player player, Player target, Container inventory, Component title) {
+        if (!player.level().isClientSide) {
+            player.openMenu(new SimpleMenuProvider(((i, inv, player1) -> new SimpleMenuHandler(i, inventory, target)), title), (buf -> buf.writeInt(target.getId())));
+        }
+    }
+
+    public static void cardUsePost(Player user, ItemStack stack, @Nullable LivingEntity target) {
+        NeoForge.EVENT_BUS.post(new CardCBs.UsePost(user, stack, target));
+    }
+
+    public static void cardDiscard(Player player, ItemStack stack, int count, boolean fromEquip) {
+        NeoForge.EVENT_BUS.post(new CardCBs.Discard(player, stack, count, fromEquip));
+    }
+
+    public static void cardMove(LivingEntity from, Player to, ItemStack stack, int count, CardCBs.T type) {
+        NeoForge.EVENT_BUS.post(new CardCBs.Move(from, to, stack, count, type));
     }
 }

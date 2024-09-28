@@ -1,6 +1,5 @@
 package com.amotassic.dabaosword.item.card;
 
-import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.util.Sounds;
@@ -11,10 +10,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
 
-import static com.amotassic.dabaosword.util.ModTools.hasTrinket;
-import static com.amotassic.dabaosword.util.ModTools.voice;
+import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class ShanItem extends CardItem {
     public ShanItem(Properties p_41383_) {super(p_41383_);}
@@ -29,7 +26,7 @@ public class ShanItem extends CardItem {
             int i = hasTrinket(SkillCards.LEIJI, user) ? 3 : 0;
             user.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 20,0,false,false,false));
             user.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 20,i,false,false,false));
-            NeoForge.EVENT_BUS.post(new CardUsePostListener(user, user.getItemInHand(hand), user));
+            cardUsePost(user, user.getItemInHand(hand), user);
             voice(user, Sounds.SHAN);
         }
         return  InteractionResultHolder.success(user.getItemInHand(hand));

@@ -1,6 +1,5 @@
 package com.amotassic.dabaosword.item.card;
 
-import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.Sounds;
 import net.minecraft.core.BlockPos;
@@ -16,8 +15,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.neoforged.neoforge.common.NeoForge;
 
+import static com.amotassic.dabaosword.util.ModTools.cardUsePost;
 import static com.amotassic.dabaosword.util.ModTools.voice;
 
 public class NanmanItem extends CardItem {
@@ -33,7 +32,7 @@ public class NanmanItem extends CardItem {
             };
             for (Component name : names) {summonDog(world, user, name);}
 
-            NeoForge.EVENT_BUS.post(new CardUsePostListener(user, user.getItemInHand(hand), null));
+            cardUsePost(user, user.getItemInHand(hand), null);
             voice(user, Sounds.NANMAN);
             return InteractionResultHolder.success(user.getItemInHand(hand));
         }

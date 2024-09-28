@@ -1,7 +1,6 @@
 package com.amotassic.dabaosword.event;
 
 import com.amotassic.dabaosword.DabaoSword;
-import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.equipment.Equipment;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
@@ -23,10 +22,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.Random;
 
@@ -47,7 +44,7 @@ public class EntityHurtHandler {
                         ItemStack stack = stackInTag(Tags.RECOVER, player);
                         if (stack.getItem() == ModItems.PEACH.get()) voice(player, Sounds.RECOVER);
                         if (stack.getItem() == ModItems.JIU.get()) voice(player, Sounds.JIU);
-                        NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, player));
+                        cardUsePost(player, stack, player);
                     }
                 }
                 //最后将玩家的体力设置为 受伤前生命值 - 伤害值 + 回复量
@@ -145,45 +142,27 @@ public class EntityHurtHandler {
                             }
                         }
                     }
-                    NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, entity));
+                    cardUsePost(player, stack, entity);
                 }
             }
 
-            var optional = CuriosApi.getCuriosInventory(entity);
-            if (optional.isPresent()) {
-                var handler = optional.get().getEquippedCurios();
-                for (int i = 0; i < handler.getSlots(); i++) {
-                    ItemStack stack = handler.getStackInSlot(i);
-                    if (stack.getItem() instanceof SkillItem skill) skill.onHurt(stack, entity, source, amount);
-                    if (stack.getItem() instanceof Equipment skill) skill.onHurt(stack, entity, source, amount);
-                }
+            for (var stack : allTrinkets(entity)) {
+                if (stack.getItem() instanceof SkillItem skill && canTrigger(skill, entity)) skill.onHurt(stack, entity, source, amount);
+                if (stack.getItem() instanceof Equipment skill) skill.onHurt(stack, entity, source, amount);
             }
-
 
             if (source.getDirectEntity() instanceof LivingEntity living) { //在近战攻击造成伤害后触发
-                var optional1 = CuriosApi.getCuriosInventory(living);
-                if (optional1.isPresent()) {
-                    var handler1 = optional1.get().getEquippedCurios();
-                    for (int i = 0; i < handler1.getSlots(); i++) {
-                        ItemStack stack = handler1.getStackInSlot(i);
-                        if (stack.getItem() instanceof SkillItem skill) skill.postAttack(stack, entity, living, amount);
-                        if (stack.getItem() instanceof Equipment skill) skill.postAttack(stack, entity, living, amount);
-                    }
+                for (var stack : allTrinkets(living)) {
+                    if (stack.getItem() instanceof SkillItem skill && canTrigger(skill, living)) skill.postAttack(stack, entity, living, amount);
+                    if (stack.getItem() instanceof Equipment skill) skill.postAttack(stack, entity, living, amount);
                 }
-
             }
 
             if (source.getEntity() instanceof LivingEntity living) { //只要攻击造成伤害即可触发，包括远程
-                var optional1 = CuriosApi.getCuriosInventory(living);
-                if (optional1.isPresent()) {
-                    var handler1 = optional1.get().getEquippedCurios();
-                    for (int i = 0; i < handler1.getSlots(); i++) {
-                        ItemStack stack = handler1.getStackInSlot(i);
-                        if (stack.getItem() instanceof SkillItem skill) skill.postDamage(stack, entity, living, amount);
-                        if (stack.getItem() instanceof Equipment skill) skill.postDamage(stack, entity, living, amount);
-                    }
+                for (var stack : allTrinkets(living)) {
+                    if (stack.getItem() instanceof SkillItem skill && canTrigger(skill, living)) skill.postDamage(stack, entity, living, amount);
+                    if (stack.getItem() instanceof Equipment skill) skill.postDamage(stack, entity, living, amount);
                 }
-
             }
 
         }

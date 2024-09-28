@@ -19,10 +19,10 @@ public class AllRegs {
         public static final DeferredHolder<Item, Item> GANGLIE = ITEMS.register("ganglie", ()-> new SkillItem.Ganglie(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> GONGAO = ITEMS.register("gongao", ()-> new SkillItem.Gongao(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> JUEQING = ITEMS.register("jueqing", ()-> new SkillItem(new Item.Properties().stacksTo(1)));
-        public static final DeferredHolder<Item, Item> LUOSHEN = ITEMS.register("luoshen", ()-> new SkillItem.ActiveSkill(new Item.Properties().stacksTo(1)));
+        public static final DeferredHolder<Item, Item> LUOSHEN = ITEMS.register("luoshen", ()-> new SkillItem.Luoshen(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> QINGGUO = ITEMS.register("qingguo", ()-> new SkillItem.Qingguo(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> LUOYI = ITEMS.register("luoyi", ()-> new SkillItem.Luoyi(new Item.Properties().stacksTo(1)));
-        public static final DeferredHolder<Item, Item> QICE = ITEMS.register("qice", ()-> new SkillItem.ActiveSkill(new Item.Properties().stacksTo(1)));
+        public static final DeferredHolder<Item, Item> QICE = ITEMS.register("qice", ()-> new SkillItem.Qice(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> QUANJI = ITEMS.register("quanji", ()-> new SkillItem.Quanji(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> SHANZHUAN = ITEMS.register("shanzhuan", ()-> new SkillItem.Shanzhuan(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> SHENSU = ITEMS.register("shensu", ()-> new SkillItem.Shensu(new Item.Properties().stacksTo(1)));
@@ -35,24 +35,24 @@ public class AllRegs {
         public static final DeferredHolder<Item, Item> KUANGGU = ITEMS.register("kuanggu", ()-> new SkillItem.Kuanggu(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> LIEGONG = ITEMS.register("liegong", ()-> new SkillItem.Liegong(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> LONGDAN = ITEMS.register("longdan", ()-> new SkillItem.Longdan(new Item.Properties().stacksTo(1)));
-        public static final DeferredHolder<Item, Item> RENDE = ITEMS.register("rende", ()-> new SkillItem.ActiveSkillWithTarget(new Item.Properties().stacksTo(1)));
+        public static final DeferredHolder<Item, Item> RENDE = ITEMS.register("rende", ()-> new SkillItem.Rende(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> TIEJI = ITEMS.register("tieji", ()-> new SkillItem.Tieji(new Item.Properties().stacksTo(1)));
         //吴
         public static final DeferredHolder<Item, Item> BUQU = ITEMS.register("buqu", ()-> new SkillItem(new Item.Properties().stacksTo(1)));
-        public static final DeferredHolder<Item, Item> GONGXIN = ITEMS.register("gongxin", ()-> new SkillItem.ActiveSkillWithTarget(new Item.Properties().stacksTo(1)));
+        public static final DeferredHolder<Item, Item> GONGXIN = ITEMS.register("gongxin", ()-> new SkillItem.Gongxin(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> GUOSE = ITEMS.register("guose", ()-> new SkillItem.Guose(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> LIANYING = ITEMS.register("lianying", ()-> new SkillItem.Lianying(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> LIULI = ITEMS.register("liuli", ()-> new SkillItem(new Item.Properties().stacksTo(1)));
-        public static final DeferredHolder<Item, Item> KUROU = ITEMS.register("kurou", ()-> new SkillItem.ActiveSkill(new Item.Properties().stacksTo(1)));
+        public static final DeferredHolder<Item, Item> KUROU = ITEMS.register("kurou", ()-> new SkillItem.Kurou(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> POJUN = ITEMS.register("pojun", ()-> new SkillItem.Pojun(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> QIXI = ITEMS.register("qixi", ()-> new SkillItem.Qixi(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> XIAOJI = ITEMS.register("xiaoji", ()-> new SkillItem(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> ZHIHENG = ITEMS.register("zhiheng", ()-> new SkillItem.Zhiheng(new Item.Properties().stacksTo(1)));
-        public static final DeferredHolder<Item, Item> ZHIJIAN = ITEMS.register("zhijian", ()-> new SkillItem.ActiveSkillWithTarget(new Item.Properties().stacksTo(1)));
+        public static final DeferredHolder<Item, Item> ZHIJIAN = ITEMS.register("zhijian", ()-> new SkillItem.Zhijian(new Item.Properties().stacksTo(1)));
         //群
         public static final DeferredHolder<Item, Item> LEIJI = ITEMS.register("leiji", ()-> new SkillItem(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> LUANJI = ITEMS.register("luanji", ()-> new SkillItem.Luanji(new Item.Properties().stacksTo(1)));
-        public static final DeferredHolder<Item, Item> TAOLUAN = ITEMS.register("taoluan", ()-> new SkillItem.ActiveSkill(new Item.Properties().stacksTo(1)));
+        public static final DeferredHolder<Item, Item> TAOLUAN = ITEMS.register("taoluan", ()-> new SkillItem.Taoluan(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> MASHU = ITEMS.register("mashu", ()-> new SkillItem(new Item.Properties().stacksTo(1)));
 
         public static final DeferredHolder<Item, Item> FEIYING = ITEMS.register("feiying", ()-> new SkillItem(new Item.Properties().stacksTo(1)));

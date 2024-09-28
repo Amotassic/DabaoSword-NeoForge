@@ -8,11 +8,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
-import top.theillusivec4.curios.api.CuriosApi;
+
+import static com.amotassic.dabaosword.util.ModTools.allTrinkets;
+import static com.amotassic.dabaosword.util.ModTools.canTrigger;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class AttackEntityHandler {
@@ -23,14 +24,9 @@ public class AttackEntityHandler {
         Entity entity = event.getTarget();
         if (player.level() instanceof ServerLevel && entity instanceof LivingEntity target) {
             if (!(player.getMainHandItem().is(ModItems.JUEDOU) || player.getMainHandItem().is(ModItems.DISCARD))) {
-                var optional = CuriosApi.getCuriosInventory(player);
-                if (optional.isPresent()) {
-                    var handler = optional.get().getEquippedCurios();
-                    for (int i = 0; i < handler.getSlots(); i++) {
-                        ItemStack stack = handler.getStackInSlot(i);
-                        if (stack.getItem() instanceof SkillItem skill) skill.preAttack(stack, target, player);
-                        if (stack.getItem() instanceof Equipment skill) skill.preAttack(stack, target, player);
-                    }
+                for (var stack : allTrinkets(player)) {
+                    if (stack.getItem() instanceof SkillItem skill && canTrigger(skill, player)) skill.preAttack(stack, target, player);
+                    if (stack.getItem() instanceof Equipment skill) skill.preAttack(stack, target, player);
                 }
             }
         }

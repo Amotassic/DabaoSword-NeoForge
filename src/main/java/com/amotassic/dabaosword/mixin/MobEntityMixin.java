@@ -1,7 +1,5 @@
 package com.amotassic.dabaosword.mixin;
 
-import com.amotassic.dabaosword.event.listener.CardDiscardListener;
-import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.Sounds;
 import com.amotassic.dabaosword.util.Tags;
@@ -21,7 +19,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -78,7 +75,7 @@ public abstract class MobEntityMixin extends LivingEntity {
 
         if (stack.getItem() == ModItems.BINGLIANG_ITEM.get()) {
             if (target instanceof Player player && hasItem(player, ModItems.WUXIE.get())) {
-                NeoForge.EVENT_BUS.post(new CardUsePostListener(player, getItem(player, ModItems.WUXIE.get()), null));
+                cardUsePost(player, getItem(player, ModItems.WUXIE.get()), null);
                 voice(player, Sounds.WUXIE);
             } else target.addEffect(new MobEffectInstance(ModItems.BINGLIANG, MobEffectInstance.INFINITE_DURATION,1));
             voice(dabaoSword$mob, Sounds.BINGLIANG); stack.shrink(1);
@@ -87,7 +84,7 @@ public abstract class MobEntityMixin extends LivingEntity {
         if (stack.getItem() == ModItems.TOO_HAPPY_ITEM.get()) {
             if (target instanceof Player player) {
                 if (hasItem(player, ModItems.WUXIE.get())) {
-                    NeoForge.EVENT_BUS.post(new CardUsePostListener(player, getItem(player, ModItems.WUXIE.get()), null));
+                    cardUsePost(player, getItem(player, ModItems.WUXIE.get()), null);
                     voice(player, Sounds.WUXIE);
                 } else player.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 5));
             } else target.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 15));
@@ -97,7 +94,7 @@ public abstract class MobEntityMixin extends LivingEntity {
         if (stack.getItem() == ModItems.DISCARD.get()) {
             if (target instanceof Player player) {//如果是玩家则弃牌
                 if (hasItem(player, ModItems.WUXIE.get())) {
-                    NeoForge.EVENT_BUS.post(new CardUsePostListener(player, getItem(player, ModItems.WUXIE.get()), null));
+                    cardUsePost(player, getItem(player, ModItems.WUXIE.get()), null);
                     voice(player, Sounds.WUXIE);
                     voice(dabaoSword$mob, Sounds.GUOHE); stack.shrink(1);
                 } else {
@@ -119,7 +116,7 @@ public abstract class MobEntityMixin extends LivingEntity {
                     if(!candidate.isEmpty()) {
                         int index = new Random().nextInt(candidate.size()); ItemStack chosen = candidate.get(index);
                         player.displayClientMessage(Component.literal(dabaoSword$mob.getScoreboardName()).append(Component.translatable("dabaosword.discard")).append(chosen.getDisplayName()), false);
-                        NeoForge.EVENT_BUS.post(new CardDiscardListener(player, chosen, 1, index > candidate.size() - equip));
+                        cardDiscard(player, chosen, 1, index > candidate.size() - equip);
                         voice(dabaoSword$mob, Sounds.GUOHE); stack.shrink(1);
                     }
                 }
@@ -149,7 +146,7 @@ public abstract class MobEntityMixin extends LivingEntity {
             ItemStack stack1 = target.getMainHandItem();
             if (!stack1.isEmpty()) {
                 if (target instanceof Player player && hasItem(player, ModItems.WUXIE.get())) {
-                    NeoForge.EVENT_BUS.post(new CardUsePostListener(player, getItem(player, ModItems.WUXIE.get()), null));
+                    cardUsePost(player, getItem(player, ModItems.WUXIE.get()), null);
                     voice(player, Sounds.WUXIE);
                 } else {
                     dabaoSword$mob.setItemInHand(InteractionHand.MAIN_HAND, stack1.copy());

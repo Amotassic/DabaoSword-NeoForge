@@ -1,6 +1,5 @@
 package com.amotassic.dabaosword.item.card;
 
-import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.util.Sounds;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -9,8 +8,8 @@ import net.minecraft.world.entity.projectile.LargeFireball;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
 
+import static com.amotassic.dabaosword.util.ModTools.cardUsePost;
 import static com.amotassic.dabaosword.util.ModTools.voice;
 
 public class FireAttackItem extends CardItem {
@@ -23,7 +22,7 @@ public class FireAttackItem extends CardItem {
             LargeFireball fireballEntity = new LargeFireball(world, user, momentum, 3);
             fireballEntity.setPos(user.getX(), user.getY(0.5) + 0.5, user.getZ());
             world.addFreshEntity(fireballEntity);
-            NeoForge.EVENT_BUS.post(new CardUsePostListener(user, user.getItemInHand(hand), user));
+            cardUsePost(user, user.getItemInHand(hand), user);
             voice(user, Sounds.HUOGONG);
         }
         return InteractionResultHolder.success(user.getItemInHand(hand));

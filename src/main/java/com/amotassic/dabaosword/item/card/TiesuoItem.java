@@ -1,6 +1,5 @@
 package com.amotassic.dabaosword.item.card;
 
-import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.util.Sounds;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -11,8 +10,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.common.NeoForge;
 
+import static com.amotassic.dabaosword.util.ModTools.cardUsePost;
 import static com.amotassic.dabaosword.util.ModTools.voice;
 
 public class TiesuoItem extends CardItem {
@@ -25,7 +24,7 @@ public class TiesuoItem extends CardItem {
             for (LivingEntity nearbyEntity : user.level().getEntitiesOfClass(LivingEntity.class, box, nearbyEntity -> !nearbyEntity.isCurrentlyGlowing())) {
                 nearbyEntity.addEffect(new MobEffectInstance(MobEffects.GLOWING, MobEffectInstance.INFINITE_DURATION, 0, false, true,false));
             }
-            NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
+            cardUsePost(user, stack, entity);
             voice(user, Sounds.TIESUO);
             user.removeEffect(MobEffects.GLOWING);
         }

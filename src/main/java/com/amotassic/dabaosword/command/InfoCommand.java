@@ -3,6 +3,7 @@ package com.amotassic.dabaosword.command;
 import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.ui.FullInvScreenHandler;
+import com.amotassic.dabaosword.util.ModTools;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -24,7 +25,6 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,9 +65,9 @@ public class InfoCommand {
         }
     }
 
-    public static Container fullInv(LivingEntity target, boolean ebitable) {
+    public static Container fullInv(LivingEntity target, boolean editable) {
         SimpleContainer inv = new SimpleContainer(64);
-        return updateInv(inv, target, ebitable);
+        return updateInv(inv, target, editable);
     }
 
     public static Container updateInv(Container inventory, LivingEntity target, boolean editable) {
@@ -94,18 +94,10 @@ public class InfoCommand {
 
         inventory.setItem(40, target.getOffhandItem()); //副手
 
-        var component = CuriosApi.getCuriosInventory(target);
-        if (component.isPresent()) {//饰品栏
-            var trinkets = component.get().getCurios();
-            List<ItemStack> stacks = new ArrayList<>();
-            for (var trinket : trinkets.values()) {
-                for (int i = 0; i < trinket.getSlots(); i++) {
-                    stacks.add(trinket.getStacks().getStackInSlot(i));
-                }
-            }
-            for (var stack : stacks) {
-                inventory.setItem(stacks.indexOf(stack) + 41, stack);
-            }
+        //饰品栏
+        List<ItemStack> stacks = new ArrayList<>(ModTools.allTrinkets(target));
+        for (var stack : stacks) {
+            inventory.setItem(stacks.indexOf(stack) + 41, stack);
         }
         return inventory;
     }

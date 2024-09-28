@@ -1,9 +1,7 @@
 package com.amotassic.dabaosword.event;
 
 import com.amotassic.dabaosword.DabaoSword;
-import com.amotassic.dabaosword.event.listener.CardDiscardListener;
-import com.amotassic.dabaosword.event.listener.CardMoveListener;
-import com.amotassic.dabaosword.event.listener.CardUsePostListener;
+import com.amotassic.dabaosword.event.listener.CardCBs;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.util.Sounds;
@@ -20,7 +18,7 @@ import static com.amotassic.dabaosword.util.ModTools.*;
 public class CardEvents {
 
     @SubscribeEvent
-    public static void cardUsePost(CardUsePostListener event) {
+    public static void cardUsePost(CardCBs.UsePost event) {
         Player user = event.getEntity(); LivingEntity target = event.getTarget();
         ItemStack stack = event.getStack(); ItemStack copy = event.getCopy();
 
@@ -47,7 +45,7 @@ public class CardEvents {
     }
 
     @SubscribeEvent
-    public static void cardDiscard(CardDiscardListener event) {
+    public static void cardDiscard(CardCBs.Discard event) {
         Player player = event.getEntity();
         ItemStack stack = event.getStack(); ItemStack copy = event.getCopy();
         int count = event.getCount(); boolean fromEquip = event.isFromEquip();
@@ -64,22 +62,22 @@ public class CardEvents {
     }
 
     @SubscribeEvent
-    public static void cardMove(CardMoveListener event) {
+    public static void cardMove(CardCBs.Move event) {
         LivingEntity from = event.getFrom(); Player to = event.getEntity();
         ItemStack stack = event.getStack(); ItemStack copy = event.getCopy();
-        int count = event.getCount(); CardMoveListener.Type type = event.getType();
+        int count = event.getCount(); CardCBs.T type = event.getType();
 
         //如果是移动到物品栏的类型，则减少from的物品，给to等量的物品（移动到装备区有专门的方法）
-        if (type == CardMoveListener.Type.INV_TO_INV || type == CardMoveListener.Type.EQUIP_TO_INV) {
+        if (type == CardCBs.T.INV_TO_INV || type == CardCBs.T.EQUIP_TO_INV) {
             give(to, copy);
             stack.shrink(count);
         }
 
-        if (type == CardMoveListener.Type.INV_TO_EQUIP || type == CardMoveListener.Type.INV_TO_INV) {
+        if (type == CardCBs.T.INV_TO_EQUIP || type == CardCBs.T.INV_TO_INV) {
             if (from instanceof Player player && hasTrinket(SkillCards.LIANYING, player) && countCards(player) == 0) lianyingTrigger(player);
         }
 
-        if (type == CardMoveListener.Type.EQUIP_TO_INV || type == CardMoveListener.Type.EQUIP_TO_EQUIP) {
+        if (type == CardCBs.T.EQUIP_TO_INV || type == CardCBs.T.EQUIP_TO_EQUIP) {
             if (from instanceof Player player && hasTrinket(SkillCards.XIAOJI, player)) xiaojiTrigger(player);
         }
     }

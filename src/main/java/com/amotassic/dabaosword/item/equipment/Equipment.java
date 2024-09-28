@@ -1,8 +1,7 @@
 package com.amotassic.dabaosword.item.equipment;
 
-import com.amotassic.dabaosword.event.listener.CardDiscardListener;
-import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
+import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.util.ModTools;
 import com.amotassic.dabaosword.util.Skill;
 import com.amotassic.dabaosword.util.Sounds;
@@ -25,7 +24,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
@@ -54,8 +52,14 @@ public class Equipment extends Item implements ICurioItem, Skill {
         public void curioTick(SlotContext slotContext, ItemStack stack) {
             if (slotContext.entity().level() instanceof ServerLevel world) {
                 int cd = ModTools.getCD(stack);
-                if (cd > 0 && world.getGameTime() % 20 == 0) cd--; stack.set(ModItems.CD, cd);
+                if (cd > 0 && world.getGameTime() % 20 == 0) stack.set(ModItems.CD, cd - 1);
             }
+        }
+
+        @Override
+        public void onEquip(SlotContext slotContext, ItemStack prevStack, ItemStack stack) {
+            super.onEquip(slotContext, prevStack, stack);
+            SkillItem.setEquipped(stack, true);
         }
 
         @Override
@@ -194,12 +198,11 @@ public class Equipment extends Item implements ICurioItem, Skill {
 
     @Override
     public void onEquip(SlotContext slotContext, ItemStack prevStack, ItemStack stack) {
-        if (slotContext.entity().level() instanceof ServerLevel world) {
+        if (slotContext.entity().level() instanceof ServerLevel world && !SkillItem.equipped(stack)) {
             world.players().forEach(player -> player.displayClientMessage(
                     Component.literal(slotContext.entity().getScoreboardName()).append(Component.literal(" equipped ").append(stack.getDisplayName())),false
             ));
         }
-        ICurioItem.super.onEquip(slotContext, prevStack, stack);
     }
 
     @Override
@@ -236,7 +239,7 @@ public class Equipment extends Item implements ICurioItem, Skill {
 
                         if (present.isEmpty()) {
                             stackHandler.setStackInSlot(i, stack.copy());
-                            NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, player));
+                            cardUsePost(player, stack, player);
                             return true;
                         } else if (firstSlot == null) firstSlot = new Tuple<>(stackHandler, slotContext);
                     }
@@ -248,9 +251,9 @@ public class Equipment extends Item implements ICurioItem, Skill {
                 SlotContext slotContext = firstSlot.getB();
                 int i = slotContext.index();
                 ItemStack present = stackHandler.getStackInSlot(i);
-                NeoForge.EVENT_BUS.post(new CardDiscardListener(player, present, present.getCount(), true));
+                cardDiscard(player, present, present.getCount(), true);
                 stackHandler.setStackInSlot(i, stack.copy());
-                NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, player));
+                cardUsePost(player, stack, player);
                 return true;
             }
         }

@@ -2,7 +2,9 @@ package com.amotassic.dabaosword.item;
 
 import com.amotassic.dabaosword.effect.*;
 import com.amotassic.dabaosword.item.card.*;
-import com.amotassic.dabaosword.item.equipment.*;
+import com.amotassic.dabaosword.item.equipment.ArrowRainItem;
+import com.amotassic.dabaosword.item.equipment.Equipment;
+import com.amotassic.dabaosword.item.equipment.GudingdaoItem;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.ui.FullInvScreenHandler;
 import com.amotassic.dabaosword.ui.PlayerInvScreenHandler;

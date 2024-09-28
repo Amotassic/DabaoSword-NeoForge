@@ -1,10 +1,12 @@
 package com.amotassic.dabaosword.item.skillcard;
 
-import com.amotassic.dabaosword.event.ActiveSkillHandler;
-import com.amotassic.dabaosword.event.listener.CardDiscardListener;
+import com.amotassic.dabaosword.event.listener.CardCBs;
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.item.card.GainCardItem;
-import com.amotassic.dabaosword.util.*;
+import com.amotassic.dabaosword.item.equipment.Equipment;
+import com.amotassic.dabaosword.util.ModTools;
+import com.amotassic.dabaosword.util.Skill;
+import com.amotassic.dabaosword.util.Sounds;
+import com.amotassic.dabaosword.util.Tags;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.ChatFormatting;
@@ -17,8 +19,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -34,7 +38,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.NeoForge;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
@@ -162,7 +165,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                             if(!candidate.isEmpty()) {
                                 int index = new Random().nextInt(candidate.size()); ItemStack chosen = candidate.get(index);
                                 target.displayClientMessage(Component.literal(entity.getScoreboardName()).append(Component.translatable("dabaosword.discard")).append(chosen.getDisplayName()),false);
-                                NeoForge.EVENT_BUS.post(new CardDiscardListener(target, chosen, 1, index > candidate.size() - equip));
+                                cardDiscard(target, chosen, 1, index > candidate.size() - equip);
                             }
                         } else {//如果来源不是玩家则随机弃置它的主副手物品和装备
                             List<ItemStack> candidate = new ArrayList<>();
@@ -230,6 +233,28 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                     player.heal(5);
                     voice(player, Sounds.GONGAO);
                 }
+            }
+        }
+    }
+
+    public static class Gongxin extends ActiveSkillWithTarget {
+        public Gongxin(Properties p_41383_) {super(p_41383_);}
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            int cd = getCD(stack);
+            tooltip.add(Component.literal(cd == 0 ? "CD: 30s" : "CD: 30s   left: "+ cd +"s"));
+            tooltip.add(Component.translatable("item.dabaosword.gongxin.tooltip").withStyle(ChatFormatting.GREEN));
+        }
+
+        @Override
+        public void activeSkill(Player user, ItemStack stack, Player target) {
+            int cd = getCD(stack);
+            if (cd > 0) user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(ChatFormatting.RED), true);
+            else {
+                voice(user, Sounds.GONGXIN);
+                openInv(user, target, Component.translatable("gongxin.title"), targetInv(target, false, false, 2, stack));
+                setCD(stack, 30);
             }
         }
     }
@@ -302,6 +327,27 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                 voice(player, Sounds.KUANGGU);
                 player.addEffect(new MobEffectInstance(ModItems.COOLDOWN, 20 * 8,0,false,false,true));
             }
+        }
+    }
+
+    public static class Kurou extends ActiveSkill {
+        public Kurou(Properties p_41383_) {super(p_41383_);}
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            tooltip.add(Component.translatable("item.dabaosword.kurou.tooltip").withStyle(ChatFormatting.GREEN));
+        }
+
+        @Override
+        public void activeSkill(Player user, ItemStack stack, Player target) {
+            if (user.getHealth() + 5 * count(user, Tags.RECOVER) > 4.99) {
+                draw(user, 2);
+                if (!user.isCreative()) {
+                    user.invulnerableTime = 0;
+                    user.hurt(user.damageSources().genericKill(), 4.99f);
+                }
+                voice(user, Sounds.KUROU);
+            } else {user.displayClientMessage(Component.translatable("item.dabaosword.kurou.tip").withStyle(ChatFormatting.RED), true);}
         }
     }
 
@@ -410,6 +456,33 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         }
     }
 
+    public static class Luoshen extends ActiveSkill {
+        public Luoshen(Properties p_41383_) {super(p_41383_);}
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            int cd = getCD(stack);
+            tooltip.add(Component.literal(cd == 0 ? "CD: 30s" : "CD: 30s   left: "+ cd +"s"));
+            tooltip.add(Component.translatable("item.dabaosword.luoshen.tooltip").withStyle(ChatFormatting.BLUE));
+        }
+
+        @Override
+        public void activeSkill(Player user, ItemStack stack, Player target) {
+            int cd = getCD(stack);
+            if (cd > 0) user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(ChatFormatting.RED), true);
+            else {
+                voice(user, Sounds.LUOSHEN);
+                if (new Random().nextFloat() < 0.5) {
+                    draw(user);
+                    user.displayClientMessage(Component.translatable("item.dabaosword.luoshen.win").withStyle(ChatFormatting.GREEN), true);
+                } else {
+                    setCD(stack, 30);
+                    user.displayClientMessage(Component.translatable("item.dabaosword.luoshen.lose").withStyle(ChatFormatting.RED), true);
+                }
+            }
+        }
+    }
+
     public static class Luoyi extends SkillItem {
         public Luoyi(Properties p_41383_) {super(p_41383_);}
 
@@ -482,6 +555,36 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         }
     }
 
+    public static class Qice extends ActiveSkill {
+        public Qice(Properties p_41383_) {super(p_41383_);}
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            int cd = getCD(stack);
+            tooltip.add(Component.literal(cd == 0 ? "CD: 20s" : "CD: 20s   left: "+ cd +"s"));
+            tooltip.add(Component.translatable("item.dabaosword.qice.tooltip").withStyle(ChatFormatting.BLUE));
+        }
+
+        @Override
+        public void activeSkill(Player user, ItemStack stack, Player target) {
+            ItemStack offStack = user.getOffhandItem();
+            int cd = getCD(stack);
+            if (!offStack.isEmpty() && offStack.is(Tags.CARD) && offStack.getCount() > 1) {
+                if (cd == 0) {
+
+                    ItemStack[] stacks = {new ItemStack(ModItems.BINGLIANG_ITEM), new ItemStack(ModItems.TOO_HAPPY_ITEM), new ItemStack(ModItems.DISCARD), new ItemStack(ModItems.FIRE_ATTACK), new ItemStack(ModItems.JIEDAO), new ItemStack(ModItems.JUEDOU), new ItemStack(ModItems.NANMAN), new ItemStack(ModItems.STEAL), new ItemStack(ModItems.TAOYUAN), new ItemStack(ModItems.TIESUO), new ItemStack(ModItems.WANJIAN), new ItemStack(ModItems.WUXIE), new ItemStack(ModItems.WUZHONG)};
+                    Container inventory = new SimpleContainer(20);
+                    for (var stack1 : stacks) inventory.setItem(Arrays.stream(stacks).toList().indexOf(stack1), stack1);
+                    inventory.setItem(18, stack); //用于在Handler中找到原本的stack
+
+                    openSimpleMenu(user, user, inventory, Component.translatable("item.dabaosword.qice.screen"));
+                }
+                else {user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(ChatFormatting.RED), true);}
+            }
+            else {user.displayClientMessage(Component.translatable("item.dabaosword.qice.tip").withStyle(ChatFormatting.RED), true);}
+        }
+    }
+
     public static class Qingguo extends SkillItem {
         public Qingguo(Properties p_41383_) {super(p_41383_);}
 
@@ -541,6 +644,23 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         }
     }
 
+    public static class Rende extends ActiveSkillWithTarget {
+        public Rende(Properties p_41383_) {super(p_41383_);}
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            int cd = getCD(stack);
+            tooltip.add(Component.literal(cd == 0 ? "CD: 30s" : "CD: 30s   left: "+ cd +"s"));
+            tooltip.add(Component.translatable("item.dabaosword.rende.tooltip1").withStyle(ChatFormatting.RED));
+            tooltip.add(Component.translatable("item.dabaosword.rende.tooltip2").withStyle(ChatFormatting.RED));
+        }
+
+        @Override
+        public void activeSkill(Player user, ItemStack stack, Player target) {
+            openInv(user, target, Component.translatable("give_card.title", stack.getDisplayName()), targetInv(user, false, false, 2, stack));
+        }
+    }
+
     public static class Shanzhuan extends SkillItem {
         public Shanzhuan(Properties p_41383_) {super(p_41383_);}
 
@@ -555,7 +675,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         @Override
         public void postDamage(ItemStack stack, LivingEntity entity, LivingEntity attacker, float amount) {
             if (attacker instanceof Player player && !player.hasEffect(ModItems.COOLDOWN)) {
-                if (entity instanceof Player target) ActiveSkillHandler.openInv(player, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), ActiveSkillHandler.targetInv(target, true, false, 1, stack));
+                if (entity instanceof Player target) openInv(player, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), targetInv(target, true, false, 1, stack));
                 else {
                     voice(player, Sounds.SHANZHUAN);
                     if (new Random().nextFloat() < 0.5) {
@@ -593,6 +713,29 @@ public class SkillItem extends Item implements ICurioItem, Skill {
             int i = 0;
             for (var slot : player.getInventory().items) {if (slot.isEmpty()) i++;}
             return i;
+        }
+    }
+
+    public static class Taoluan extends ActiveSkill {
+        public Taoluan(Properties p_41383_) {super(p_41383_);}
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            tooltip.add(Component.translatable("item.dabaosword.taoluan.tooltip"));
+        }
+
+        @Override
+        public void activeSkill(Player user, ItemStack stack, Player target) {
+            if (user.getHealth() + 5 * count(user, Tags.RECOVER) > 4.99) {
+
+                ItemStack[] stacks = {new ItemStack(ModItems.THUNDER_SHA), new ItemStack(ModItems.FIRE_SHA), new ItemStack(ModItems.SHAN), new ItemStack(ModItems.PEACH), new ItemStack(ModItems.JIU), new ItemStack(ModItems.BINGLIANG_ITEM), new ItemStack(ModItems.TOO_HAPPY_ITEM), new ItemStack(ModItems.DISCARD), new ItemStack(ModItems.FIRE_ATTACK), new ItemStack(ModItems.JIEDAO), new ItemStack(ModItems.JUEDOU), new ItemStack(ModItems.NANMAN), new ItemStack(ModItems.STEAL), new ItemStack(ModItems.TAOYUAN), new ItemStack(ModItems.TIESUO), new ItemStack(ModItems.WANJIAN), new ItemStack(ModItems.WUXIE), new ItemStack(ModItems.WUZHONG)};
+                Container inventory = new SimpleContainer(20);
+                for (var stack1 : stacks) inventory.setItem(Arrays.stream(stacks).toList().indexOf(stack1), stack1);
+                inventory.setItem(18, stack);
+
+                openSimpleMenu(user, user, inventory, Component.translatable("item.dabaosword.taoluan.screen"));
+            }
+            else {user.displayClientMessage(Component.translatable("item.dabaosword.taoluan.tip").withStyle(ChatFormatting.RED), true);}
         }
     }
 
@@ -634,9 +777,15 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                 voice(player, Sounds.YIJI);
             }
         }
+
+        @Override
+        public void activeSkill(Player user, ItemStack stack, Player target) {
+            int i = getTag(stack);
+            if (i > 0 ) openInv(user, target, Component.translatable("give_card.title", stack.getDisplayName()), targetInv(user, false, false, 2, stack));
+        }
     }
 
-    public static class Zhiheng extends SkillItem {
+    public static class Zhiheng extends ActiveSkill {
         public Zhiheng(Properties p_41383_) {super(p_41383_);}
 
         @Override
@@ -657,6 +806,34 @@ public class SkillItem extends Item implements ICurioItem, Skill {
             }
             super.curioTick(slotContext, stack);
         }
+
+        @Override
+        public void activeSkill(Player user, ItemStack stack, Player target) {
+            int z = getTag(stack);
+            if (z > 0) openInv(user, user, Component.translatable("zhiheng.title"), targetInv(user, true, false, 2, stack));
+            else user.displayClientMessage(Component.translatable("zhiheng.fail").withStyle(ChatFormatting.RED), true);
+        }
+    }
+
+    public static class Zhijian extends ActiveSkillWithTarget {
+        public Zhijian(Properties p_41383_) {super(p_41383_);}
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            tooltip.add(Component.translatable("item.dabaosword.zhijian.tooltip1").withStyle(ChatFormatting.GREEN));
+            tooltip.add(Component.translatable("item.dabaosword.zhijian.tooltip2").withStyle(ChatFormatting.GREEN));
+        }
+
+        @Override
+        public void activeSkill(Player user, ItemStack stack, Player target) {
+            ItemStack itemStack = user.getMainHandItem();
+            if (itemStack.getItem() instanceof Equipment && itemStack.getItem() != ModItems.CARD_PILE.get()) {
+                cardMove(user, target, itemStack, itemStack.getCount(), CardCBs.T.INV_TO_EQUIP);
+                Equipment.equipItem(target, itemStack);
+                voice(user, Sounds.ZHIJIAN);
+                draw(user);
+            } else user.displayClientMessage(Component.translatable("zhijian.fail").withStyle(ChatFormatting.RED), true);
+        }
     }
 
     @Override
@@ -668,24 +845,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
 
         if (stack.getItem() == SkillCards.LIANYING) {
             tooltip.add(Component.translatable("item.dabaosword.lianying.tooltip").withStyle(ChatFormatting.GREEN));
-        }
-
-        if (stack.getItem() == SkillCards.ZHIJIAN) {
-            tooltip.add(Component.translatable("item.dabaosword.zhijian.tooltip1").withStyle(ChatFormatting.GREEN));
-            tooltip.add(Component.translatable("item.dabaosword.zhijian.tooltip2").withStyle(ChatFormatting.GREEN));
-        }
-
-        if (stack.getItem() == SkillCards.GONGXIN) {
-            int cd = getCD(stack);
-            tooltip.add(Component.literal(cd == 0 ? "CD: 30s" : "CD: 30s   left: "+ cd +"s"));
-            tooltip.add(Component.translatable("item.dabaosword.gongxin.tooltip").withStyle(ChatFormatting.GREEN));
-        }
-
-        if (stack.getItem() == SkillCards.RENDE) {
-            int cd = getCD(stack);
-            tooltip.add(Component.literal(cd == 0 ? "CD: 30s" : "CD: 30s   left: "+ cd +"s"));
-            tooltip.add(Component.translatable("item.dabaosword.rende.tooltip1").withStyle(ChatFormatting.RED));
-            tooltip.add(Component.translatable("item.dabaosword.rende.tooltip2").withStyle(ChatFormatting.RED));
         }
 
         if (stack.getItem() == SkillCards.BUQU) {
@@ -707,28 +866,8 @@ public class SkillItem extends Item implements ICurioItem, Skill {
             tooltip.add(Component.translatable("item.dabaosword.xingshang.tooltip").withStyle(ChatFormatting.BLUE));
         }
 
-        if (stack.getItem() == SkillCards.LUOSHEN) {
-            int cd = getCD(stack);
-            tooltip.add(Component.literal(cd == 0 ? "CD: 30s" : "CD: 30s   left: "+ cd +"s"));
-            tooltip.add(Component.translatable("item.dabaosword.luoshen.tooltip").withStyle(ChatFormatting.BLUE));
-        }
-
-        if (stack.getItem() == SkillCards.QICE) {
-            int cd = getCD(stack);
-            tooltip.add(Component.literal(cd == 0 ? "CD: 20s" : "CD: 20s   left: "+ cd +"s"));
-            tooltip.add(Component.translatable("item.dabaosword.qice.tooltip").withStyle(ChatFormatting.BLUE));
-        }
-
         if (stack.getItem() == SkillCards.JIZHI) {
             tooltip.add(Component.translatable("item.dabaosword.jizhi.tooltip").withStyle(ChatFormatting.RED));
-        }
-
-        if (stack.getItem() == SkillCards.KUROU) {
-            tooltip.add(Component.translatable("item.dabaosword.kurou.tooltip").withStyle(ChatFormatting.GREEN));
-        }
-
-        if (stack.getItem() == SkillCards.TAOLUAN) {
-            tooltip.add(Component.translatable("item.dabaosword.taoluan.tooltip"));
         }
 
         if (stack.getItem() == SkillCards.JUEQING) {
@@ -792,18 +931,15 @@ public class SkillItem extends Item implements ICurioItem, Skill {
             if (stack.get(ModItems.CD) != null) {
                 int cd = Objects.requireNonNull(stack.get(ModItems.CD));
                 if (world.getGameTime() % 20 == 0) {//世界时间除以20取余为0时，技能内置CD减一秒
-                    if (cd > 0) {cd--; stack.set(ModItems.CD, cd);}
+                    if (cd > 0) stack.set(ModItems.CD, cd -1);
                 }
             }
         }
-        ICurioItem.super.curioTick(slotContext, stack);
     }
 
     public static void changeSkill(Player player) {
-        List<LootEntry> lootEntries = LootTableParser.parseLootTable(ResourceLocation.fromNamespaceAndPath("dabaosword", "loot_tables/change_skill.json"));
-        LootEntry selectedEntry = GainCardItem.selectRandomEntry(lootEntries);
-
-        ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(selectedEntry.item()));
+        var selectedId = parseLootTable(ResourceLocation.fromNamespaceAndPath("dabaosword", "loot_tables/change_skill.json"));
+        ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(selectedId));
         if (stack.getItem() != Items.AIR) voice(player, Sounds.GIFTBOX,3);
         give(player, stack);
     }

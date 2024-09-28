@@ -1,7 +1,5 @@
 package com.amotassic.dabaosword.item.card;
 
-import com.amotassic.dabaosword.event.ActiveSkillHandler;
-import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.Sounds;
 import net.minecraft.network.chat.Component;
@@ -13,7 +11,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -38,12 +35,12 @@ public class DiscardItem extends CardItem {
         if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND) {
             if (entity instanceof Player target) {
                 if (hasItem(target, ModItems.WUXIE.get())) {
-                    NeoForge.EVENT_BUS.post(new CardUsePostListener(target, getItem(target, ModItems.WUXIE.get()), null));
+                    cardUsePost(target, getItem(target, ModItems.WUXIE.get()), null);
                     voice(target, Sounds.WUXIE);
-                    NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
+                    cardUsePost(user, stack, entity);
                     voice(user, Sounds.GUOHE);
                 } else {
-                    ActiveSkillHandler.openInv(user, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), ActiveSkillHandler.targetInv(target, true, false, 1, user.getMainHandItem()));
+                    openInv(user, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), targetInv(target, true, false, 1, user.getMainHandItem()));
                 }
             } else {
                 List<ItemStack> stacks = new ArrayList<>();
@@ -53,7 +50,7 @@ public class DiscardItem extends CardItem {
                     ItemStack chosen = stacks.get(new Random().nextInt(stacks.size()));
                     voice(user, Sounds.GUOHE);
                     chosen.shrink(1);
-                    NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
+                    cardUsePost(user, stack, entity);
                 }
             }
             return InteractionResult.SUCCESS;

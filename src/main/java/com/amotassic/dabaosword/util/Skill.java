@@ -18,4 +18,9 @@ public interface Skill {
 
     //受到伤害后触发
     default void onHurt(ItemStack stack, LivingEntity entity, DamageSource source, float amount) {}
+
+    /**
+     *当发动技能键按下后，若玩家没有铁骑效果即可触发，需要继承{@link com.amotassic.dabaosword.item.skillcard.SkillItem.ActiveSkill}或者{@link com.amotassic.dabaosword.item.skillcard.SkillItem.ActiveSkillWithTarget}才会生效
+     */
+    default void activeSkill(Player user, ItemStack stack, Player target) {}
 }

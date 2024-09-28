@@ -1,7 +1,6 @@
 package com.amotassic.dabaosword.event;
 
 import com.amotassic.dabaosword.DabaoSword;
-import com.amotassic.dabaosword.event.listener.CardDiscardListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
@@ -14,7 +13,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import top.theillusivec4.curios.api.CuriosApi;
 
@@ -33,7 +31,7 @@ public class PlayerEvents {
                 for (int i = 0; i < inv.getContainerSize(); ++i) {
                     ItemStack stack = inv.getItem(i);
                     if (isCard(stack)) {
-                        if (XingshangTrigger(player, stack)) NeoForge.EVENT_BUS.post(new CardDiscardListener(player, stack, stack.getCount(), false));
+                        if (XingshangTrigger(player, stack)) cardDiscard(player, stack, stack.getCount(), false);
                     }
                 }
 
@@ -43,7 +41,7 @@ public class PlayerEvents {
                     for(int i = 0; i < allEquipped.getSlots(); i++) {
                         ItemStack stack = allEquipped.getStackInSlot(i);
                         if(stack.is(Tags.CARD)) {
-                            if (XingshangTrigger(player, stack)) NeoForge.EVENT_BUS.post(new CardDiscardListener(player, stack, stack.getCount(), true));
+                            if (XingshangTrigger(player, stack)) cardDiscard(player, stack, stack.getCount(), true);
                         }
                     }
                 }

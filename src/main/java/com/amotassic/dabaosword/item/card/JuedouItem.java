@@ -1,6 +1,5 @@
 package com.amotassic.dabaosword.item.card;
 
-import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.Sounds;
 import com.amotassic.dabaosword.util.Tags;
@@ -15,7 +14,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
 
 import static com.amotassic.dabaosword.util.ModTools.*;
@@ -36,7 +34,7 @@ public class JuedouItem extends CardItem {
         if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND && entity.isAlive()) {
             user.addTag("juedou");
             if (entity instanceof Player player && hasItem(player, ModItems.WUXIE.get())) {
-                NeoForge.EVENT_BUS.post(new CardUsePostListener(player, getItem(player, ModItems.WUXIE.get()), null));
+                cardUsePost(player, getItem(player, ModItems.WUXIE.get()), null);
                 voice(player, Sounds.WUXIE);
             } else {
                 if (entity instanceof Player target) {
@@ -55,13 +53,13 @@ public class JuedouItem extends CardItem {
                         user.displayClientMessage(Component.translatable("dabaosword.juedou1"),false);
                         if (targetSha != 0) { //如果目标的杀比使用者的杀多，反击使用者，则目标减少一张杀
                             ItemStack sha = stackInTag(tag, target);
-                            NeoForge.EVENT_BUS.post(new CardUsePostListener(target, sha, user));
+                            cardUsePost(target, sha, user);
                         }
                     }
                 } else { entity.invulnerableTime = 0;
                     entity.hurt(user.damageSources().sonicBoom(user),5f);}
             }
-            NeoForge.EVENT_BUS.post(new CardUsePostListener(user, stack, entity));
+            cardUsePost(user, stack, entity);
             voice(user, Sounds.JUEDOU);
             return InteractionResult.SUCCESS;
         }

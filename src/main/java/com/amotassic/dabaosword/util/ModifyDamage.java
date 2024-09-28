@@ -1,7 +1,5 @@
 package com.amotassic.dabaosword.util;
 
-import com.amotassic.dabaosword.event.listener.CardDiscardListener;
-import com.amotassic.dabaosword.event.listener.CardUsePostListener;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import net.minecraft.core.component.DataComponents;
@@ -17,7 +15,6 @@ import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -137,7 +134,7 @@ public class ModifyDamage {
                     if (stack.getItem() == ModItems.SHA.get()) voice(player, Sounds.SHA);
                     if (stack.getItem() == ModItems.FIRE_SHA.get()) voice(player, Sounds.SHA_FIRE);
                     if (stack.getItem() == ModItems.THUNDER_SHA.get()) voice(player, Sounds.SHA_THUNDER);
-                    NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, null));
+                    cardUsePost(player, stack, null);
                     dog.setHealth(0);
                     return true;
                 }
@@ -161,7 +158,7 @@ public class ModifyDamage {
                         player.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 10,0,false,false,false));
                         player.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 10,0,false,false,false));
                         voice(player, Sounds.LIULI);
-                        NeoForge.EVENT_BUS.post(new CardDiscardListener(player, stack, 1, false));
+                        cardDiscard(player, stack, 1, false);
                         nearEntity.invulnerableTime = 0; nearEntity.hurt(source, amount);
                         return true;
                     }
@@ -183,7 +180,7 @@ public class ModifyDamage {
                     if (stack.getItem() == ModItems.SHA.get()) voice(player, Sounds.SHA);
                     if (stack.getItem() == ModItems.FIRE_SHA.get()) voice(player, Sounds.SHA_FIRE);
                     if (stack.getItem() == ModItems.THUNDER_SHA.get()) voice(player, Sounds.SHA_THUNDER);
-                    NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, entity));
+                    cardUsePost(player, stack, entity);
                 }
                 return true;
             }
@@ -228,7 +225,7 @@ public class ModifyDamage {
         if (bl) voice(entity, Sounds.BAGUA);
         voice(entity, Sounds.SHAN);
         if (entity instanceof Player player) {
-            NeoForge.EVENT_BUS.post(new CardUsePostListener(player, stack, null));
+            cardUsePost(player, stack, null);
             if (bl) player.displayClientMessage(Component.translatable("dabaosword.bagua"),true);
         } else stack.shrink(1);
     }
