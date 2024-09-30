@@ -73,7 +73,7 @@ public class InfoCommand {
     public static Container updateInv(Container inventory, LivingEntity target, boolean editable) {
         //物品栏
         if (editable) {
-            inventory.setItem(61, new ItemStack(ModItems.BBJI.get()));
+            inventory.setItem(61, new ItemStack(ModItems.BBJI));
             if (target instanceof Player player) {
                 NonNullList<ItemStack> inv = player.getInventory().items;
                 for (var stack : inv) {

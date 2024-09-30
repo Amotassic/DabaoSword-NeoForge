@@ -1,10 +1,10 @@
 package com.amotassic.dabaosword.client;
 
 import com.amotassic.dabaosword.DabaoSword;
-import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.ui.FullInvHandledScreen;
 import com.amotassic.dabaosword.ui.PlayerInvHandledScreen;
 import com.amotassic.dabaosword.ui.SimpleMenuScreen;
+import com.amotassic.dabaosword.util.AllRegs;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.neoforged.api.distmarker.Dist;
@@ -26,8 +26,8 @@ public class DabaoSwordClient {
 
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
-        event.register(ModItems.SIMPLE_MENU_HANDLER.get(), SimpleMenuScreen::new);
-        event.register(ModItems.PLAYER_INV_SCREEN_HANDLER.get(), PlayerInvHandledScreen::new);
-        event.register(ModItems.FULL_INV_SCREEN_HANDLER.get(), FullInvHandledScreen::new);
+        event.register(AllRegs.Other.SIMPLE_MENU_HANDLER.get(), SimpleMenuScreen::new);
+        event.register(AllRegs.Other.PLAYER_INV_SCREEN_HANDLER.get(), PlayerInvHandledScreen::new);
+        event.register(AllRegs.Other.FULL_INV_SCREEN_HANDLER.get(), FullInvHandledScreen::new);
     }
 }

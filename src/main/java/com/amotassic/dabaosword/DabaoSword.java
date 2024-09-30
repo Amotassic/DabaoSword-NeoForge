@@ -21,11 +21,11 @@ public class DabaoSword {
     public DabaoSword(IEventBus modEventBus) {
         LOGGER.info("Ciallo～(∠·ω< )⌒★");
         AllRegs.Skills.ITEMS.register(modEventBus);
-        ModItems.ITEMS.register(modEventBus);
-        ModItems.EFFECTS.register(modEventBus);
-        ModItems.DATA_COMPONENT.register(modEventBus);
-        ModItems.MENU.register(modEventBus);
-        ModItems.TABS.register(modEventBus);
+        AllRegs.Items.ITEMS.register(modEventBus);
+        AllRegs.Effects.EFFECTS.register(modEventBus);
+        AllRegs.Other.DATA_COMPONENT.register(modEventBus);
+        AllRegs.Other.MENU.register(modEventBus);
+        AllRegs.Items.TABS.register(modEventBus);
         AllRegs.Sounds.SOUNDS.register(modEventBus);
         Gamerule.registerGamerules();
         Tags.Tag();
@@ -35,8 +35,8 @@ public class DabaoSword {
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.COMBAT) {
-            event.insertAfter(Items.NETHERITE_SWORD.getDefaultInstance(), ModItems.GUDINGDAO.get().getDefaultInstance(), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-            event.insertAfter(Items.EGG.getDefaultInstance(), ModItems.ARROW_RAIN.get().getDefaultInstance(), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+            event.insertAfter(Items.NETHERITE_SWORD.getDefaultInstance(), ModItems.GUDINGDAO.getDefaultInstance(), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+            event.insertAfter(Items.EGG.getDefaultInstance(), ModItems.ARROW_RAIN.getDefaultInstance(), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
         }
     }
 }

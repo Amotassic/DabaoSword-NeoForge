@@ -22,7 +22,7 @@ public class CardEvents {
         Player user = event.getEntity(); LivingEntity target = event.getTarget();
         ItemStack stack = event.getStack(); ItemStack copy = event.getCopy();
 
-        if (stack.getItem() == ModItems.WUXIE.get()) stack.shrink(1); //即使创造模式，无懈可击也会消耗，为什么呢？我也不知道
+        if (stack.getItem() == ModItems.WUXIE) stack.shrink(1); //即使创造模式，无懈可击也会消耗，为什么呢？我也不知道
         else if (!user.isCreative()) stack.shrink(1);
 
         //集智技能触发

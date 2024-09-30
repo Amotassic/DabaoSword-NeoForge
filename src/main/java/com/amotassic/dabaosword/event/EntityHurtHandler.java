@@ -3,12 +3,10 @@ package com.amotassic.dabaosword.event;
 import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.equipment.Equipment;
-import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.util.ModifyDamage;
 import com.amotassic.dabaosword.util.Sounds;
 import com.amotassic.dabaosword.util.Tags;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -42,8 +40,8 @@ public class EntityHurtHandler {
                 for (int i = 0; i < need; i++) {//循环移除背包中的酒、桃
                     if (player.invulnerableTime > 9) {
                         ItemStack stack = stackInTag(Tags.RECOVER, player);
-                        if (stack.getItem() == ModItems.PEACH.get()) voice(player, Sounds.RECOVER);
-                        if (stack.getItem() == ModItems.JIU.get()) voice(player, Sounds.JIU);
+                        if (stack.getItem() == ModItems.PEACH) voice(player, Sounds.RECOVER);
+                        if (stack.getItem() == ModItems.JIU) voice(player, Sounds.JIU);
                         cardUsePost(player, stack, player);
                     }
                 }
@@ -59,25 +57,13 @@ public class EntityHurtHandler {
         float amount = event.getNewDamage();
 
         if (entity.level() instanceof ServerLevel world) {
-            if (entity instanceof Player player) {
 
-                if (player.getHealth() <= amount) {
-                    if (hasTrinket(SkillCards.BUQU, player)) {
-                        ItemStack stack = trinketItem(SkillCards.BUQU, player);
-                        int c = getTag(stack);
-                        voice(player, Sounds.BUQU);
-                        if (new Random().nextFloat() >= (float) c /13) {
-                            player.displayClientMessage(Component.translatable("buqu.tip1").withStyle(ChatFormatting.GREEN).append(String.valueOf(c + 1)), false);
-                            setTag(stack, c + 1);
-                            player.setHealth(1);
-                        } else {
-                            player.displayClientMessage(Component.translatable("buqu.tip2").withStyle(ChatFormatting.RED), false);
-                            save(player, amount);
-                        }
-                    } else save(player, amount);
-                }
-
+            for (var stack : allTrinkets(entity)) { //受伤害后触发，优先级高
+                if (stack.getItem() instanceof SkillItem skill && canTrigger(skill, entity)) skill.onHurt(stack, entity, source, amount);
+                if (stack.getItem() instanceof Equipment skill) skill.onHurt(stack, entity, source, amount);
             }
+
+            if (entity instanceof Player player && player.isDeadOrDying()) save(player, amount);
 
             if (source.getEntity() instanceof LivingEntity living) {
                 if (living.getTags().contains("px")) entity.invulnerableTime = 0;
@@ -102,17 +88,17 @@ public class EntityHurtHandler {
                 if (shouldSha(player)) {
                     ItemStack stack = player.getMainHandItem().is(Tags.SHA) ? player.getMainHandItem() : shaStack(player);
                     player.addTag("sha");
-                    if (stack.getItem() == ModItems.SHA.get()) {
+                    if (stack.getItem() == ModItems.SHA) {
                         voice(player, Sounds.SHA);
-                        if (!hasTrinket(ModItems.RATTAN_ARMOR.get(), entity)) {
+                        if (!hasTrinket(ModItems.RATTAN_ARMOR, entity)) {
                             entity.invulnerableTime = 0; entity.hurt(source, 5);
                         } else voice(entity, Sounds.TENGJIA1);
                     }
-                    if (stack.getItem() == ModItems.FIRE_SHA.get()) {
+                    if (stack.getItem() == ModItems.FIRE_SHA) {
                         voice(player, Sounds.SHA_FIRE);
                         entity.invulnerableTime = 0; entity.setRemainingFireTicks(100);
                     }
-                    if (stack.getItem() == ModItems.THUNDER_SHA.get()) {
+                    if (stack.getItem() == ModItems.THUNDER_SHA) {
                         voice(player, Sounds.SHA_THUNDER);
                         entity.invulnerableTime = 0; entity.hurt(player.damageSources().magic(),5);
                         LightningBolt lightningEntity = EntityType.LIGHTNING_BOLT.create(world);
@@ -123,14 +109,14 @@ public class EntityHurtHandler {
                         }
                     }
                     if (entity.isCurrentlyGlowing()) { //处理铁索连环的效果 铁索传导过去的伤害会触发2次加伤，这符合三国杀的逻辑，所以不改了
-                        if (stack.getItem() != ModItems.SHA.get()) entity.removeEffect(MobEffects.GLOWING);
+                        if (stack.getItem() != ModItems.SHA) entity.removeEffect(MobEffects.GLOWING);
                         AABB box = new AABB(player.getOnPos()).inflate(20); // 检测范围，根据需要修改
                         for (LivingEntity nearbyEntity : world.getEntitiesOfClass(LivingEntity.class, box, entities -> entities.isCurrentlyGlowing() && entities != entity)) {
-                            if (stack.getItem() == ModItems.FIRE_SHA.get()) {
+                            if (stack.getItem() == ModItems.FIRE_SHA) {
                                 nearbyEntity.removeEffect(MobEffects.GLOWING); nearbyEntity.hurt(source, amount);
                                 nearbyEntity.invulnerableTime = 0; nearbyEntity.setRemainingFireTicks(100);
                             }
-                            if (stack.getItem() == ModItems.THUNDER_SHA.get()) {
+                            if (stack.getItem() == ModItems.THUNDER_SHA) {
                                 nearbyEntity.removeEffect(MobEffects.GLOWING); nearbyEntity.hurt(source, amount);
                                 nearbyEntity.invulnerableTime = 0; nearbyEntity.hurt(player.damageSources().magic(), 5);
                                 LightningBolt lightningEntity = EntityType.LIGHTNING_BOLT.create(world);
@@ -144,11 +130,6 @@ public class EntityHurtHandler {
                     }
                     cardUsePost(player, stack, entity);
                 }
-            }
-
-            for (var stack : allTrinkets(entity)) {
-                if (stack.getItem() instanceof SkillItem skill && canTrigger(skill, entity)) skill.onHurt(stack, entity, source, amount);
-                if (stack.getItem() instanceof Equipment skill) skill.onHurt(stack, entity, source, amount);
             }
 
             if (source.getDirectEntity() instanceof LivingEntity living) { //在近战攻击造成伤害后触发

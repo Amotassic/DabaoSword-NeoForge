@@ -23,8 +23,8 @@ public class StealItem extends CardItem {
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
         if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND) {
             if (entity instanceof Player target) {
-                if (hasItem(target, ModItems.WUXIE.get())) {
-                    cardUsePost(target, getItem(target, ModItems.WUXIE.get()), null);
+                if (hasItem(target, ModItems.WUXIE)) {
+                    cardUsePost(target, getItem(target, ModItems.WUXIE), null);
                     voice(target, Sounds.WUXIE);
                     cardUsePost(user, stack, entity);
                     voice(user, Sounds.SHUNSHOU);

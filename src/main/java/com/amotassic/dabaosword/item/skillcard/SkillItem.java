@@ -19,12 +19,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -38,6 +40,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import org.jetbrains.annotations.Nullable;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
@@ -65,9 +69,9 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         public void curioTick(SlotContext slotContext, ItemStack stack) {
             if (!slotContext.entity().level().isClientSide && slotContext.entity() instanceof Player player && noLongHand(player) && noTieji(slotContext.entity())) {
                 int benxi = getTag(stack);
-                if (hasTrinket(ModItems.CHITU.get(), player) && hasTrinket(SkillCards.MASHU, player)) {
+                if (hasTrinket(ModItems.CHITU, player) && hasTrinket(SkillCards.MASHU, player)) {
                     player.addEffect(new MobEffectInstance(ModItems.REACH, 10,benxi + 2,false,false,true));
-                } else if (hasTrinket(ModItems.CHITU.get(), player) || hasTrinket(SkillCards.MASHU, player)) {
+                } else if (hasTrinket(ModItems.CHITU, player) || hasTrinket(SkillCards.MASHU, player)) {
                     player.addEffect(new MobEffectInstance(ModItems.REACH, 10,benxi + 1,false,false,true));
                 } else if (benxi != 0) {
                     player.addEffect(new MobEffectInstance(ModItems.REACH, 10,benxi - 1,false,false,true));
@@ -89,7 +93,40 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         }
 
         private boolean noLongHand(Player player) {
-            return player.getMainHandItem().getItem() != ModItems.JUEDOU.get() && player.getMainHandItem().getItem() != ModItems.DISCARD.get();
+            return player.getMainHandItem().getItem() != ModItems.JUEDOU && player.getMainHandItem().getItem() != ModItems.DISCARD;
+        }
+    }
+
+    public static class Buqu extends SkillItem {
+        public Buqu(Properties p_41383_) {super(p_41383_);}
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            int c = getTag(stack);
+            if(Screen.hasShiftDown()) {
+                tooltip.add(Component.translatable("item.dabaosword.buqu.tooltip1").withStyle(ChatFormatting.GREEN));
+                tooltip.add(Component.translatable("item.dabaosword.buqu.tooltip2").withStyle(ChatFormatting.GREEN));
+                tooltip.add(Component.translatable("item.dabaosword.buqu.tooltip3").withStyle(ChatFormatting.GREEN));
+                tooltip.add(Component.translatable("item.dabaosword.buqu.tooltip4").withStyle(ChatFormatting.GREEN));
+                tooltip.add(Component.translatable("item.dabaosword.buqu.tooltip5").withStyle(ChatFormatting.GREEN));
+            } else {
+                tooltip.add(Component.literal("chuang: " + c));
+                tooltip.add(Component.translatable("item.dabaosword.buqu.tooltip").withStyle(ChatFormatting.GREEN));
+                tooltip.add(Component.translatable("dabaosword.shifttooltip"));
+            }
+        }
+
+        @Override
+        public void onHurt(ItemStack stack, LivingEntity entity, DamageSource source, float amount) {
+            if (entity instanceof Player player && player.isDeadOrDying()) {
+                int c = getTag(stack);
+                voice(player, Sounds.BUQU);
+                if (new Random().nextFloat() >= (float) c /13) {
+                    player.displayClientMessage(Component.translatable("buqu.tip1").withStyle(ChatFormatting.GREEN).append(String.valueOf(c + 1)), false);
+                    setTag(stack, c + 1);
+                    player.setHealth(1);
+                } else player.displayClientMessage(Component.translatable("buqu.tip2").withStyle(ChatFormatting.RED), false);
+            }
         }
     }
 
@@ -202,7 +239,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                     if (entity instanceof Player player) {
                         if (extraHP >= 5 && !player.isCreative() && !player.isSpectator()) {
                             draw(player, 2);
-                            stack.set(ModItems.TAGS, extraHP - 5);
+                            setTag(stack, extraHP - 5);
                             voice(player, Sounds.WEIZHONG);
                         }
                     }
@@ -290,6 +327,29 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         public void curioTick(SlotContext slotContext, ItemStack stack) {
             if (slotContext.entity() instanceof Player player) viewAs(player, stack, 15, s -> s.is(Tags.BASIC_CARD), new ItemStack(ModItems.FIRE_ATTACK), Sounds.HUOJI);
             super.curioTick(slotContext, stack);
+        }
+    }
+
+    public static class Jueqing extends SkillItem {
+        public Jueqing(Properties p_41383_) {super(p_41383_);}
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            tooltip.add(Component.translatable("item.dabaosword.jueqing.tooltip1").withStyle(ChatFormatting.BLUE));
+            tooltip.add(Component.translatable("item.dabaosword.jueqing.tooltip2").withStyle(ChatFormatting.BLUE));
+        }
+
+        @Override
+        public Priority getPriority(LivingEntity target, DamageSource source, float amount) {return Priority.LOWEST;}
+
+        @Override
+        public boolean cancelDamage(LivingEntity target, DamageSource source, float amount) {
+            if (source.getEntity() instanceof LivingEntity attacker && hasTrinket(SkillCards.JUEQING, attacker)) {
+                target.hurt(target.damageSources().genericKill(), Math.min(Math.max(7, target.getMaxHealth() / 3), amount));
+                voice(attacker, Sounds.JUEQING, 1);
+                return true;
+            }
+            return false;
         }
     }
 
@@ -391,6 +451,20 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         }
 
         @Override
+        public Tuple<Float, Float> modifyDamage(LivingEntity target, DamageSource source, float amount) {
+            if (source.getEntity() instanceof LivingEntity attacker) { //命中后加伤害，至少为5
+                if (hasTrinket(SkillCards.LIEGONG, attacker) && !attacker.hasEffect(ModItems.COOLDOWN)) {
+                    float f = Math.max(13 - attacker.distanceTo(target), 5);
+                    attacker.addEffect(new MobEffectInstance(ModItems.COOLDOWN, (int) (40 * f),0,false,false,true));
+                    voice(attacker, Sounds.LIEGONG);
+                    System.out.println(f);
+                    return new Tuple<>(0f, f);
+                }
+            }
+            return super.modifyDamage(target, source, amount);
+        }
+
+        @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
             LivingEntity entity = slotContext.entity();
             if (!entity.level().isClientSide && noTieji(entity)) {
@@ -413,6 +487,52 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         }
     }
 
+    public static class Liuli extends SkillItem {
+        public Liuli(Properties p_41383_) {super(p_41383_);}
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            tooltip.add(Component.translatable("item.dabaosword.liuli.tooltip").withStyle(ChatFormatting.GREEN));
+        }
+
+        @Override
+        public Priority getPriority(LivingEntity target, DamageSource source, float amount) {return Priority.NORMAL;}
+
+        @Override
+        public boolean cancelDamage(LivingEntity target, DamageSource source, float amount) {
+            if (source.getEntity() instanceof LivingEntity attacker && target instanceof Player player) {
+                if (hasTrinket(SkillCards.LIULI, player) && hasItemInTag(Tags.CARD, player) && !player.hasEffect(ModItems.INVULNERABLE)) {
+                    ItemStack stack = stackInTag(Tags.CARD, player);
+                    LivingEntity nearEntity = getLiuliEntity(player, attacker);
+                    if (nearEntity != null) {
+                        player.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 15,0,false,false,false));
+                        voice(player, Sounds.LIULI);
+                        cardDiscard(player, stack, 1, false);
+                        nearEntity.invulnerableTime = 0; nearEntity.hurt(source, amount);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static @Nullable LivingEntity getLiuliEntity(Entity entity, LivingEntity attacker) {
+            if (entity.level() instanceof ServerLevel world) {
+                AABB box = new AABB(entity.getOnPos()).inflate(10);
+                List<LivingEntity> entities = world.getEntitiesOfClass(LivingEntity.class, box, entity1 -> entity1 != entity && entity1 != attacker);
+                if (!entities.isEmpty()) {
+                    Map<Float, LivingEntity> map = new HashMap<>();
+                    for (var e : entities) {
+                        map.put(e.distanceTo(entity), e);
+                    }
+                    float min = Collections.min(map.keySet());
+                    return map.values().stream().toList().get(map.keySet().stream().toList().indexOf(min));
+                }
+            }
+            return null;
+        }
+    }
+
     public static class Longdan extends SkillItem {
         public Longdan(Properties p_41383_) {super(p_41383_);}
 
@@ -428,10 +548,10 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                 ItemStack stack1 = player.getOffhandItem();
                 if (world.getGameTime() % 20 == 0 && stack1.is(Tags.BASIC_CARD)) {
                     stack1.shrink(1);
-                    if (stack1.is(Tags.SHA)) give(player, new ItemStack(ModItems.SHAN.get()));
-                    if (stack1.getItem() == ModItems.SHAN.get()) give(player, new ItemStack(ModItems.SHA.get()));
-                    if (stack1.getItem() == ModItems.PEACH.get()) give(player, new ItemStack(ModItems.JIU.get()));
-                    if (stack1.getItem() == ModItems.JIU.get()) give(player, new ItemStack(ModItems.PEACH.get()));
+                    if (stack1.is(Tags.SHA)) give(player, new ItemStack(ModItems.SHAN));
+                    if (stack1.getItem() == ModItems.SHAN) give(player, new ItemStack(ModItems.SHA));
+                    if (stack1.getItem() == ModItems.PEACH) give(player, new ItemStack(ModItems.JIU));
+                    if (stack1.getItem() == ModItems.JIU) give(player, new ItemStack(ModItems.PEACH));
                     voice(player, Sounds.LONGDAN);
                 }
             }
@@ -642,6 +762,21 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                 voice(entity, Sounds.QUANJI);
             }
         }
+
+        @Override
+        public Tuple<Float, Float> modifyDamage(LivingEntity entity, DamageSource source, float amount) {
+            if (source.getDirectEntity() instanceof LivingEntity s && hasTrinket(SkillCards.QUANJI, s)) {
+                ItemStack stack = trinketItem(SkillCards.QUANJI, s);
+                int quan = getTag(stack);
+                if (quan > 0) {
+                    if (quan > 4 && entity instanceof Player player) draw(player, 2);
+                    setTag(stack, quan/2);
+                    voice(s, Sounds.PAIYI);
+                    return new Tuple<>(0f, (float) quan);
+                }
+            }
+            return super.modifyDamage(entity, source, amount);
+        }
     }
 
     public static class Rende extends ActiveSkillWithTarget {
@@ -696,6 +831,24 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.shensu.tooltip1").withStyle(ChatFormatting.BLUE));
             tooltip.add(Component.translatable("item.dabaosword.shensu.tooltip2").withStyle(ChatFormatting.BLUE));
+        }
+
+        @Override
+        public Tuple<Float, Float> modifyDamage(LivingEntity target, DamageSource source, float amount) {
+            if (source.getDirectEntity() instanceof LivingEntity attacker) {
+                if (hasTrinket(SkillCards.SHENSU, attacker) && !attacker.hasEffect(ModItems.COOLDOWN)) {
+                    float walkSpeed = 4.317f;
+                    float speed = trinketItem(SkillCards.SHENSU, attacker).get(DataComponents.CUSTOM_DATA).copyTag().getFloat("speed");
+                    if (speed > walkSpeed) {
+                        float m = (speed - walkSpeed) / walkSpeed / 2;
+                        attacker.addEffect(new MobEffectInstance(ModItems.COOLDOWN, (int) (5 * 20 * m),0,false,false,true));
+                        if (attacker instanceof Player player) player.displayClientMessage(Component.translatable("shensu.info", speed, m), false);
+                        voice(attacker, Sounds.SHENSU);
+                        return new Tuple<>(m, 0f);
+                    }
+                }
+            }
+            return super.modifyDamage(target, source, amount);
         }
 
         @Override
@@ -800,9 +953,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         public void curioTick(SlotContext slotContext, ItemStack stack) {
             if (slotContext.entity().level() instanceof ServerLevel world) {
                 int z = getTag(stack);
-                if (z < 10) {
-                    if (world.getGameTime() % 100 == 0) {z++; stack.set(ModItems.TAGS, z);}
-                }
+                if (z < 10 && world.getGameTime() % 100 == 0) setTag(stack, z + 1);
             }
             super.curioTick(slotContext, stack);
         }
@@ -827,7 +978,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         @Override
         public void activeSkill(Player user, ItemStack stack, Player target) {
             ItemStack itemStack = user.getMainHandItem();
-            if (itemStack.getItem() instanceof Equipment && itemStack.getItem() != ModItems.CARD_PILE.get()) {
+            if (itemStack.getItem() instanceof Equipment && itemStack.getItem() != ModItems.CARD_PILE) {
                 cardMove(user, target, itemStack, itemStack.getCount(), CardCBs.T.INV_TO_EQUIP);
                 Equipment.equipItem(target, itemStack);
                 voice(user, Sounds.ZHIJIAN);
@@ -847,36 +998,12 @@ public class SkillItem extends Item implements ICurioItem, Skill {
             tooltip.add(Component.translatable("item.dabaosword.lianying.tooltip").withStyle(ChatFormatting.GREEN));
         }
 
-        if (stack.getItem() == SkillCards.BUQU) {
-            int c = getTag(stack);
-            if(Screen.hasShiftDown()) {
-                tooltip.add(Component.translatable("item.dabaosword.buqu.tooltip1").withStyle(ChatFormatting.GREEN));
-                tooltip.add(Component.translatable("item.dabaosword.buqu.tooltip2").withStyle(ChatFormatting.GREEN));
-                tooltip.add(Component.translatable("item.dabaosword.buqu.tooltip3").withStyle(ChatFormatting.GREEN));
-                tooltip.add(Component.translatable("item.dabaosword.buqu.tooltip4").withStyle(ChatFormatting.GREEN));
-                tooltip.add(Component.translatable("item.dabaosword.buqu.tooltip5").withStyle(ChatFormatting.GREEN));
-            } else {
-                tooltip.add(Component.literal("chuang: " + c));
-                tooltip.add(Component.translatable("item.dabaosword.buqu.tooltip").withStyle(ChatFormatting.GREEN));
-                tooltip.add(Component.translatable("dabaosword.shifttooltip"));
-            }
-        }
-
         if (stack.getItem() == SkillCards.XINGSHANG) {
             tooltip.add(Component.translatable("item.dabaosword.xingshang.tooltip").withStyle(ChatFormatting.BLUE));
         }
 
         if (stack.getItem() == SkillCards.JIZHI) {
             tooltip.add(Component.translatable("item.dabaosword.jizhi.tooltip").withStyle(ChatFormatting.RED));
-        }
-
-        if (stack.getItem() == SkillCards.JUEQING) {
-            tooltip.add(Component.translatable("item.dabaosword.jueqing.tooltip1").withStyle(ChatFormatting.BLUE));
-            tooltip.add(Component.translatable("item.dabaosword.jueqing.tooltip2").withStyle(ChatFormatting.BLUE));
-        }
-
-        if (stack.getItem() == SkillCards.LIULI) {
-            tooltip.add(Component.translatable("item.dabaosword.liuli.tooltip").withStyle(ChatFormatting.GREEN));
         }
 
         if (stack.getItem() == SkillCards.MASHU) {
@@ -928,12 +1055,8 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     @Override
     public void curioTick(SlotContext slotContext, ItemStack stack) {
         if (slotContext.entity().level() instanceof ServerLevel world) {
-            if (stack.get(ModItems.CD) != null) {
-                int cd = Objects.requireNonNull(stack.get(ModItems.CD));
-                if (world.getGameTime() % 20 == 0) {//世界时间除以20取余为0时，技能内置CD减一秒
-                    if (cd > 0) stack.set(ModItems.CD, cd -1);
-                }
-            }
+            int cd = getCD(stack); //世界时间除以20取余为0时，技能内置CD减一秒
+            if (cd > 0 && world.getGameTime() % 20 == 0) setCD(stack, cd - 1);
         }
     }
 

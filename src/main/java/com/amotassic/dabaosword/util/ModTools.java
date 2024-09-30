@@ -98,7 +98,7 @@ public class ModTools {
 
     //判断是否是卡牌，包含GAIN_CARD
     public static boolean isCard(ItemStack stack) {
-        return stack.is(Tags.CARD) || stack.getItem() == ModItems.GAIN_CARD.get();
+        return stack.is(Tags.CARD) || stack.getItem() == ModItems.GAIN_CARD;
     }
 
     //判断是否有含某个标签的物品
@@ -164,7 +164,7 @@ public class ModTools {
     }
 
     //改了摸牌物品之后，应该不用这样了，但是它就是方便，暂且保留吧
-    public static int countCards(Player player) {return count(player, Tags.CARD) + count(player, ModItems.GAIN_CARD.get());}
+    public static int countCards(Player player) {return count(player, Tags.CARD) + count(player, ModItems.GAIN_CARD);}
 
     //自定义战利品表解析
     public static ResourceLocation parseLootTable(ResourceLocation lootTableId) {
@@ -213,19 +213,19 @@ public class ModTools {
     }
 
     public static int getCD(ItemStack stack) { //获取物品的内置冷却时间
-        return stack.get(ModItems.CD) == null ? 0 : Objects.requireNonNull(stack.get(ModItems.CD));
+        return stack.get(AllRegs.Other.CD) == null ? 0 : Objects.requireNonNull(stack.get(AllRegs.Other.CD));
     }
 
     public static void setCD(ItemStack stack, int seconds) { //设置物品的内置冷却时间
-        stack.set(ModItems.CD, seconds);
+        stack.set(AllRegs.Other.CD, seconds);
     }
 
     public static int getTag(ItemStack stack) { //获取物品的标签的数量
-        return stack.get(ModItems.TAGS) == null ? 0 : Objects.requireNonNull(stack.get(ModItems.TAGS));
+        return stack.get(AllRegs.Other.TAGS) == null ? 0 : Objects.requireNonNull(stack.get(AllRegs.Other.TAGS));
     }
 
     public static void setTag(ItemStack stack, int value) { //设置物品的标签的数量
-        stack.set(ModItems.TAGS, value);
+        stack.set(AllRegs.Other.TAGS, value);
     }
 
     //转化卡牌技能通用方法
@@ -257,10 +257,10 @@ public class ModTools {
         Container targetInv = new SimpleContainer(60);
         if(equip) {
             for(var stack : allTrinkets(target)) {
-                if (stack.getTags().toList().equals(ModItems.GUDING_WEAPON.get().getDefaultInstance().getTags().toList())) targetInv.setItem(0, stack);
-                if (stack.getTags().toList().equals(ModItems.BAGUA.get().getDefaultInstance().getTags().toList())) targetInv.setItem(1, stack);
-                if (stack.getItem() == ModItems.DILU.get()) targetInv.setItem(2, stack);
-                if (stack.getItem() == ModItems.CHITU.get()) targetInv.setItem(3, stack);
+                if (stack.getTags().toList().equals(ModItems.GUDING_WEAPON.getDefaultInstance().getTags().toList())) targetInv.setItem(0, stack);
+                if (stack.getTags().toList().equals(ModItems.BAGUA.getDefaultInstance().getTags().toList())) targetInv.setItem(1, stack);
+                if (stack.getItem() == ModItems.DILU) targetInv.setItem(2, stack);
+                if (stack.getItem() == ModItems.CHITU) targetInv.setItem(3, stack);
             }//四件装备占1~4格
         }
 

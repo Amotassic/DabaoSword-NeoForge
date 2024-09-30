@@ -32,8 +32,8 @@ public class EntityTickEvents {
         Entity en = event.getEntity();
         if (en.level() instanceof ServerLevel world && en instanceof LivingEntity entity) {
             Player closestPlayer = world.getNearestPlayer(entity, 5);
-            if (closestPlayer != null && hasTrinket(ModItems.FANGTIAN.get(), closestPlayer) && entity.isAlive()) {
-                ItemStack stack = trinketItem(ModItems.FANGTIAN.get(), closestPlayer);
+            if (closestPlayer != null && hasTrinket(ModItems.FANGTIAN, closestPlayer) && entity.isAlive()) {
+                ItemStack stack = trinketItem(ModItems.FANGTIAN, closestPlayer);
                 int time = 0;
                 if (stack != null) time = getCD(stack);
                 if (time > 15 && closestPlayer.swingTime == 1) {
@@ -56,7 +56,7 @@ public class EntityTickEvents {
             boolean limit = world.getGameRules().getBoolean(Gamerule.ENABLE_CARDS_LIMIT);
 
             if (time % giveCard == 0) { // 每分钟摸两张牌
-                if (hasTrinket(ModItems.CARD_PILE.get(), player) && !player.isCreative() && !player.isSpectator() && player.isAlive()) {
+                if (hasTrinket(ModItems.CARD_PILE, player) && !player.isCreative() && !player.isSpectator() && player.isAlive()) {
                     if (countCards(player) > player.getMaxHealth() && limit) return;
                     else { //如果不限制摸牌就继续发牌
                         draw(player, 2);
@@ -69,7 +69,7 @@ public class EntityTickEvents {
                 if (skill == 0) player.addTag("change_skill");
                 else if (time % skill == 0) { //每5分钟可以切换技能
                     player.addTag("change_skill");
-                    if (skill >= 600 && hasTrinket(ModItems.CARD_PILE.get(), player)) {
+                    if (skill >= 600 && hasTrinket(ModItems.CARD_PILE, player)) {
                         player.displayClientMessage(Component.translatable("dabaosword.change_skill").withStyle(ChatFormatting.BOLD), false);
                         player.displayClientMessage(Component.translatable("dabaosword.change_skill2"), false);
                     }
@@ -84,7 +84,7 @@ public class EntityTickEvents {
 
                 //牌堆恢复饱食度
                 boolean food = world.getGameRules().getBoolean(Gamerule.CARD_PILE_HUNGERLESS);
-                if (hasTrinket(ModItems.CARD_PILE.get(), player) && food) player.getFoodData().setFoodLevel(20);
+                if (hasTrinket(ModItems.CARD_PILE, player) && food) player.getFoodData().setFoodLevel(20);
             }
 
             AABB box = new AABB(player.getOnPos()).inflate(20); // 检测范围，根据需要修改
@@ -100,11 +100,11 @@ public class EntityTickEvents {
 
             int level1 = 0; int level2 = 0; //马术和飞影的效果
             if (shouldMashu(player)) {
-                if (hasTrinket(ModItems.CHITU.get(), player)) level1++;
+                if (hasTrinket(ModItems.CHITU, player)) level1++;
                 if (hasTrinket(SkillCards.MASHU, player)) level1++;
                 if (level1 > 0) player.addEffect(new MobEffectInstance(ModItems.REACH, 10,level1,false,false,true));
             }
-            if (hasTrinket(ModItems.DILU.get(), player)) level2++;
+            if (hasTrinket(ModItems.DILU, player)) level2++;
             if (hasTrinket(SkillCards.FEIYING, player)) level2++;
             if (level2 > 0) player.addEffect(new MobEffectInstance(ModItems.DEFEND, 10,level2,false,false,true));
 
@@ -112,7 +112,7 @@ public class EntityTickEvents {
     }
 
     static boolean shouldMashu(Player player) {
-        return !hasTrinket(SkillCards.BENXI, player) && player.getMainHandItem().getItem() != ModItems.JUEDOU.get() && player.getMainHandItem().getItem() != ModItems.DISCARD.get();
+        return !hasTrinket(SkillCards.BENXI, player) && player.getMainHandItem().getItem() != ModItems.JUEDOU && player.getMainHandItem().getItem() != ModItems.DISCARD;
     }
 
     static boolean isLooking(Player player, Entity entity) {

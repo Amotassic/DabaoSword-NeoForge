@@ -47,7 +47,7 @@ public class PlayerEvents {
                 }
             }
 
-            if (hasItem(player, ModItems.BBJI.get())) voice(player, Sounds.XUYOU);
+            if (hasItem(player, ModItems.BBJI)) voice(player, Sounds.XUYOU);
 
             if (hasTrinket(SkillCards.BUQU, player)) {
                 ItemStack stack = trinketItem(SkillCards.BUQU, player);
@@ -81,10 +81,10 @@ public class PlayerEvents {
         if (player.level() instanceof ServerLevel world) {
 
             boolean card = world.getGameRules().getBoolean(Gamerule.CLEAR_CARDS_AFTER_DEATH);
-            if (card && hasTrinket(ModItems.CARD_PILE.get(), player)) {
-                give(player, new ItemStack(ModItems.SHA.get()));
-                give(player, new ItemStack(ModItems.SHAN.get()));
-                give(player, new ItemStack(ModItems.PEACH.get()));
+            if (card && hasTrinket(ModItems.CARD_PILE, player)) {
+                give(player, new ItemStack(ModItems.SHA));
+                give(player, new ItemStack(ModItems.SHAN));
+                give(player, new ItemStack(ModItems.PEACH));
             }
 
         }

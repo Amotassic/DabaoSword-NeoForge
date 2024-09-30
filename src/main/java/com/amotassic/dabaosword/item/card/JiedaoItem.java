@@ -18,8 +18,8 @@ public class JiedaoItem extends CardItem {
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
         ItemStack stack1 = entity.getMainHandItem();
         if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND && !stack1.isEmpty()) {
-            if (entity instanceof Player player && hasItem(player, ModItems.WUXIE.get())) {
-                cardUsePost(player, getItem(player, ModItems.WUXIE.get()), null);
+            if (entity instanceof Player player && hasItem(player, ModItems.WUXIE)) {
+                cardUsePost(player, getItem(player, ModItems.WUXIE), null);
                 voice(player, Sounds.WUXIE);
             } else {
                 if (isCard(stack1)) cardMove(entity, user, stack1, stack1.getCount(), CardCBs.T.INV_TO_INV);

@@ -3,6 +3,7 @@ package com.amotassic.dabaosword.ui;
 import com.amotassic.dabaosword.event.listener.CardCBs;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
+import com.amotassic.dabaosword.util.AllRegs;
 import com.amotassic.dabaosword.util.Sounds;
 import com.amotassic.dabaosword.util.Tags;
 import net.minecraft.ChatFormatting;
@@ -38,7 +39,7 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
     }
 
     public PlayerInvScreenHandler(int syncId, Container inventory, Player target) {
-        super(ModItems.PLAYER_INV_SCREEN_HANDLER.get(), syncId);
+        super(AllRegs.Other.PLAYER_INV_SCREEN_HANDLER.get(), syncId);
         this.target = target;
         this.cards = inventory.getItem(54).getCount();
         this.eventStack = inventory.getItem(55);
@@ -109,7 +110,7 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
                     if (z - 1 == 0) closeGUI(player);
                 }
 
-                if (stack.getItem() == ModItems.STEAL.get()) {
+                if (stack.getItem() == ModItems.STEAL) {
                     voice(player, Sounds.SHUNSHOU);
                     target.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("dabaosword.steal")).append(targetStack.getDisplayName()), false);
                     CardCBs.T type = slotIndex < 4 ? CardCBs.T.EQUIP_TO_INV : CardCBs.T.INV_TO_INV;
@@ -121,7 +122,7 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
                     closeGUI(player);
                 }
 
-                if (stack.getItem() == ModItems.DISCARD.get()) {
+                if (stack.getItem() == ModItems.DISCARD) {
                     voice(player, Sounds.GUOHE);
                     target.displayClientMessage(Component.literal(player.getScoreboardName()).append(Component.translatable("dabaosword.discard")).append(targetStack.getDisplayName()), false);
                     cardDiscard(target, targetStack, 1, slotIndex < 4);

@@ -18,8 +18,8 @@ public class TooHappyItem extends CardItem {
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
         if (!user.level().isClientSide) {
             if (entity instanceof Player player) {
-                if (hasItem(player, ModItems.WUXIE.get())) {
-                    cardUsePost(player, getItem(player, ModItems.WUXIE.get()), null);
+                if (hasItem(player, ModItems.WUXIE)) {
+                    cardUsePost(player, getItem(player, ModItems.WUXIE), null);
                     voice(player, Sounds.WUXIE);
                 } else player.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 5));
             } else entity.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 15));

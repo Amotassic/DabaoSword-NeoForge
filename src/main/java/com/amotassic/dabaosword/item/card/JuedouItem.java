@@ -33,8 +33,8 @@ public class JuedouItem extends CardItem {
     public @NotNull InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
         if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND && entity.isAlive()) {
             user.addTag("juedou");
-            if (entity instanceof Player player && hasItem(player, ModItems.WUXIE.get())) {
-                cardUsePost(player, getItem(player, ModItems.WUXIE.get()), null);
+            if (entity instanceof Player player && hasItem(player, ModItems.WUXIE)) {
+                cardUsePost(player, getItem(player, ModItems.WUXIE), null);
                 voice(player, Sounds.WUXIE);
             } else {
                 if (entity instanceof Player target) {
@@ -46,7 +46,7 @@ public class JuedouItem extends CardItem {
                         target.invulnerableTime = 0;
                         target.hurt(user.damageSources().sonicBoom(user),5f);
                         target.displayClientMessage(Component.literal(user.getScoreboardName()).append(Component.translatable("dabaosword.juedou2")),false);
-                    } else { target.addTag("juedou"); //防止决斗触发杀
+                    } else { target.addTag("juedou"); //防止决斗触发杀、闪
                         user.addEffect(new MobEffectInstance(ModItems.COOLDOWN2,2,0,false,false,false));
                         user.invulnerableTime = 0;
                         user.hurt(target.damageSources().sonicBoom(target),5f);
@@ -56,7 +56,8 @@ public class JuedouItem extends CardItem {
                             cardUsePost(target, sha, user);
                         }
                     }
-                } else { entity.invulnerableTime = 0;
+                } else { entity.addTag("juedou");
+                    entity.invulnerableTime = 0;
                     entity.hurt(user.damageSources().sonicBoom(user),5f);}
             }
             cardUsePost(user, stack, entity);

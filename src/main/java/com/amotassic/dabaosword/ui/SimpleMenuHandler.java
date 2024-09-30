@@ -2,6 +2,7 @@ package com.amotassic.dabaosword.ui;
 
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
+import com.amotassic.dabaosword.util.AllRegs;
 import com.amotassic.dabaosword.util.Sounds;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.Container;
@@ -31,7 +32,7 @@ public class SimpleMenuHandler extends AbstractContainerMenu {
     }
 
     public SimpleMenuHandler(int syncId, Container inventory, Player target) {
-        super(ModItems.SIMPLE_MENU_HANDLER.get(), syncId);
+        super(AllRegs.Other.SIMPLE_MENU_HANDLER.get(), syncId);
         this.inventory = inventory;
         this.eventStack = inventory.getItem(18);
         this.target = target;

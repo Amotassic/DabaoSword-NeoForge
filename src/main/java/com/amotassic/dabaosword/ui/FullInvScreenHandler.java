@@ -1,6 +1,7 @@
 package com.amotassic.dabaosword.ui;
 
 import com.amotassic.dabaosword.item.ModItems;
+import com.amotassic.dabaosword.util.AllRegs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
@@ -32,7 +33,7 @@ public class FullInvScreenHandler extends AbstractContainerMenu {
     }
 
     public FullInvScreenHandler(int syncId, Inventory playerInv, Container inventory, LivingEntity target) {
-        super(ModItems.FULL_INV_SCREEN_HANDLER.get(), syncId);
+        super(AllRegs.Other.FULL_INV_SCREEN_HANDLER.get(), syncId);
         this.inventory =inventory;
         this.target = target;
         this.editable = !inventory.getItem(61).isEmpty();

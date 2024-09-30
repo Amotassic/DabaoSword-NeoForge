@@ -17,7 +17,7 @@ public class GainCardItem extends CardItem {
     @Override
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slotId, boolean isSelected) {
         if (!entity.level().isClientSide && entity instanceof Player player) {
-            if (!player.isCreative() && !player.isSpectator() && stack.getItem() == ModItems.GAIN_CARD.get()) {
+            if (!player.isCreative() && !player.isSpectator() && stack.getItem() == ModItems.GAIN_CARD) {
                 draw(player, stack.getCount());
                 stack.setCount(0);
             }
@@ -29,13 +29,13 @@ public class GainCardItem extends CardItem {
         if (!world.isClientSide) {
             int m;
             //摸牌
-            if (user.getItemInHand(hand).getItem() == ModItems.GAIN_CARD.get()) {
+            if (user.getItemInHand(hand).getItem() == ModItems.GAIN_CARD) {
                 if (user.isShiftKeyDown()) {m=user.getItemInHand(hand).getCount();} else {m=1;}
                 draw(user,m);
                 if (!user.isCreative()) {user.getItemInHand(hand).shrink(m);}
             }
             //无中生有
-            if (user.getItemInHand(hand).getItem() == ModItems.WUZHONG.get()) {
+            if (user.getItemInHand(hand).getItem() == ModItems.WUZHONG) {
                 draw(user,2);
                 cardUsePost(user, user.getItemInHand(hand), user);
                 voice(user, Sounds.WUZHONG);

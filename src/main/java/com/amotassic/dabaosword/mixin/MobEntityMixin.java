@@ -52,7 +52,7 @@ public abstract class MobEntityMixin extends LivingEntity {
 
     @Inject(method = "tick", at = @At(value = "TAIL"))
     public void tick(CallbackInfo ci) {
-        if (getOffhandItem().getItem() == ModItems.PEACH.get() && getHealth() <= getMaxHealth() - 5) {
+        if (getOffhandItem().getItem() == ModItems.PEACH && getHealth() <= getMaxHealth() - 5) {
             heal(5);
             voice(dabaoSword$mob, Sounds.RECOVER);
             getOffhandItem().shrink(1);
@@ -66,35 +66,35 @@ public abstract class MobEntityMixin extends LivingEntity {
 
     @Unique
     private void dabaoSword$tryUseCard(ItemStack stack, LivingEntity target) {
-        if (stack.getItem() == ModItems.SHA.get()) {
-            if (!hasTrinket(ModItems.RATTAN_ARMOR.get(), target)) {
+        if (stack.getItem() == ModItems.SHA) {
+            if (!hasTrinket(ModItems.RATTAN_ARMOR, target)) {
                 target.invulnerableTime = 0; target.hurt(dabaoSword$mob.damageSources().mobAttack(dabaoSword$mob), 5);
             }
             voice(dabaoSword$mob, Sounds.SHA); stack.shrink(1);
         }
 
-        if (stack.getItem() == ModItems.BINGLIANG_ITEM.get()) {
-            if (target instanceof Player player && hasItem(player, ModItems.WUXIE.get())) {
-                cardUsePost(player, getItem(player, ModItems.WUXIE.get()), null);
+        if (stack.getItem() == ModItems.BINGLIANG_ITEM) {
+            if (target instanceof Player player && hasItem(player, ModItems.WUXIE)) {
+                cardUsePost(player, getItem(player, ModItems.WUXIE), null);
                 voice(player, Sounds.WUXIE);
             } else target.addEffect(new MobEffectInstance(ModItems.BINGLIANG, MobEffectInstance.INFINITE_DURATION,1));
             voice(dabaoSword$mob, Sounds.BINGLIANG); stack.shrink(1);
         }
 
-        if (stack.getItem() == ModItems.TOO_HAPPY_ITEM.get()) {
+        if (stack.getItem() == ModItems.TOO_HAPPY_ITEM) {
             if (target instanceof Player player) {
-                if (hasItem(player, ModItems.WUXIE.get())) {
-                    cardUsePost(player, getItem(player, ModItems.WUXIE.get()), null);
+                if (hasItem(player, ModItems.WUXIE)) {
+                    cardUsePost(player, getItem(player, ModItems.WUXIE), null);
                     voice(player, Sounds.WUXIE);
                 } else player.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 5));
             } else target.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 15));
             voice(dabaoSword$mob, Sounds.LEBU); stack.shrink(1);
         }
 
-        if (stack.getItem() == ModItems.DISCARD.get()) {
+        if (stack.getItem() == ModItems.DISCARD) {
             if (target instanceof Player player) {//如果是玩家则弃牌
-                if (hasItem(player, ModItems.WUXIE.get())) {
-                    cardUsePost(player, getItem(player, ModItems.WUXIE.get()), null);
+                if (hasItem(player, ModItems.WUXIE)) {
+                    cardUsePost(player, getItem(player, ModItems.WUXIE), null);
                     voice(player, Sounds.WUXIE);
                     voice(dabaoSword$mob, Sounds.GUOHE); stack.shrink(1);
                 } else {
@@ -133,7 +133,7 @@ public abstract class MobEntityMixin extends LivingEntity {
             }
         }
 
-        if (stack.getItem() == ModItems.FIRE_ATTACK.get()) {
+        if (stack.getItem() == ModItems.FIRE_ATTACK) {
             ServerLevel world = (ServerLevel) level();
             Vec3 momentum = dabaoSword$mob.getForward().scale(3);
             LargeFireball fireballEntity = new LargeFireball(world, dabaoSword$mob, momentum, 3);
@@ -142,11 +142,11 @@ public abstract class MobEntityMixin extends LivingEntity {
             voice(dabaoSword$mob, Sounds.HUOGONG); stack.shrink(1);
         }
 
-        if (stack.getItem() == ModItems.JIEDAO.get()) {
+        if (stack.getItem() == ModItems.JIEDAO) {
             ItemStack stack1 = target.getMainHandItem();
             if (!stack1.isEmpty()) {
-                if (target instanceof Player player && hasItem(player, ModItems.WUXIE.get())) {
-                    cardUsePost(player, getItem(player, ModItems.WUXIE.get()), null);
+                if (target instanceof Player player && hasItem(player, ModItems.WUXIE)) {
+                    cardUsePost(player, getItem(player, ModItems.WUXIE), null);
                     voice(player, Sounds.WUXIE);
                 } else {
                     dabaoSword$mob.setItemInHand(InteractionHand.MAIN_HAND, stack1.copy());
@@ -156,16 +156,16 @@ public abstract class MobEntityMixin extends LivingEntity {
             }
         }
 
-        if (stack.getItem() == ModItems.NANMAN.get()) {//暂时不想做，摆————
+        if (stack.getItem() == ModItems.NANMAN) {//暂时不想做，摆————
 
         }
 
-        if (stack.getItem() == ModItems.WANJIAN.get()) {
+        if (stack.getItem() == ModItems.WANJIAN) {
             dabaoSword$mob.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 15,1,false,false,false));
             voice(dabaoSword$mob, Sounds.WANJIAN); stack.shrink(1);
         }
 
-        if (stack.getItem() == ModItems.TIESUO.get()) {
+        if (stack.getItem() == ModItems.TIESUO) {
             dabaoSword$mob.addEffect(new MobEffectInstance(MobEffects.GLOWING, MobEffectInstance.INFINITE_DURATION, 0, false, true,false));
             target.addEffect(new MobEffectInstance(MobEffects.GLOWING, MobEffectInstance.INFINITE_DURATION, 0, false, true,false));
             voice(dabaoSword$mob, Sounds.TIESUO); stack.shrink(1);
@@ -188,15 +188,15 @@ public abstract class MobEntityMixin extends LivingEntity {
 
     @Unique private Item dabaoSword$getMainCard() {
         if (new Random().nextFloat() > 0.33) {
-            Item[] items = {ModItems.BINGLIANG_ITEM.get(), ModItems.TOO_HAPPY_ITEM.get(), ModItems.DISCARD.get(), ModItems.FIRE_ATTACK.get(), ModItems.JIEDAO.get(), ModItems.WANJIAN.get(), ModItems.TIESUO.get()};
+            Item[] items = {ModItems.BINGLIANG_ITEM, ModItems.TOO_HAPPY_ITEM, ModItems.DISCARD, ModItems.FIRE_ATTACK, ModItems.JIEDAO, ModItems.WANJIAN, ModItems.TIESUO};
             int index = new java.util.Random().nextInt(items.length);
             return Arrays.stream(items).toList().get(index);
         }
-        return ModItems.SHA.get();
+        return ModItems.SHA;
     }
 
     @Unique private Item dabaoSword$getOffCard() {
-        if (new Random().nextFloat() < 0.5) return ModItems.SHAN.get();
-        return ModItems.PEACH.get();
+        if (new Random().nextFloat() < 0.5) return ModItems.SHAN;
+        return ModItems.PEACH;
     }
 }

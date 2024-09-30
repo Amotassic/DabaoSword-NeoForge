@@ -18,8 +18,8 @@ public class BingliangItem extends CardItem {
     @Override
     public @NotNull InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
         if (!user.level().isClientSide) {
-            if (entity instanceof Player player && hasItem(player, ModItems.WUXIE.get())) {
-                cardUsePost(player, getItem(player, ModItems.WUXIE.get()), null);
+            if (entity instanceof Player player && hasItem(player, ModItems.WUXIE)) {
+                cardUsePost(player, getItem(player, ModItems.WUXIE), null);
                 voice(player, Sounds.WUXIE);
             } else entity.addEffect(new MobEffectInstance(ModItems.BINGLIANG, MobEffectInstance.INFINITE_DURATION,1));
             cardUsePost(user, stack, entity);
