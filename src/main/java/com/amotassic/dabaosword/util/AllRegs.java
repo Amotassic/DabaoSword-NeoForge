@@ -7,6 +7,7 @@ import com.amotassic.dabaosword.item.card.*;
 import com.amotassic.dabaosword.item.equipment.ArrowRainItem;
 import com.amotassic.dabaosword.item.equipment.Equipment;
 import com.amotassic.dabaosword.item.equipment.GudingdaoItem;
+import com.amotassic.dabaosword.item.equipment.SunshineSmile;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.ui.FullInvScreenHandler;
@@ -79,6 +80,7 @@ public class AllRegs {
         public static final DeferredHolder<Item, Item> GIFT_BOX = ITEMS.register("gift_box", ()-> new GiftBoxItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
         public static final DeferredHolder<Item, Item> BBJI = ITEMS.register("bbji", ()-> new BBjiItem(new Item.Properties().durability(250)));
         public static final DeferredHolder<Item, Item> LET_ME_CC = ITEMS.register("let_me_cc", ()-> new LetMeCCItem(new Item.Properties().stacksTo(1)));
+        public static final DeferredHolder<Item, Item> SUNSHINE_SMILE = ITEMS.register("sunshine_smile", ()-> new SunshineSmile(new Item.Properties().durability(999).rarity(Rarity.UNCOMMON)));
 
         //物品组注册
         public static DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, "dabaosword");
@@ -164,6 +166,7 @@ public class AllRegs {
                             o.accept(GIFT_BOX.get());
                             o.accept(BBJI.get());
                             o.accept(LET_ME_CC.get());
+                            o.accept(SUNSHINE_SMILE.get());
                         }).build());
     }
 

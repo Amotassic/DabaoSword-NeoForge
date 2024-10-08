@@ -11,6 +11,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Inventory;
@@ -56,6 +57,29 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
             var stack = getStack(player, eventStack);
             var targetStack = selected(target, slotIndex); //根据情况来判断需要选择自己的stack还是目标的stack
             var selfStack = selected(player, slotIndex);
+
+            if (eventStack.is(ModItems.SUNSHINE_SMILE)) {
+                ItemStack mainHand = player.getMainHandItem();
+                if (selfStack.isEmpty()) { //如果玩家点了一个空的格子————
+                    int emptySlot = player.getInventory().getFreeSlot();
+                    if (emptySlot != -1) { //如果主手不为空，就把主手的物品移动到其他空格子，主手设为空
+                        player.getInventory().setItem(emptySlot, mainHand.copy());
+                        mainHand.setCount(0);
+                    }
+                } else { //如果玩家选了一个非空的格子，就交换主手和该格子的物品
+                    ItemStack mainCopy = mainHand.copy(); ItemStack swapCopy = selfStack.copy();
+                    if (player.getOffhandItem().equals(selfStack)) {
+                        player.setItemInHand(InteractionHand.MAIN_HAND, swapCopy);
+                        player.setItemInHand(InteractionHand.OFF_HAND, mainCopy);
+                    } else {
+                        int swapSlot = player.getInventory().findSlotMatchingItem(selfStack);
+                        player.setItemInHand(InteractionHand.MAIN_HAND, swapCopy);
+                        player.getInventory().setItem(swapSlot, mainCopy);
+                    }
+                }
+                closeGUI(player);
+            }
+
             if (selfStack != ItemStack.EMPTY) {
 
                 if (stack.getItem() == SkillCards.RENDE) {

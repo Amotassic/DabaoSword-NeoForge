@@ -4,6 +4,7 @@ import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.network.ActiveSkillPayload;
+import com.amotassic.dabaosword.network.QuickSwapPayload;
 import com.amotassic.dabaosword.network.ShensuPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
@@ -30,17 +31,23 @@ public class OnSkillKeyInput {
     public static void onKeyboardInput(InputEvent.Key event) {
         var user = Minecraft.getInstance().player;
         var result = Minecraft.getInstance().hitResult;
-        if (DabaoSwordClient.ACTIVE_SKILL.consumeClick() && user != null) {
-            if (haveSkill(user, stack -> stack.getItem() instanceof SkillItem.ActiveSkillWithTarget)) {
-                if (result != null && result.getType() == HitResult.Type.ENTITY) {
-                    var hitResult = (EntityHitResult) result; var entity = hitResult.getEntity();
-                    if (entity instanceof Player player) {
-                        PacketDistributor.sendToServer(new ActiveSkillPayload(player.getId()));
-                        return;
+        if (user != null) {
+            if (DabaoSwordClient.SELECT_CARD.consumeClick()) {
+                PacketDistributor.sendToServer(new QuickSwapPayload(user.getId()));
+                return;
+            }
+
+            if (DabaoSwordClient.ACTIVE_SKILL.consumeClick()) {
+                if (haveSkill(user, stack -> stack.getItem() instanceof SkillItem.ActiveSkillWithTarget)) {
+                    if (result != null && result.getType() == HitResult.Type.ENTITY) {
+                        if (((EntityHitResult) result).getEntity() instanceof Player player) {
+                            PacketDistributor.sendToServer(new ActiveSkillPayload(player.getId()));
+                            return;
+                        }
                     }
                 }
+                if (haveSkill(user, stack -> stack.getItem() instanceof SkillItem.ActiveSkill)) PacketDistributor.sendToServer(new ActiveSkillPayload(user.getId()));
             }
-            if (haveSkill(user, stack -> stack.getItem() instanceof SkillItem.ActiveSkill)) PacketDistributor.sendToServer(new ActiveSkillPayload(user.getId()));
         }
     }
 

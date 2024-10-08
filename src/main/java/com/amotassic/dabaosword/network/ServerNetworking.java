@@ -16,8 +16,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-import static com.amotassic.dabaosword.util.ModTools.allTrinkets;
-import static com.amotassic.dabaosword.util.ModTools.trinketItem;
+import static com.amotassic.dabaosword.util.ModTools.*;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class ServerNetworking {
@@ -56,6 +55,11 @@ public class ServerNetworking {
                 }
                 //if (Objects.requireNonNull(stack.get(DataComponents.CUSTOM_DATA)).copyTag().getFloat("speed") > 0) player.displayClientMessage(Component.literal("Speed: " + speed), true);
             }
+        });
+
+        registrar.playToServer(QuickSwapPayload.ID, QuickSwapPayload.CODEC, (p, c) -> {
+            Player player = c.player();
+            openInv(player, player, Component.translatable("key.dabaosword.select_card"), targetInv(player, false, false, 3, new ItemStack(ModItems.SUNSHINE_SMILE)));
         });
     }
 }

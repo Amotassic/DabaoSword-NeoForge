@@ -44,6 +44,7 @@ public class ModItems {
     public static Item WUZHONG = AllRegs.Items.WUZHONG.get();
     public static Item GIFT_BOX = AllRegs.Items.GIFT_BOX.get();
     public static Item BBJI = AllRegs.Items.BBJI.get();
+    public static Item SUNSHINE_SMILE = AllRegs.Items.SUNSHINE_SMILE.get();
 
     //状态效果
     public static Holder<MobEffect> BINGLIANG = AllRegs.Effects.BINGLIANG;

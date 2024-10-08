@@ -19,9 +19,12 @@ import org.lwjgl.glfw.GLFW;
 public class DabaoSwordClient {
     public static final KeyMapping ACTIVE_SKILL = new KeyMapping("key.dabaosword.active_skill", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_J, "category.dabaosword.keybindings");
 
+    public static final KeyMapping SELECT_CARD = new KeyMapping("key.dabaosword.select_card", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.dabaosword.keybindings");
+
     @SubscribeEvent
     public static void registerKeyBinds(RegisterKeyMappingsEvent event) {
         event.register(ACTIVE_SKILL);
+        event.register(SELECT_CARD);
     }
 
     @SubscribeEvent
