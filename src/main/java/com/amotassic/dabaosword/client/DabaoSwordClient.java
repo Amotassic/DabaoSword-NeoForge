@@ -2,6 +2,7 @@ package com.amotassic.dabaosword.client;
 
 import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.ui.FullInvHandledScreen;
+import com.amotassic.dabaosword.ui.PileHandledScreen;
 import com.amotassic.dabaosword.ui.PlayerInvHandledScreen;
 import com.amotassic.dabaosword.ui.SimpleMenuScreen;
 import com.amotassic.dabaosword.util.AllRegs;
@@ -19,7 +20,7 @@ import org.lwjgl.glfw.GLFW;
 public class DabaoSwordClient {
     public static final KeyMapping ACTIVE_SKILL = new KeyMapping("key.dabaosword.active_skill", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_J, "category.dabaosword.keybindings");
 
-    public static final KeyMapping SELECT_CARD = new KeyMapping("key.dabaosword.select_card", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.dabaosword.keybindings");
+    public static final KeyMapping SELECT_CARD = new KeyMapping("key.dabaosword.select_card", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, "category.dabaosword.keybindings");
 
     @SubscribeEvent
     public static void registerKeyBinds(RegisterKeyMappingsEvent event) {
@@ -32,5 +33,6 @@ public class DabaoSwordClient {
         event.register(AllRegs.Other.SIMPLE_MENU_HANDLER.get(), SimpleMenuScreen::new);
         event.register(AllRegs.Other.PLAYER_INV_SCREEN_HANDLER.get(), PlayerInvHandledScreen::new);
         event.register(AllRegs.Other.FULL_INV_SCREEN_HANDLER.get(), FullInvHandledScreen::new);
+        event.register(AllRegs.Other.PILE_SCREEN_HANDLER.get(), PileHandledScreen::new);
     }
 }

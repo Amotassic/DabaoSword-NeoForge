@@ -1,12 +1,12 @@
 package com.amotassic.dabaosword.event;
 
 import com.amotassic.dabaosword.DabaoSword;
+import com.amotassic.dabaosword.api.CardPileInventory;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.util.Gamerule;
 import com.amotassic.dabaosword.util.Sounds;
-import com.amotassic.dabaosword.util.Tags;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -14,7 +14,6 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import top.theillusivec4.curios.api.CuriosApi;
 
 import static com.amotassic.dabaosword.util.ModTools.*;
 
@@ -27,27 +26,21 @@ public class PlayerEvents {
 
             boolean card = world.getGameRules().getBoolean(Gamerule.CLEAR_CARDS_AFTER_DEATH);
             if (card) {
+                CardPileInventory inventory = new CardPileInventory(player); //移除牌堆背包的牌
+                for (var stack : inventory.cards) {cardDiscard(player, stack, stack.getCount(), false);}
+
                 Inventory inv = player.getInventory();
-                for (int i = 0; i < inv.getContainerSize(); ++i) {
+                for (int i = 0; i < inv.getContainerSize(); ++i) { //移除玩家物品栏的牌
                     ItemStack stack = inv.getItem(i);
-                    if (isCard(stack)) {
-                        if (XingshangTrigger(player, stack)) cardDiscard(player, stack, stack.getCount(), false);
-                    }
+                    if (isCard(stack)) cardDiscard(player, stack, stack.getCount(), false);
                 }
 
-                var component = CuriosApi.getCuriosInventory(player);
-                if(component.isPresent()) {
-                    var allEquipped = component.get().getEquippedCurios();
-                    for(int i = 0; i < allEquipped.getSlots(); i++) {
-                        ItemStack stack = allEquipped.getStackInSlot(i);
-                        if(stack.is(Tags.CARD)) {
-                            if (XingshangTrigger(player, stack)) cardDiscard(player, stack, stack.getCount(), true);
-                        }
-                    }
+                for(var stack : allTrinkets(player)) { //移除玩家装备区的牌
+                    if(isCard(stack)) cardDiscard(player, stack, stack.getCount(), true);
                 }
             }
 
-            if (hasItem(player, ModItems.BBJI)) voice(player, Sounds.XUYOU);
+            if (hasItem(player, stack -> stack.is(ModItems.BBJI))) voice(player, Sounds.XUYOU);
 
             if (hasTrinket(SkillCards.BUQU, player)) {
                 ItemStack stack = trinketItem(SkillCards.BUQU, player);
@@ -60,19 +53,6 @@ public class PlayerEvents {
                 if (stack != null) setCD(stack, 0);
             }
         }
-    }
-
-    private static boolean XingshangTrigger(Player player, ItemStack stack) {
-        for (Player player1 : player.level().players()) {//行殇技能触发
-            if (hasTrinket(SkillCards.XINGSHANG, player1) && player1.distanceTo(player) <= 25 && player1 != player) {
-                if (!player1.getTags().contains("xingshang")) voice(player1, Sounds.XINGSHANG);
-                player1.addTag("xingshang");
-                give(player1, stack.copy());
-                stack.setCount(0);
-                return false;
-            }
-        }//为了简便，触发行殇后返回false
-        return true;
     }
 
     @SubscribeEvent

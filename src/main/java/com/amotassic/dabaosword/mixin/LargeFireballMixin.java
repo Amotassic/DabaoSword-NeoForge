@@ -1,32 +1,28 @@
 package com.amotassic.dabaosword.mixin;
 
 import com.amotassic.dabaosword.util.Gamerule;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.Fireball;
 import net.minecraft.world.entity.projectile.LargeFireball;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.HitResult;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.ModifyArgs;
+import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
+
+import java.util.Objects;
 
 @Mixin(LargeFireball.class)
 public abstract class LargeFireballMixin extends Fireball {
-    @Shadow private int explosionPower;
     public LargeFireballMixin(EntityType<? extends Fireball> p_37006_, Level p_37007_) {super(p_37006_, p_37007_);}
 
-    @Inject(method = "onHit", at = @At("HEAD"), cancellable = true)
-    public void onCollision(HitResult hitResult, CallbackInfo ci) {
+    @ModifyArgs(method = "onHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;explode(Lnet/minecraft/world/entity/Entity;DDDFZLnet/minecraft/world/level/Level$ExplosionInteraction;)Lnet/minecraft/world/level/Explosion;"))
+    public void onCollision(Args args) {
         boolean bl = !this.level().getGameRules().getBoolean(Gamerule.FIRE_ATTACK_BREAKS_BLOCK);
-        super.onHit(hitResult);
-        if (!this.level().isClientSide) {
-            if (bl && this.explosionPower == 3) {
-                this.level().explode(this, this.getX(), this.getY(), this.getZ(), 3, false, Level.ExplosionInteraction.NONE);
-                this.discard();
-                ci.cancel();
-            }
+        if (bl && Objects.equals(this.getCustomName(), Component.nullToEmpty("a"))) {
+            args.set(5, false);
+            args.set(6, Level.ExplosionInteraction.NONE);
         }
     }
 }

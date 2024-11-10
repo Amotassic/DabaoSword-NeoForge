@@ -29,11 +29,16 @@ public class OnSkillKeyInput {
 
     @SubscribeEvent
     public static void onKeyboardInput(InputEvent.Key event) {
+        var client = Minecraft.getInstance();
         var user = Minecraft.getInstance().player;
         var result = Minecraft.getInstance().hitResult;
         if (user != null) {
             if (DabaoSwordClient.SELECT_CARD.consumeClick()) {
-                PacketDistributor.sendToServer(new QuickSwapPayload(user.getId()));
+                int i = 0;
+                if (user.isShiftKeyDown() && client.options.keySprint.consumeClick()) i = 3;
+                else if (user.isShiftKeyDown()) i = 1;
+                else if (client.options.keySprint.consumeClick()) i = 2;
+                PacketDistributor.sendToServer(new QuickSwapPayload(i));
                 return;
             }
 

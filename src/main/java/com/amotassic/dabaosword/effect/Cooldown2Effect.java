@@ -29,10 +29,7 @@ public class Cooldown2Effect extends MobEffect {
         if (entity.level() instanceof ServerLevel world) {
             int restTime = Objects.requireNonNull(entity.getEffect(ModItems.COOLDOWN2)).getDuration();
             //一级效果被用于万箭齐发
-            if (amplifier == 1) {
-                arrowRain(entity, 3);
-                if (restTime <= 1) entity.getTags().remove("wanjian");
-            }
+            if (amplifier == 1) arrowRain(entity, 3);
 
             if (amplifier == 3 && hasTrinket(SkillCards.LEIJI, entity) && restTime >= 15) {//雷击的效果
                 EntityType.LIGHTNING_BOLT.spawn(world, new BlockPos((int) entity.getX(), (int) entity.getY(), (int) entity.getZ()),null);

@@ -1,6 +1,5 @@
 package com.amotassic.dabaosword.item.card;
 
-import com.amotassic.dabaosword.util.Sounds;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -9,8 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-import static com.amotassic.dabaosword.util.ModTools.cardUsePost;
-import static com.amotassic.dabaosword.util.ModTools.voice;
+import static com.amotassic.dabaosword.util.ModTools.cardUsePre;
 
 public class PeachItem extends CardItem {
     public PeachItem(Properties p_41383_) {super(p_41383_);}
@@ -18,26 +16,22 @@ public class PeachItem extends CardItem {
     //非潜行时右键，给自己回血
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
         if (!world.isClientSide && player.getHealth() < player.getMaxHealth() && !player.isShiftKeyDown() && hand == InteractionHand.MAIN_HAND) {
-            player.heal(5);
-            cardUsePost(player, player.getItemInHand(hand), player);
-            voice(player, Sounds.RECOVER);
-            return InteractionResultHolder.success(stack);
+            if (cardUsePre(player, player.getMainHandItem(), null)) return InteractionResultHolder.success(player.getMainHandItem());
         }
-        return InteractionResultHolder.pass(stack);
+        return super.use(world, player, hand);
     }
 
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
-        if (!user.level().isClientSide && user.isShiftKeyDown() && hand == InteractionHand.MAIN_HAND) {
-            if (entity.getHealth() < entity.getMaxHealth()) {
-                entity.heal(5);
-                entity.playSound(Sounds.RECOVER,1.0F,1.0F);
-                cardUsePost(user, stack, user);
-                return InteractionResultHolder.success(!user.level().isClientSide).getResult();
-            }
+        if (!user.level().isClientSide && entity.getHealth() < entity.getMaxHealth() && user.isShiftKeyDown() && hand == InteractionHand.MAIN_HAND) {
+            if (cardUsePre(user, user.getMainHandItem(), entity)) return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
+    }
+
+    @Override
+    public void cardUse(LivingEntity user, ItemStack stack, LivingEntity target) {
+        target.heal(5);
     }
 }

@@ -1,10 +1,11 @@
 package com.amotassic.dabaosword.item.skillcard;
 
-import com.amotassic.dabaosword.event.listener.CardCBs;
+import com.amotassic.dabaosword.api.Card;
+import com.amotassic.dabaosword.api.CardPileInventory;
+import com.amotassic.dabaosword.api.Skill;
+import com.amotassic.dabaosword.api.event.CardCBs;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.equipment.Equipment;
-import com.amotassic.dabaosword.util.ModTools;
-import com.amotassic.dabaosword.util.Skill;
 import com.amotassic.dabaosword.util.Sounds;
 import com.amotassic.dabaosword.util.Tags;
 import com.google.common.collect.LinkedHashMultimap;
@@ -32,6 +33,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -42,11 +44,11 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
-import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 import static com.amotassic.dabaosword.util.ModTools.*;
@@ -66,20 +68,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         }
 
         @Override
-        public void curioTick(SlotContext slotContext, ItemStack stack) {
-            if (!slotContext.entity().level().isClientSide && slotContext.entity() instanceof Player player && noLongHand(player) && noTieji(slotContext.entity())) {
-                int benxi = getTag(stack);
-                if (hasTrinket(ModItems.CHITU, player) && hasTrinket(SkillCards.MASHU, player)) {
-                    player.addEffect(new MobEffectInstance(ModItems.REACH, 10,benxi + 2,false,false,true));
-                } else if (hasTrinket(ModItems.CHITU, player) || hasTrinket(SkillCards.MASHU, player)) {
-                    player.addEffect(new MobEffectInstance(ModItems.REACH, 10,benxi + 1,false,false,true));
-                } else if (benxi != 0) {
-                    player.addEffect(new MobEffectInstance(ModItems.REACH, 10,benxi - 1,false,false,true));
-                }
-            }
-        }
-
-        @Override
         public void postAttack(ItemStack stack, LivingEntity target, LivingEntity attacker, float amount) {
             if (attacker instanceof Player player && !player.getTags().contains("benxi")) {
                 int ben = getTag(stack);
@@ -90,10 +78,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                     voice(player, Sounds.BENXI);
                 }
             }
-        }
-
-        private boolean noLongHand(Player player) {
-            return player.getMainHandItem().getItem() != ModItems.JUEDOU && player.getMainHandItem().getItem() != ModItems.DISCARD;
         }
     }
 
@@ -122,7 +106,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                 int c = getTag(stack);
                 voice(player, Sounds.BUQU);
                 if (new Random().nextFloat() >= (float) c /13) {
-                    player.displayClientMessage(Component.translatable("buqu.tip1").withStyle(ChatFormatting.GREEN).append(String.valueOf(c + 1)), false);
+                    player.displayClientMessage(Component.translatable("buqu.tip1", c + 1).withStyle(ChatFormatting.GREEN), false);
                     setTag(stack, c + 1);
                     player.setHealth(1);
                 } else player.displayClientMessage(Component.translatable("buqu.tip2").withStyle(ChatFormatting.RED), false);
@@ -141,7 +125,8 @@ public class SkillItem extends Item implements ICurioItem, Skill {
 
         @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
-            if (slotContext.entity() instanceof Player player) viewAs(player, stack, 5, ModTools::nonBasic, new ItemStack(ModItems.BINGLIANG_ITEM), Sounds.DUANLIANG);
+            Predicate<ItemStack> dl = s -> isBlackCard.test(s) && !s.is(Tags.ARMOURY_CARD);
+            if (slotContext.entity() instanceof Player player) viewAs(player, stack, 5, dl, new ItemStack(ModItems.BINGLIANG_ITEM), Sounds.DUANLIANG);
             super.curioTick(slotContext, stack);
         }
     }
@@ -184,24 +169,21 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                         attacker.invulnerableTime = 0; attacker.hurt(entity.damageSources().mobAttack(entity), f);
                     } else {//弃牌
                         if (attacker instanceof Player target) {//如果来源是玩家则弃牌
-                            List<ItemStack> candidate = new ArrayList<>();
+                            List<ItemStack> candidate = new ArrayList<>(new CardPileInventory(target).nonEmpty);
                             //把背包中的卡牌添加到待选物品中
                             NonNullList<ItemStack> inventory = target.getInventory().items;
                             List<Integer> cardSlots = IntStream.range(0, inventory.size()).filter(j -> isCard(inventory.get(j))).boxed().toList();
                             for (Integer slot : cardSlots) {candidate.add(inventory.get(slot));}
                             //把饰品栏的卡牌添加到待选物品中
                             int equip = 0; //用于标记装备区牌的数量
-                            var component = CuriosApi.getCuriosInventory(target);
-                            if(component.isPresent()) {
-                                var allEquipped = component.get().getEquippedCurios();
-                                for(int j = 0; j < allEquipped.getSlots(); j++) {
-                                    ItemStack stack1 = allEquipped.getStackInSlot(j);
-                                    if (stack1.is(Tags.CARD)) candidate.add(stack1); equip++;
-                                }
+                            for (var stack1 : allTrinkets(target)) {
+                                if (isCard(stack1)) candidate.add(stack1); equip++;
                             }
                             if(!candidate.isEmpty()) {
                                 int index = new Random().nextInt(candidate.size()); ItemStack chosen = candidate.get(index);
-                                target.displayClientMessage(Component.literal(entity.getScoreboardName()).append(Component.translatable("dabaosword.discard")).append(chosen.getDisplayName()),false);
+                                Component message = Component.translatable("dabaosword.discard", entity.getDisplayName(), target.getDisplayName(), chosen.getDisplayName());
+                                if (entity instanceof Player player) player.displayClientMessage(message, false);
+                                target.displayClientMessage(message, false);
                                 cardDiscard(target, chosen, 1, index > candidate.size() - equip);
                             }
                         } else {//如果来源不是玩家则随机弃置它的主副手物品和装备
@@ -290,9 +272,16 @@ public class SkillItem extends Item implements ICurioItem, Skill {
             if (cd > 0) user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(ChatFormatting.RED), true);
             else {
                 voice(user, Sounds.GONGXIN);
-                openInv(user, target, Component.translatable("gongxin.title"), targetInv(target, false, false, 2, stack));
+                openInv(user, target, Component.translatable("gongxin.title"), stack, false, false, false, 2);
                 setCD(stack, 30);
             }
+        }
+
+        @Override
+        public void onClickGUISlot(Player player, ItemStack stack, Player target, ItemStack selected, int slotIndex) {
+            target.displayClientMessage(Component.translatable("dabaosword.discard", player.getDisplayName(), target.getDisplayName(), selected.getDisplayName()), false);
+            cardDiscard(target, selected, 1, false);
+            closeGUI(player);
         }
     }
 
@@ -308,7 +297,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
 
         @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
-            if (slotContext.entity() instanceof Player player) viewAs(player, stack, 15, s -> s.is(ModItems.SHAN), new ItemStack(ModItems.TOO_HAPPY_ITEM), Sounds.GUOSE);
+            if (slotContext.entity() instanceof Player player) viewAs(player, stack, 15, isDiamondCard, new ItemStack(ModItems.TOO_HAPPY_ITEM), Sounds.GUOSE);
             super.curioTick(slotContext, stack);
         }
     }
@@ -325,7 +314,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
 
         @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
-            if (slotContext.entity() instanceof Player player) viewAs(player, stack, 15, s -> s.is(Tags.BASIC_CARD), new ItemStack(ModItems.FIRE_ATTACK), Sounds.HUOJI);
+            if (slotContext.entity() instanceof Player player) viewAs(player, stack, 15, isRedCard, new ItemStack(ModItems.FIRE_ATTACK), Sounds.HUOJI);
             super.curioTick(slotContext, stack);
         }
     }
@@ -365,7 +354,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
 
         @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
-            if (slotContext.entity() instanceof Player player) viewAs(player, stack, 10, s -> s.is(Tags.ARMOURY_CARD), new ItemStack(ModItems.WUXIE), Sounds.KANPO);
+            if (slotContext.entity() instanceof Player player) viewAs(player, stack, 10, isBlackCard, new ItemStack(ModItems.WUXIE), Sounds.KANPO);
             super.curioTick(slotContext, stack);
         }
     }
@@ -400,7 +389,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
 
         @Override
         public void activeSkill(Player user, ItemStack stack, Player target) {
-            if (user.getHealth() + 5 * count(user, Tags.RECOVER) > 4.99) {
+            if (user.getHealth() + 5 * count(user, canSaveDying) > 4.99) {
                 draw(user, 2);
                 if (!user.isCreative()) {
                     user.invulnerableTime = 0;
@@ -457,33 +446,10 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                     float f = Math.max(13 - attacker.distanceTo(target), 5);
                     attacker.addEffect(new MobEffectInstance(ModItems.COOLDOWN, (int) (40 * f),0,false,false,true));
                     voice(attacker, Sounds.LIEGONG);
-                    System.out.println(f);
                     return new Tuple<>(0f, f);
                 }
             }
-            return super.modifyDamage(target, source, amount);
-        }
-
-        @Override
-        public void curioTick(SlotContext slotContext, ItemStack stack) {
-            LivingEntity entity = slotContext.entity();
-            if (!entity.level().isClientSide && noTieji(entity)) {
-                if (!entity.hasEffect(ModItems.COOLDOWN)) gainReach(entity,13);
-                else gainReach(entity,0);
-            }
-            super.curioTick(slotContext, stack);
-        }
-
-        @Override
-        public void onUnequip(SlotContext slotContext, ItemStack newStack, ItemStack stack) {
-            LivingEntity entity = slotContext.entity();
-            if (!entity.level().isClientSide) gainReach(entity,0);
-        }
-
-        private void gainReach(LivingEntity entity, int value) {
-            AttributeModifier Modifier = new AttributeModifier(ResourceLocation.withDefaultNamespace("range_13"), value, AttributeModifier.Operation.ADD_VALUE);
-            Objects.requireNonNull(entity.getAttributes().getInstance(Attributes.ENTITY_INTERACTION_RANGE)).addOrUpdateTransientModifier(Modifier);
-            Objects.requireNonNull(entity.getAttributes().getInstance(Attributes.BLOCK_INTERACTION_RANGE)).addOrUpdateTransientModifier(Modifier);
+            return null;
         }
     }
 
@@ -501,8 +467,8 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         @Override
         public boolean cancelDamage(LivingEntity target, DamageSource source, float amount) {
             if (source.getEntity() instanceof LivingEntity attacker && target instanceof Player player) {
-                if (hasTrinket(SkillCards.LIULI, player) && hasItemInTag(Tags.CARD, player) && !player.hasEffect(ModItems.INVULNERABLE)) {
-                    ItemStack stack = stackInTag(Tags.CARD, player);
+                if (hasTrinket(SkillCards.LIULI, player) && hasCard(player, isCard) && !player.hasEffect(ModItems.INVULNERABLE)) {
+                    ItemStack stack = getCard(player, isCard).getB();
                     LivingEntity nearEntity = getLiuliEntity(player, attacker);
                     if (nearEntity != null) {
                         player.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 15,0,false,false,false));
@@ -548,10 +514,10 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                 ItemStack stack1 = player.getOffhandItem();
                 if (world.getGameTime() % 20 == 0 && stack1.is(Tags.BASIC_CARD)) {
                     stack1.shrink(1);
-                    if (stack1.is(Tags.SHA)) give(player, new ItemStack(ModItems.SHAN));
-                    if (stack1.getItem() == ModItems.SHAN) give(player, new ItemStack(ModItems.SHA));
-                    if (stack1.getItem() == ModItems.PEACH) give(player, new ItemStack(ModItems.JIU));
-                    if (stack1.getItem() == ModItems.JIU) give(player, new ItemStack(ModItems.PEACH));
+                    if (isSha.test(stack1)) give(player, new ItemStack(ModItems.SHAN));
+                    if (stack1.is(ModItems.SHAN)) give(player, new ItemStack(ModItems.SHA));
+                    if (stack1.is(ModItems.PEACH)) give(player, new ItemStack(ModItems.JIU));
+                    if (stack1.is(ModItems.JIU)) give(player, new ItemStack(ModItems.PEACH));
                     voice(player, Sounds.LONGDAN);
                 }
             }
@@ -571,8 +537,34 @@ public class SkillItem extends Item implements ICurioItem, Skill {
 
         @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
-            if (slotContext.entity() instanceof Player player) viewAs(player, stack, 15, s -> s.is(Tags.CARD) && s.getCount() > 1, 2, new ItemStack(ModItems.WANJIAN), Sounds.LUANJI);
+            LivingEntity entity = slotContext.entity();
             super.curioTick(slotContext, stack);
+            if (!entity.level().isClientSide && entity instanceof Player player && noTieji(player) && getCD(stack) == 0) {
+                ItemStack off = player.getOffhandItem();
+                CompoundTag nbt = getOrCreateNbt(stack);
+                Card.Suits firstSuit = null;
+                if (nbt.contains("suit")) firstSuit = Card.Suits.valueOf(nbt.getString("suit"));
+                if (entity.level().getGameTime() % 100 == 0 && firstSuit != null) {
+                    player.displayClientMessage(Component.translatable("item.dabaosword.luanji.suit", stack.getDisplayName(), firstSuit.suit), true);
+                }
+                Card.Suits suit = getSuit(off);
+                if (isCard(off) && suit != null) {
+                    if (firstSuit == suit) { //如果记录花色和当前牌花色相同，就移除一张牌，获得万箭齐发，技能进入CD
+                        nbt.remove("suit");
+                        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
+                        setCD(stack, 15);
+                        off.shrink(1);
+                        give(player, new ItemStack(ModItems.WANJIAN));
+                        voice(player, Sounds.LUANJI);
+                        return;
+                    }
+                    if (firstSuit == null) { //如果没有记录花色，就移除一张牌，记录该花色
+                        nbt.putString("suit", suit.name());
+                        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
+                        off.shrink(1);
+                    }
+                }
+            }
         }
     }
 
@@ -687,9 +679,8 @@ public class SkillItem extends Item implements ICurioItem, Skill {
 
         @Override
         public void activeSkill(Player user, ItemStack stack, Player target) {
-            ItemStack offStack = user.getOffhandItem();
             int cd = getCD(stack);
-            if (!offStack.isEmpty() && offStack.is(Tags.CARD) && offStack.getCount() > 1) {
+            if (countCards(user) > 0) {
                 if (cd == 0) {
 
                     ItemStack[] stacks = {new ItemStack(ModItems.BINGLIANG_ITEM), new ItemStack(ModItems.TOO_HAPPY_ITEM), new ItemStack(ModItems.DISCARD), new ItemStack(ModItems.FIRE_ATTACK), new ItemStack(ModItems.JIEDAO), new ItemStack(ModItems.JUEDOU), new ItemStack(ModItems.NANMAN), new ItemStack(ModItems.STEAL), new ItemStack(ModItems.TAOYUAN), new ItemStack(ModItems.TIESUO), new ItemStack(ModItems.WANJIAN), new ItemStack(ModItems.WUXIE), new ItemStack(ModItems.WUZHONG)};
@@ -702,6 +693,17 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                 else {user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(ChatFormatting.RED), true);}
             }
             else {user.displayClientMessage(Component.translatable("item.dabaosword.qice.tip").withStyle(ChatFormatting.RED), true);}
+        }
+
+        @Override
+        public void onClickGUISlot(Player player, ItemStack stack, Player target, ItemStack selected, int slot) {
+            if (!player.isCreative()) {
+                while (countCards(player) > 0) {cardDecrement(getCard(player, isCard), 64);}
+                setCD(stack, 20);
+            }
+            give(player, selected);
+            voice(player, Sounds.QICE);
+            closeGUI(player);
         }
     }
 
@@ -716,7 +718,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
 
         @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
-            if (slotContext.entity() instanceof Player player) viewAs(player, stack, 5, ModTools::nonBasic, new ItemStack(ModItems.SHAN), Sounds.QINGGUO);
+            if (slotContext.entity() instanceof Player player) viewAs(player, stack, 5, isBlackCard, new ItemStack(ModItems.SHAN), Sounds.QINGGUO);
             super.curioTick(slotContext, stack);
         }
     }
@@ -732,7 +734,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
 
         @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
-            if (slotContext.entity() instanceof Player player) viewAs(player, stack, 5, ModTools::nonBasic, new ItemStack(ModItems.DISCARD), Sounds.QIXI);
+            if (slotContext.entity() instanceof Player player) viewAs(player, stack, 5, isBlackCard, new ItemStack(ModItems.DISCARD), Sounds.QIXI);
             super.curioTick(slotContext, stack);
         }
     }
@@ -775,7 +777,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                     return new Tuple<>(0f, (float) quan);
                 }
             }
-            return super.modifyDamage(entity, source, amount);
+            return null;
         }
     }
 
@@ -792,7 +794,22 @@ public class SkillItem extends Item implements ICurioItem, Skill {
 
         @Override
         public void activeSkill(Player user, ItemStack stack, Player target) {
-            openInv(user, target, Component.translatable("give_card.title", stack.getDisplayName()), targetInv(user, false, false, 2, stack));
+            openInv(user, target, Component.translatable("give_card.title", stack.getDisplayName()), stack, true, false, false, 2);
+        }
+
+        @Override
+        public void onClickGUISlot(Player player, ItemStack stack, Player target, ItemStack selected, int slotIndex) {
+            voice(player, Sounds.RENDE);
+            Component message = Component.translatable("give_card.tip", player.getDisplayName(), stack.getDisplayName(), target.getDisplayName(), selected.getDisplayName());
+            target.displayClientMessage(message, false);
+            player.displayClientMessage(message, false);
+            cardMove(player, target, selected, 1, CardCBs.T.INV_TO_INV);
+            int cd = getCD(stack);
+            if (player.getHealth() < player.getMaxHealth() && cd == 0 && new Random().nextFloat() < 0.5) {
+                player.heal(5); voice(player, Sounds.RECOVER);
+                player.displayClientMessage(Component.translatable("recover.tip").withStyle(ChatFormatting.GREEN), true);
+                setCD(stack, 30);
+            }
         }
     }
 
@@ -810,17 +827,28 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         @Override
         public void postDamage(ItemStack stack, LivingEntity entity, LivingEntity attacker, float amount) {
             if (attacker instanceof Player player && !player.hasEffect(ModItems.COOLDOWN)) {
-                if (entity instanceof Player target) openInv(player, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), targetInv(target, true, false, 1, stack));
+                if (entity instanceof Player target) openInv(player, target, Component.translatable("dabaosword.discard.title", stack.getDisplayName()), stack, false, true, false, 1);
                 else {
                     voice(player, Sounds.SHANZHUAN);
                     if (new Random().nextFloat() < 0.5) {
                         entity.addEffect(new MobEffectInstance(ModItems.BINGLIANG, MobEffectInstance.INFINITE_DURATION,1));
-                    } else {
-                        entity.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 5));
-                    }
+                    } else entity.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 5));
                     player.addEffect(new MobEffectInstance(ModItems.COOLDOWN, 20 * 5,0,false,false,true));
                 }
             }
+        }
+
+        @Override
+        public void onClickGUISlot(Player player, ItemStack stack, Player target, ItemStack selected, int slotIndex) {
+            voice(player, Sounds.SHANZHUAN);
+            if (isRedCard.test(selected)) target.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * 5));
+            else target.addEffect(new MobEffectInstance(ModItems.BINGLIANG, -1,1));
+            Component message = Component.translatable("dabaosword.discard", player.getDisplayName(), target.getDisplayName(), selected.getDisplayName());
+            player.displayClientMessage(message, false);
+            target.displayClientMessage(message, false);
+            cardDiscard(target, selected, 1, slotIndex < 4);
+            player.addEffect(new MobEffectInstance(ModItems.COOLDOWN, 20 * 8,0,false,false,true));
+            closeGUI(player);
         }
     }
 
@@ -838,7 +866,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
             if (source.getDirectEntity() instanceof LivingEntity attacker) {
                 if (hasTrinket(SkillCards.SHENSU, attacker) && !attacker.hasEffect(ModItems.COOLDOWN)) {
                     float walkSpeed = 4.317f;
-                    float speed = trinketItem(SkillCards.SHENSU, attacker).get(DataComponents.CUSTOM_DATA).copyTag().getFloat("speed");
+                    float speed = getOrCreateNbt(trinketItem(SkillCards.SHENSU, attacker)).getFloat("speed");
                     if (speed > walkSpeed) {
                         float m = (speed - walkSpeed) / walkSpeed / 2;
                         attacker.addEffect(new MobEffectInstance(ModItems.COOLDOWN, (int) (5 * 20 * m),0,false,false,true));
@@ -848,7 +876,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                     }
                 }
             }
-            return super.modifyDamage(target, source, amount);
+            return null;
         }
 
         @Override
@@ -879,7 +907,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
 
         @Override
         public void activeSkill(Player user, ItemStack stack, Player target) {
-            if (user.getHealth() + 5 * count(user, Tags.RECOVER) > 4.99) {
+            if (user.getHealth() + 5 * count(user, canSaveDying) > 4.99) {
 
                 ItemStack[] stacks = {new ItemStack(ModItems.THUNDER_SHA), new ItemStack(ModItems.FIRE_SHA), new ItemStack(ModItems.SHAN), new ItemStack(ModItems.PEACH), new ItemStack(ModItems.JIU), new ItemStack(ModItems.BINGLIANG_ITEM), new ItemStack(ModItems.TOO_HAPPY_ITEM), new ItemStack(ModItems.DISCARD), new ItemStack(ModItems.FIRE_ATTACK), new ItemStack(ModItems.JIEDAO), new ItemStack(ModItems.JUEDOU), new ItemStack(ModItems.NANMAN), new ItemStack(ModItems.STEAL), new ItemStack(ModItems.TAOYUAN), new ItemStack(ModItems.TIESUO), new ItemStack(ModItems.WANJIAN), new ItemStack(ModItems.WUXIE), new ItemStack(ModItems.WUZHONG)};
                 Container inventory = new SimpleContainer(20);
@@ -889,6 +917,17 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                 openSimpleMenu(user, user, inventory, Component.translatable("item.dabaosword.taoluan.screen"));
             }
             else {user.displayClientMessage(Component.translatable("item.dabaosword.taoluan.tip").withStyle(ChatFormatting.RED), true);}
+        }
+
+        @Override
+        public void onClickGUISlot(Player player, ItemStack stack, Player target, ItemStack selected, int slotIndex) {
+            give(player, selected);
+            if (!player.isCreative()) {
+                player.invulnerableTime = 0;
+                player.hurt(player.damageSources().genericKill(), 4.99f);
+            }
+            voice(player, Sounds.TAOLUAN);
+            closeGUI(player);
         }
     }
 
@@ -903,11 +942,51 @@ public class SkillItem extends Item implements ICurioItem, Skill {
 
         @Override
         public void preAttack(ItemStack stack, LivingEntity target, Player player) {
-            if (getShaSlot(player) != -1) {
+            if (hasItem(player, isSha)) {
                 voice(player, Sounds.TIEJI);
                 target.addEffect(new MobEffectInstance(ModItems.TIEJI,200,0,false,true,true));
                 if (new Random().nextFloat() < 0.75) target.addEffect(new MobEffectInstance(ModItems.COOLDOWN2,2,0,false,false,false));
             }
+        }
+    }
+
+    public static class Weimu extends SkillItem {
+        public Weimu(Properties p_41383_) {super(p_41383_);}
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            tooltip.add(Component.translatable("item.dabaosword.weimu.tooltip"));
+        }
+
+        @Override
+        public Priority getPriority(LivingEntity target, DamageSource source, float amount) {return Priority.HIGHEST;}
+
+        @Override
+        public boolean cancelDamage(LivingEntity target, DamageSource source, float amount) {
+            if (hasTrinket(SkillCards.WEIMU, target) && source.getDirectEntity() instanceof Wolf dog && dog.hasEffect(ModItems.INVULNERABLE)) {
+                dog.setHealth(0);
+                voice(target, Sounds.WEIMU);
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public static class Wusheng extends SkillItem {
+        public Wusheng(Properties p_41383_) {super(p_41383_);}
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            tooltip.add(Component.literal("CD: 5s"));
+            tooltip.add(Component.translatable("item.dabaosword.wusheng.tooltip1").withStyle(ChatFormatting.RED));
+            tooltip.add(Component.translatable("item.dabaosword.wusheng.tooltip2").withStyle(ChatFormatting.RED));
+        }
+
+        @Override
+        public void curioTick(SlotContext slotContext, ItemStack stack) {
+            LivingEntity entity = slotContext.entity();
+            if (entity instanceof Player player) viewAs(player, stack, 5, isRedCard, new ItemStack(ModItems.SHA), Sounds.WUSHENG);
+            super.curioTick(slotContext, stack);
         }
     }
 
@@ -934,7 +1013,18 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         @Override
         public void activeSkill(Player user, ItemStack stack, Player target) {
             int i = getTag(stack);
-            if (i > 0 ) openInv(user, target, Component.translatable("give_card.title", stack.getDisplayName()), targetInv(user, false, false, 2, stack));
+            if (i > 0 ) openInv(user, target, Component.translatable("give_card.title", stack.getDisplayName()), stack, true, false, false, 2);
+        }
+
+        @Override
+        public void onClickGUISlot(Player player, ItemStack stack, Player target, ItemStack selected, int slotIndex) {
+            int i = getTag(stack);
+            Component message = Component.translatable("give_card.tip", player.getDisplayName(), stack.getDisplayName(), target.getDisplayName(), selected.getDisplayName());
+            target.displayClientMessage(message, false);
+            player.displayClientMessage(message, false);
+            cardMove(player, target, selected, 1, CardCBs.T.INV_TO_INV);
+            setTag(stack, i - 1);
+            if (i - 1 == 0) closeGUI(player);
         }
     }
 
@@ -961,8 +1051,21 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         @Override
         public void activeSkill(Player user, ItemStack stack, Player target) {
             int z = getTag(stack);
-            if (z > 0) openInv(user, user, Component.translatable("zhiheng.title"), targetInv(user, true, false, 2, stack));
+            if (z > 0) openInv(user, user, Component.translatable("zhiheng.title"), stack, true, true, false, 2);
             else user.displayClientMessage(Component.translatable("zhiheng.fail").withStyle(ChatFormatting.RED), true);
+        }
+
+        @Override
+        public void onClickGUISlot(Player player, ItemStack stack, Player target, ItemStack selected, int slotIndex) {
+            int z = getTag(stack);
+            voice(player, Sounds.ZHIHENG);
+            cardDiscard(target, selected, 1, slotIndex < 4);
+            if (new Random().nextFloat() < 0.1) {
+                draw(player, 2);
+                player.displayClientMessage(Component.translatable("zhiheng.extra").withStyle(ChatFormatting.GREEN), true);
+            } else draw(player);
+            setTag(stack, z - 1);
+            if (z - 1 == 0) closeGUI(player);
         }
     }
 
@@ -1019,7 +1122,7 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     public void onEquip(SlotContext slotContext, ItemStack prevStack, ItemStack stack) {
         if (slotContext.entity().level() instanceof ServerLevel world && !equipped(stack)) {
             world.players().forEach(player -> player.displayClientMessage(
-                    Component.literal(slotContext.entity().getScoreboardName()).append(Component.literal(" equipped ").append(stack.getDisplayName())),false
+                    Component.translatable("dabaosword.entity.equip", slotContext.entity().getDisplayName(), stack.getDisplayName()), false
             ));
             setEquipped(stack, true);
         }
@@ -1033,17 +1136,17 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static void setEquipped(ItemStack stack, boolean equipped) {
-        if (equipped) {
-            CompoundTag nbt = new CompoundTag(); nbt.putBoolean("equipped", true);
-            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
-        } else if (stack.get(DataComponents.CUSTOM_DATA) != null) stack.remove(DataComponents.CUSTOM_DATA);
+        CompoundTag nbt = getOrCreateNbt(stack);
+        if (equipped) nbt.putBoolean("equipped", true);
+        else nbt.remove("equipped");
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         if (!world.isClientSide && user.getTags().contains("change_skill") && hand == InteractionHand.OFF_HAND && user.isShiftKeyDown()) {
             ItemStack stack = user.getItemInHand(hand);
-            if (stack.is(Tags.SKILL)) {
+            if (stack.getItem() instanceof SkillItem) {
                 stack.setCount(0);
                 changeSkill(user);
                 user.getTags().remove("change_skill");

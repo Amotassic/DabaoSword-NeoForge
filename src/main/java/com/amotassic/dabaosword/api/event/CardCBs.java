@@ -1,48 +1,71 @@
-package com.amotassic.dabaosword.event.listener;
+package com.amotassic.dabaosword.api.event;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.bus.api.ICancellableEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import javax.annotation.Nullable;
 
+/**
+ * 卡牌事件，用于监听卡牌的移动、丢弃、使用等事件
+ * <p>
+ * 注意：
+ * 不要直接调用这个类里面的方法，而是通过使用{@link com.amotassic.dabaosword.util.ModTools}中已有的静态方法来调用监听器。
+ * 因为事件内不会处理卡牌的减少，所有卡牌减少和相关的逻辑都在ModTools对应的方法中处理。
+ */
+
 public class CardCBs {
-    public static class UsePost extends PlayerEvent {
+    public static class UsePre extends LivingEvent implements ICancellableEvent {
 
         private final ItemStack stack;
         private final LivingEntity target;
 
-        public UsePost(Player player, ItemStack stack, @Nullable LivingEntity target) {
-            super(player);
+        public UsePre(LivingEntity entity, ItemStack stack, @Nullable LivingEntity target) {
+            super(entity);
             this.stack = stack;
             this.target = target;
         }
 
         public ItemStack getStack() {return this.stack;}
 
-        public ItemStack getCopy() {return this.stack.copy();}
+        @Nullable
+        public LivingEntity getTarget() {return this.target;}
+    }
+
+    public static class UsePost extends LivingEvent {
+
+        private final ItemStack stack;
+        private final LivingEntity target;
+
+        public UsePost(LivingEntity entity, ItemStack stack, @Nullable LivingEntity target) {
+            super(entity);
+            this.stack = stack;
+            this.target = target;
+        }
+
+        public ItemStack getStack() {return this.stack;}
 
         @Nullable
         public LivingEntity getTarget() {return this.target;}
     }
 
-    public static class Discard extends PlayerEvent {
+    public static class Discard extends LivingEvent {
 
         private final ItemStack stack;
         private final int count;
         private final boolean fromEquip;
 
-        public Discard(Player player, ItemStack stack, int count, boolean fromEquip) {
-            super(player);
+        public Discard(LivingEntity entity, ItemStack stack, int count, boolean fromEquip) {
+            super(entity);
             this.stack = stack;
             this.count = count;
             this.fromEquip = fromEquip;
         }
 
         public ItemStack getStack() {return this.stack;}
-
-        public ItemStack getCopy() {return this.stack.copyWithCount(count);}
 
         public int getCount() {return this.count;}
 
@@ -67,8 +90,6 @@ public class CardCBs {
         public LivingEntity getFrom() {return this.from;}
 
         public ItemStack getStack() {return this.stack;}
-
-        public ItemStack getCopy() {return this.stack.copyWithCount(count);}
 
         public int getCount() {return this.count;}
 

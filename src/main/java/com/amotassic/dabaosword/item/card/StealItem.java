@@ -1,8 +1,6 @@
 package com.amotassic.dabaosword.item.card;
 
-import com.amotassic.dabaosword.event.listener.CardCBs;
-import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.util.Sounds;
+import com.amotassic.dabaosword.api.event.CardCBs;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -22,28 +20,29 @@ public class StealItem extends CardItem {
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
         if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND) {
+            if (cardUsePre(user, user.getMainHandItem(), entity)) return InteractionResult.SUCCESS;
+        }
+        return InteractionResult.PASS;
+    }
+
+    @Override
+    public void cardUse(LivingEntity user, ItemStack stack, LivingEntity entity) {
+        if (user instanceof Player player) {
             if (entity instanceof Player target) {
-                if (hasItem(target, ModItems.WUXIE)) {
-                    cardUsePost(target, getItem(target, ModItems.WUXIE), null);
-                    voice(target, Sounds.WUXIE);
-                    cardUsePost(user, stack, entity);
-                    voice(user, Sounds.SHUNSHOU);
-                } else {
-                    openInv(user, target, Component.translatable("dabaosword.steal.title"), targetInv(target, true, true, 1, user.getMainHandItem()));
-                }
+                openInv(player, target, Component.translatable("dabaosword.steal.title"), stack, false, true, true, 1);
             } else {
                 List<ItemStack> stacks = new ArrayList<>();
                 if (isCard(entity.getMainHandItem())) stacks.add(entity.getMainHandItem());
                 if (isCard(entity.getOffhandItem())) stacks.add(entity.getOffhandItem());
                 if (!stacks.isEmpty()) {
                     ItemStack chosen = stacks.get(new Random().nextInt(stacks.size()));
-                    voice(user, Sounds.SHUNSHOU);
-                    cardMove(entity, user, chosen, 1, CardCBs.T.INV_TO_INV);
-                    cardUsePost(user, stack, entity);
+                    cardMove(entity, player, chosen, 1, CardCBs.T.INV_TO_INV);
+                    cardUsePost(player, stack, entity);
                 }
             }
-            return InteractionResult.SUCCESS;
-        }
-        return InteractionResult.PASS;
+        } else cardUsePost(user, stack, entity);
     }
+
+    @Override
+    public boolean notImmediatelyEffective() {return true;}
 }

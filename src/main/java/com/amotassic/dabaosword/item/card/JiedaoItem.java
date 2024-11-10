@@ -1,8 +1,6 @@
 package com.amotassic.dabaosword.item.card;
 
-import com.amotassic.dabaosword.event.listener.CardCBs;
-import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.util.Sounds;
+import com.amotassic.dabaosword.api.event.CardCBs;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,19 +14,24 @@ public class JiedaoItem extends CardItem {
 
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
-        ItemStack stack1 = entity.getMainHandItem();
-        if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND && !stack1.isEmpty()) {
-            if (entity instanceof Player player && hasItem(player, ModItems.WUXIE)) {
-                cardUsePost(player, getItem(player, ModItems.WUXIE), null);
-                voice(player, Sounds.WUXIE);
-            } else {
-                if (isCard(stack1)) cardMove(entity, user, stack1, stack1.getCount(), CardCBs.T.INV_TO_INV);
-                else give(user, stack1.copy()); stack1.setCount(0);
-            }
-            voice(user, Sounds.JIEDAO);
-            cardUsePost(user, stack, entity);
-            return InteractionResult.SUCCESS;
+        if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND && !entity.getMainHandItem().isEmpty()) {
+            if (cardUsePre(user, user.getMainHandItem(), entity)) return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
+    }
+
+    @Override
+    public void cardUse(LivingEntity user, ItemStack stack, LivingEntity entity) {
+        ItemStack stack1 = entity.getMainHandItem();
+        if (user instanceof Player player) {
+            if (isCard(stack1)) cardMove(entity, player, stack1, stack1.getCount(), CardCBs.T.INV_TO_INV);
+            else {
+                give(player, stack1.copy());
+                stack1.setCount(0);
+            }
+        } else {
+            user.setItemInHand(InteractionHand.MAIN_HAND, stack1.copy());
+            stack1.setCount(0);
+        }
     }
 }

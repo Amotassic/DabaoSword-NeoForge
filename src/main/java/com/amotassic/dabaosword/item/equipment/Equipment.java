@@ -1,13 +1,16 @@
 package com.amotassic.dabaosword.item.equipment;
 
+import com.amotassic.dabaosword.api.Card;
+import com.amotassic.dabaosword.api.Skill;
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.util.Skill;
 import com.amotassic.dabaosword.util.Sounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
@@ -16,11 +19,14 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
@@ -39,7 +45,7 @@ import static com.amotassic.dabaosword.item.skillcard.SkillItem.setEquipped;
 import static com.amotassic.dabaosword.util.ModTools.*;
 import static com.amotassic.dabaosword.util.ModifyDamage.shan;
 
-public class Equipment extends Item implements ICurioItem, Skill {
+public class Equipment extends Item implements ICurioItem, Skill, Card {
     public Equipment(Properties p_41383_) {super(p_41383_);}
 
     public static class BaguaArmor extends Equipment {
@@ -47,8 +53,8 @@ public class Equipment extends Item implements ICurioItem, Skill {
 
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            tooltip.add(Component.translatable("item.dabaosword.bagua.tooltip"));
             super.appendHoverText(stack, context, tooltip, tooltipFlag);
+            tooltip.add(Component.translatable("item.dabaosword.bagua.tooltip"));
         }
 
         @Override
@@ -59,7 +65,7 @@ public class Equipment extends Item implements ICurioItem, Skill {
             if (source.getEntity() instanceof LivingEntity) {
                 if (!target.hasEffect(ModItems.COOLDOWN2) && !target.getTags().contains("juedou")) {
                     if (hasTrinket(ModItems.BAGUA, target) && new Random().nextFloat() < 0.5 && !source.is(DamageTypeTags.BYPASSES_ARMOR)) {
-                        shan(target, true, source);
+                        shan(target, true, source, amount);
                         return true;
                     }
                 }
@@ -73,8 +79,8 @@ public class Equipment extends Item implements ICurioItem, Skill {
 
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            tooltip.add(Component.translatable("item.dabaosword.baiyin.tooltip"));
             super.appendHoverText(stack, context, tooltip, tooltipFlag);
+            tooltip.add(Component.translatable("item.dabaosword.baiyin.tooltip"));
         }
 
         @Override
@@ -83,7 +89,7 @@ public class Equipment extends Item implements ICurioItem, Skill {
                 voice(target, Sounds.BAIYIN);
                 return new Tuple<>(-0.4f, 0f);
             }
-            return super.modifyDamage(target, source, amount);
+            return null;
         }
     }
 
@@ -92,9 +98,9 @@ public class Equipment extends Item implements ICurioItem, Skill {
 
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            super.appendHoverText(stack, context, tooltip, tooltipFlag);
             tooltip.add(Component.translatable("item.dabaosword.fangtian.tooltip1"));
             tooltip.add(Component.translatable("item.dabaosword.fangtian.tooltip2").withStyle(ChatFormatting.AQUA));
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
         }
 
         @Override
@@ -120,9 +126,9 @@ public class Equipment extends Item implements ICurioItem, Skill {
 
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            super.appendHoverText(stack, context, tooltip, tooltipFlag);
             tooltip.add(Component.translatable("item.dabaosword.gudingdao.tooltip").withStyle(ChatFormatting.GREEN));
             tooltip.add(Component.translatable("item.dabaosword.gudingdao.tooltip2").withStyle(ChatFormatting.AQUA));
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
         }
 
         @Override
@@ -135,7 +141,7 @@ public class Equipment extends Item implements ICurioItem, Skill {
                     return new Tuple<>(0f, 5f);
                 }
             }
-            return super.modifyDamage(target, source, amount);
+            return null;
         }
     }
 
@@ -144,8 +150,8 @@ public class Equipment extends Item implements ICurioItem, Skill {
 
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            tooltip.add(Component.translatable("item.dabaosword.hanbing.tooltip").withStyle(ChatFormatting.AQUA));
             super.appendHoverText(stack, context, tooltip, tooltipFlag);
+            tooltip.add(Component.translatable("item.dabaosword.hanbing.tooltip").withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -161,9 +167,9 @@ public class Equipment extends Item implements ICurioItem, Skill {
 
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            super.appendHoverText(stack, context, tooltip, tooltipFlag);
             tooltip.add(Component.translatable("item.dabaosword.qinggang.tooltip1"));
             tooltip.add(Component.translatable("item.dabaosword.qinggang.tooltip2").withStyle(ChatFormatting.AQUA));
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
         }
 
         @Override
@@ -180,9 +186,9 @@ public class Equipment extends Item implements ICurioItem, Skill {
 
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            super.appendHoverText(stack, context, tooltip, tooltipFlag);
             tooltip.add(Component.translatable("item.dabaosword.qinglong.tooltip1"));
             tooltip.add(Component.translatable("item.dabaosword.qinglong.tooltip2").withStyle(ChatFormatting.AQUA));
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
         }
 
         @Override
@@ -200,8 +206,8 @@ public class Equipment extends Item implements ICurioItem, Skill {
 
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            tooltip.add(Component.translatable("item.dabaosword.rattanarmor.tooltip"));
             super.appendHoverText(stack, context, tooltip, tooltipFlag);
+            tooltip.add(Component.translatable("item.dabaosword.rattanarmor.tooltip"));
         }
 
         //实现渡江不沉的效果，代码来自https://github.com/focamacho/RingsOfAscension/中的水上行走戒指
@@ -228,7 +234,7 @@ public class Equipment extends Item implements ICurioItem, Skill {
                 voice(target, Sounds.TENGJIA2);
                 return new Tuple<>(0f, Math.min(amount, 5f));
             }
-            return super.modifyDamage(target, source, amount);
+            return null;
         }
 
         @Override
@@ -238,15 +244,27 @@ public class Equipment extends Item implements ICurioItem, Skill {
         public boolean cancelDamage(LivingEntity target, DamageSource source, float amount) {
             //弹射物对藤甲无效
             if (source.is(DamageTypeTags.IS_PROJECTILE) && inrattan(target)) {
-                voice(target, Sounds.TENGJIA1);
-                if (source.getDirectEntity() != null) source.getDirectEntity().discard();
-                return true;
+                Entity projectile = source.getDirectEntity();
+                if (projectile instanceof Arrow) { //即使处于CD中，箭也对藤甲无效
+                    projectile.discard();
+                    voice(target, Sounds.TENGJIA1);
+                    return true;
+                }
+                ItemStack stack = trinketItem(ModItems.RATTAN_ARMOR, target);
+                if (getCD(stack) == 0) {
+                    if (projectile != null) projectile.discard();
+                    setCD(stack, 5);
+                    target.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 10,0,false,false,false));
+                    voice(target, Sounds.TENGJIA1);
+                    return true;
+                }
             }
             //若攻击者主手没有物品，则无法击穿藤甲
             if (source.getDirectEntity() instanceof LivingEntity s && inrattan(target) && s.getMainHandItem().isEmpty()) {
                 ItemStack stack = trinketItem(ModItems.RATTAN_ARMOR, target);
                 if (getCD(stack) == 0) {
-                    setCD(stack, 3);
+                    setCD(stack, 5);
+                    target.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 10,0,false,false,false));
                     voice(target, Sounds.TENGJIA1);
                     return true;
                 }
@@ -257,8 +275,46 @@ public class Equipment extends Item implements ICurioItem, Skill {
         private static boolean inrattan(LivingEntity entity) {return hasTrinket(ModItems.RATTAN_ARMOR, entity);}
     }
 
+    public static class ZhangbaWeapon extends Equipment {
+        public ZhangbaWeapon(Properties p_41383_) {super(p_41383_);}
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            super.appendHoverText(stack, context, tooltip, tooltipFlag);
+            tooltip.add(Component.translatable("item.dabaosword.zhangba.tooltip1"));
+            tooltip.add(Component.translatable("item.dabaosword.zhangba.tooltip2").withStyle(ChatFormatting.AQUA));
+        }
+
+        @Override
+        public void curioTick(SlotContext slotContext, ItemStack stack) {
+            super.curioTick(slotContext, stack);
+            LivingEntity entity = slotContext.entity();
+            if (!entity.level().isClientSide && entity instanceof Player player && getCD(stack) == 0) {
+                ItemStack off = player.getOffhandItem();
+                CompoundTag nbt = getOrCreateNbt(stack);
+                boolean one = nbt.contains("has_one");
+                if (isCard(off)) {
+                    if (one) {
+                        nbt.remove("has_one");
+                        setCD(stack, 5);
+                        give(player, new ItemStack(ModItems.SHA));
+                        voice(player, Sounds.ZHANGBA);
+                    } else {nbt.putBoolean("has_one", true);}
+                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
+                    off.shrink(1);
+                }
+            }
+        }
+    }
+
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+        var sr = getSuitAndRank(stack);
+        if (sr != null) {
+            Card.Suits suit = sr.getA(); Card.Ranks rank = sr.getB();
+            if (isRedCard.test(stack)) tooltip.add(Component.translatable("card.suit_and_rank", suit.suit, rank.rank).withStyle(ChatFormatting.RED));
+            else tooltip.add(Component.translatable("card.suit_and_rank", suit.suit, rank.rank));
+        }
 
         if (stack.getItem() == ModItems.CHITU) {
             tooltip.add(Component.translatable("item.dabaosword.chitu.tooltip"));
@@ -272,19 +328,17 @@ public class Equipment extends Item implements ICurioItem, Skill {
             tooltip.add(Component.translatable("item.dabaosword.card_pile.tooltip"));
         }
 
-        if (stack.getItem() != ModItems.CARD_PILE) {
-            if(Screen.hasShiftDown()) {
-                tooltip.add(Component.translatable("equipment.tip1").withStyle(ChatFormatting.BOLD));
-                tooltip.add(Component.translatable("equipment.tip2").withStyle(ChatFormatting.BOLD));
-            } else tooltip.add(Component.translatable("dabaosword.shifttooltip"));
-        }
+        if(Screen.hasShiftDown()) {
+            tooltip.add(Component.translatable("equipment.tip1").withStyle(ChatFormatting.BOLD));
+            tooltip.add(Component.translatable("equipment.tip2").withStyle(ChatFormatting.BOLD));
+        } else tooltip.add(Component.translatable("dabaosword.shifttooltip"));
     }
 
     @Override
     public void onEquip(SlotContext slotContext, ItemStack prevStack, ItemStack stack) {
         if (slotContext.entity().level() instanceof ServerLevel world && !equipped(stack)) {
             world.players().forEach(player -> player.displayClientMessage(
-                    Component.literal(slotContext.entity().getScoreboardName()).append(Component.literal(" equipped ").append(stack.getDisplayName())),false
+                    Component.translatable("dabaosword.entity.equip", slotContext.entity().getDisplayName(), stack.getDisplayName()), false
             ));
             setEquipped(stack, true);
         }
@@ -301,20 +355,25 @@ public class Equipment extends Item implements ICurioItem, Skill {
     @Override
     public boolean canUnequip(SlotContext slotContext, ItemStack stack) {
         LivingEntity entity = slotContext.entity();
-        if (entity instanceof Player player && player.isCreative()) return true;
-        if (stack.getItem() != ModItems.CARD_PILE) return false;
+        if (entity instanceof Player player && !player.isCreative()) return false;
         return ICurioItem.super.canUnequip(slotContext, stack);
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
-        ItemStack stack = player.getItemInHand(usedHand);
-        if (equipItem(player, stack)) return InteractionResultHolder.success(stack);
+        if (!level.isClientSide && usedHand == InteractionHand.MAIN_HAND) {
+            if (cardUsePre(player, player.getMainHandItem(), player)) return InteractionResultHolder.success(player.getMainHandItem());
+        }
         return super.use(level, player, usedHand);
     }
 
-    public static boolean equipItem(Player player, ItemStack stack) {
-        var optional = CuriosApi.getCuriosInventory(player);
+    @Override
+    public void cardUse(LivingEntity user, ItemStack stack, LivingEntity target) {
+        equipItem(user, stack);
+    }
+
+    public static void equipItem(LivingEntity entity, ItemStack stack) {
+        var optional = CuriosApi.getCuriosInventory(entity);
         if (optional.isPresent()) {
             Map<String, ICurioStacksHandler> curios = optional.get().getCurios();
             Tuple<IDynamicStackHandler, SlotContext> firstSlot = null;
@@ -325,15 +384,14 @@ public class Equipment extends Item implements ICurioItem, Skill {
                 for (int i = 0; i < stackHandler.getSlots(); i++) {
                     String id = entry.getKey();
                     NonNullList<Boolean> renderStates = entry.getValue().getRenders();
-                    SlotContext slotContext = new SlotContext(id, player, i, false, renderStates.size() > i && renderStates.get(i));
+                    SlotContext slotContext = new SlotContext(id, entity, i, false, renderStates.size() > i && renderStates.get(i));
 
                     if (stackHandler.isItemValid(i, stack)) {
                         ItemStack present = stackHandler.getStackInSlot(i);
 
                         if (present.isEmpty()) {
                             stackHandler.setStackInSlot(i, stack.copy());
-                            cardUsePost(player, stack, player);
-                            return true;
+                            return;
                         } else if (firstSlot == null) firstSlot = new Tuple<>(stackHandler, slotContext);
                     }
                 }
@@ -344,12 +402,9 @@ public class Equipment extends Item implements ICurioItem, Skill {
                 SlotContext slotContext = firstSlot.getB();
                 int i = slotContext.index();
                 ItemStack present = stackHandler.getStackInSlot(i);
-                cardDiscard(player, present, present.getCount(), true);
+                cardDiscard(entity, present, present.getCount(), true);
                 stackHandler.setStackInSlot(i, stack.copy());
-                cardUsePost(player, stack, player);
-                return true;
             }
         }
-        return false;
     }
 }

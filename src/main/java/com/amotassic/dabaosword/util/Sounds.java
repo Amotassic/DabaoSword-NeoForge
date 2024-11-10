@@ -3,6 +3,8 @@ package com.amotassic.dabaosword.util;
 import net.minecraft.sounds.SoundEvent;
 
 public class Sounds {
+    public static SoundEvent WEIMU = AllRegs.Sounds.WEIMU.get();
+    public static SoundEvent WUSHENG = AllRegs.Sounds.WUSHENG.get();
     public static SoundEvent SHENSU = AllRegs.Sounds.SHENSU.get();
     public static SoundEvent LIANYING = AllRegs.Sounds.LIANYING.get();
     public static SoundEvent XIAOJI = AllRegs.Sounds.XIAOJI.get();
@@ -57,24 +59,8 @@ public class Sounds {
     public static SoundEvent QINGLONG = AllRegs.Sounds.QINGLONG.get();
     public static SoundEvent TENGJIA1 = AllRegs.Sounds.TENGJIA1.get();
     public static SoundEvent TENGJIA2 = AllRegs.Sounds.TENGJIA2.get();
+    public static SoundEvent ZHANGBA = AllRegs.Sounds.ZHANGBA.get();
 
-    public static SoundEvent BINGLIANG = AllRegs.Sounds.BINGLIANG.get();
-    public static SoundEvent GUOHE = AllRegs.Sounds.GUOHE.get();
-    public static SoundEvent HUOGONG = AllRegs.Sounds.HUOGONG.get();
-    public static SoundEvent JIEDAO = AllRegs.Sounds.JIEDAO.get();
-    public static SoundEvent JIU = AllRegs.Sounds.JIU.get();
-    public static SoundEvent JUEDOU = AllRegs.Sounds.JUEDOU.get();
-    public static SoundEvent LEBU = AllRegs.Sounds.LEBU.get();
     public static SoundEvent RECOVER = AllRegs.Sounds.RECOVER.get();
-    public static SoundEvent SHAN = AllRegs.Sounds.SHAN.get();
-    public static SoundEvent SHUNSHOU = AllRegs.Sounds.SHUNSHOU.get();
     public static SoundEvent TAOYUAN = AllRegs.Sounds.TAOYUAN.get();
-    public static SoundEvent TIESUO = AllRegs.Sounds.TIESUO.get();
-    public static SoundEvent WANJIAN = AllRegs.Sounds.WANJIAN.get();
-    public static SoundEvent WUXIE = AllRegs.Sounds.WUXIE.get();
-    public static SoundEvent WUZHONG = AllRegs.Sounds.WUZHONG.get();
-    public static SoundEvent NANMAN = AllRegs.Sounds.NANMAN.get();
-    public static SoundEvent SHA = AllRegs.Sounds.SHA_FIRE.get();
-    public static SoundEvent SHA_FIRE = AllRegs.Sounds.SHA_FIRE.get();
-    public static SoundEvent SHA_THUNDER = AllRegs.Sounds.SHA_THUNDER.get();
 }

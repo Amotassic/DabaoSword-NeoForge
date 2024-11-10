@@ -11,10 +11,8 @@ public class Tags {
     public static final TagKey<Item> CARD = createTag("card");
     public static final TagKey<Item> BASIC_CARD = createTag("basic_card");
     public static final TagKey<Item> ARMOURY_CARD = createTag("armoury_card");
-    public static final TagKey<Item> SKILL = createTag("skills");
-    public static final TagKey<Item> SHA = createTag("sha");
-    public static final TagKey<Item> RECOVER = createTag("recover");
     public static final TagKey<Item> LOCK_SKILL = createTag("lock_skill");
+    public static final TagKey<Item> TRIGGER_WUXIE = createTag("trigger_wuxie");
 
     private static TagKey<Item> createTag(String name) {
         return ItemTags.create(ResourceLocation.fromNamespaceAndPath("dabaosword", name));

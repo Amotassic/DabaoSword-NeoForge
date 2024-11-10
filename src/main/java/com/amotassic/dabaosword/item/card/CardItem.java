@@ -1,20 +1,78 @@
 package com.amotassic.dabaosword.item.card;
 
+import com.amotassic.dabaosword.api.Card;
 import com.amotassic.dabaosword.item.ModItems;
+import com.amotassic.dabaosword.util.Sounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
-public class CardItem extends Item {
+import static com.amotassic.dabaosword.util.ModTools.*;
+
+public class CardItem extends Item implements Card{
     public CardItem(Properties p_41383_) {super(p_41383_);}
+
+    public static class Sha extends CardItem {
+        public Sha(Properties p_41383_) {super(p_41383_);}
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            super.appendHoverText(stack, context, tooltip, tooltipFlag);
+            tooltip.add(Component.translatable("item.dabaosword.sha.tip").withStyle(ChatFormatting.BOLD));
+
+            if (stack.is(ModItems.SHA)) {
+                tooltip.add(Component.translatable("item.dabaosword.sha.tooltip"));
+            }
+            if (stack.is(ModItems.FIRE_SHA)) {
+                tooltip.add(Component.translatable("item.dabaosword.fire_sha.tooltip").withStyle(ChatFormatting.RED));
+            }
+            if (stack.is(ModItems.THUNDER_SHA)) {
+                tooltip.add(Component.translatable("item.dabaosword.thunder_sha.tooltip").withStyle(ChatFormatting.BLUE));
+            }
+        }
+
+        @Override
+        public void cardUse(LivingEntity user, ItemStack stack, LivingEntity entity) {
+            Level world = user.level();
+            user.addTag("sha");
+            if (stack.is(ModItems.SHA)) {
+                if (!hasTrinket(ModItems.RATTAN_ARMOR, entity)) {
+                    entity.invulnerableTime = 0; entity.hurt(user.damageSources().mobAttack(user), 5);
+                } else voice(entity, Sounds.TENGJIA1);
+            }
+            if (stack.is(ModItems.FIRE_SHA)) {
+                entity.invulnerableTime = 0; entity.setRemainingFireTicks(100);
+            }
+            if (stack.is(ModItems.THUNDER_SHA)) {
+                entity.invulnerableTime = 0; entity.hurt(user.damageSources().indirectMagic(user, user),5);
+                LightningBolt lightningEntity = EntityType.LIGHTNING_BOLT.create(world);
+                if (lightningEntity != null) {
+                    lightningEntity.moveTo(entity.getX(), entity.getY(), entity.getZ());
+                    lightningEntity.setVisualOnly(true);
+                    world.addFreshEntity(lightningEntity);
+                }
+            }
+        }
+    }
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+        var sr = getSuitAndRank(stack);
+        if (sr != null) {
+            Card.Suits suit = sr.getA(); Card.Ranks rank = sr.getB();
+            if (isRedCard.test(stack)) tooltip.add(Component.translatable("card.suit_and_rank", suit.suit, rank.rank).withStyle(ChatFormatting.RED));
+            else tooltip.add(Component.translatable("card.suit_and_rank", suit.suit, rank.rank));
+        }
+
         if (stack.getItem() == ModItems.WUXIE) {
             tooltip.add(Component.translatable("item.dabaosword.wuxie.tooltip1"));
             tooltip.add(Component.translatable("item.dabaosword.wuxie.tooltip2"));
@@ -82,7 +140,7 @@ public class CardItem extends Item {
         }
 
         if (stack.getItem() == ModItems.SHAN) {
-            tooltip.add(Component.translatable("item.dabaosword.sha&shan.tooltip").withStyle(ChatFormatting.BOLD));
+            tooltip.add(Component.translatable("item.dabaosword.shan.tip").withStyle(ChatFormatting.BOLD));
             tooltip.add(Component.translatable("item.dabaosword.shan.tooltip"));
         }
 
@@ -116,21 +174,6 @@ public class CardItem extends Item {
 
         if (stack.getItem() == ModItems.GAIN_CARD) {
             tooltip.add(Component.translatable("item.dabaosword.gain_card.tooltip"));
-        }
-
-        if (stack.getItem() == ModItems.SHA) {
-            tooltip.add(Component.translatable("item.dabaosword.sha&shan.tooltip").withStyle(ChatFormatting.BOLD));
-            tooltip.add(Component.translatable("item.dabaosword.sha.tooltip"));
-        }
-
-        if (stack.getItem() == ModItems.FIRE_SHA) {
-            tooltip.add(Component.translatable("item.dabaosword.sha&shan.tooltip").withStyle(ChatFormatting.BOLD));
-            tooltip.add(Component.translatable("item.dabaosword.fire_sha.tooltip").withStyle(ChatFormatting.RED));
-        }
-
-        if (stack.getItem() == ModItems.THUNDER_SHA) {
-            tooltip.add(Component.translatable("item.dabaosword.sha&shan.tooltip").withStyle(ChatFormatting.BOLD));
-            tooltip.add(Component.translatable("item.dabaosword.thunder_sha.tooltip").withStyle(ChatFormatting.BLUE));
         }
     }
 }

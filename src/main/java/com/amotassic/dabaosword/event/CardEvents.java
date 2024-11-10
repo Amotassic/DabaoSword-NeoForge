@@ -1,9 +1,10 @@
 package com.amotassic.dabaosword.event;
 
 import com.amotassic.dabaosword.DabaoSword;
-import com.amotassic.dabaosword.event.listener.CardCBs;
+import com.amotassic.dabaosword.api.event.CardCBs;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
+import com.amotassic.dabaosword.util.ModTools;
 import com.amotassic.dabaosword.util.Sounds;
 import com.amotassic.dabaosword.util.Tags;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,45 +17,61 @@ import static com.amotassic.dabaosword.util.ModTools.*;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class CardEvents {
+    @SubscribeEvent
+    public static void cardUsePre(CardCBs.UsePre event) {
+        LivingEntity user = event.getEntity(); LivingEntity target = event.getTarget();
+        ItemStack stack = event.getStack();
+
+        if (target != null) {
+            if (isBlackCard.test(stack) && stack.is(Tags.ARMOURY_CARD) && hasTrinket(SkillCards.WEIMU, target)) {
+                voice(target, Sounds.WEIMU);
+                ModTools.cardUsePost(user, stack, target);
+                event.setCanceled(true); return;
+            }
+            if (stack.is(Tags.TRIGGER_WUXIE) && hasCard(target, s -> s.is(ModItems.WUXIE))) {
+                ModTools.cardUsePre(target, new ItemStack(ModItems.WUXIE), null); //递归触发无懈，因此不用再写消耗和执行效果
+                ModTools.cardUsePost(user, stack, target);
+                event.setCanceled(true);
+            }
+        }
+    }
 
     @SubscribeEvent
     public static void cardUsePost(CardCBs.UsePost event) {
-        Player user = event.getEntity(); LivingEntity target = event.getTarget();
-        ItemStack stack = event.getStack(); ItemStack copy = event.getCopy();
+        LivingEntity user = event.getEntity(); LivingEntity target = event.getTarget();
+        ItemStack stack = event.getStack();
 
-        if (stack.getItem() == ModItems.WUXIE) stack.shrink(1); //即使创造模式，无懈可击也会消耗，为什么呢？我也不知道
-        else if (!user.isCreative()) stack.shrink(1);
-
-        //集智技能触发
-        if (hasTrinket(SkillCards.JIZHI, user) && copy.is(Tags.ARMOURY_CARD)) {
-            draw(user);
-            voice(user, Sounds.JIZHI);
-        }
-
-        //奔袭技能触发
-        if (hasTrinket(SkillCards.BENXI, user)) {
-            ItemStack trinketItem = trinketItem(SkillCards.BENXI, user);
-            int benxi = getTag(trinketItem);
-            if (benxi < 5) {
-                benxi ++; setTag(trinketItem, benxi);
-                voice(user, Sounds.BENXI);
+        if (user instanceof Player player) {
+            //集智技能触发
+            if (hasTrinket(SkillCards.JIZHI, player) && stack.is(Tags.ARMOURY_CARD)) {
+                draw(player);
+                voice(player, Sounds.JIZHI);
             }
-        }
 
-        if (hasTrinket(SkillCards.LIANYING, user) && countCards(user) == 0) lianyingTrigger(user);
+            //奔袭技能触发
+            if (hasTrinket(SkillCards.BENXI, player)) {
+                ItemStack trinketItem = trinketItem(SkillCards.BENXI, player);
+                int benxi = getTag(trinketItem);
+                if (benxi < 5) {
+                    benxi ++; setTag(trinketItem, benxi);
+                    voice(player, Sounds.BENXI);
+                }
+            }
+
+            if (hasTrinket(SkillCards.LIANYING, player) && countCards(player) == 0) lianyingTrigger(player);
+        }
     }
 
     @SubscribeEvent
     public static void cardDiscard(CardCBs.Discard event) {
-        Player player = event.getEntity();
-        ItemStack stack = event.getStack(); ItemStack copy = event.getCopy();
-        int count = event.getCount(); boolean fromEquip = event.isFromEquip();
+        LivingEntity entity = event.getEntity();
+        ItemStack stack = event.getStack();
+        boolean fromEquip = event.isFromEquip();
 
-        //移除被弃置的牌
-        stack.shrink(count);
+        if (XingshangTrigger(entity, stack)) return; //todo 卡牌弃置后并被他人获得后，与其他技能的交互处理
 
         //弃置牌后，玩家的死亡判断是有必要的
-        if (player.isAlive()) {
+        if (entity instanceof Player player && player.isAlive()) {
             if (hasTrinket(SkillCards.LIANYING, player) && !fromEquip && countCards(player) == 0) lianyingTrigger(player);
 
             if (hasTrinket(SkillCards.XIAOJI, player) && fromEquip) xiaojiTrigger(player);
@@ -64,14 +81,8 @@ public class CardEvents {
     @SubscribeEvent
     public static void cardMove(CardCBs.Move event) {
         LivingEntity from = event.getFrom(); Player to = event.getEntity();
-        ItemStack stack = event.getStack(); ItemStack copy = event.getCopy();
-        int count = event.getCount(); CardCBs.T type = event.getType();
-
-        //如果是移动到物品栏的类型，则减少from的物品，给to等量的物品（移动到装备区有专门的方法）
-        if (type == CardCBs.T.INV_TO_INV || type == CardCBs.T.EQUIP_TO_INV) {
-            give(to, copy);
-            stack.shrink(count);
-        }
+        ItemStack stack = event.getStack();
+        CardCBs.T type = event.getType();
 
         if (type == CardCBs.T.INV_TO_EQUIP || type == CardCBs.T.INV_TO_INV) {
             if (from instanceof Player player && hasTrinket(SkillCards.LIANYING, player) && countCards(player) == 0) lianyingTrigger(player);
@@ -80,6 +91,19 @@ public class CardEvents {
         if (type == CardCBs.T.EQUIP_TO_INV || type == CardCBs.T.EQUIP_TO_EQUIP) {
             if (from instanceof Player player && hasTrinket(SkillCards.XIAOJI, player)) xiaojiTrigger(player);
         }
+    }
+
+    private static boolean XingshangTrigger(LivingEntity entity, ItemStack stack) {
+        if (entity.isAlive()) return false;
+        for (Player player : entity.level().players()) {
+            if (hasTrinket(SkillCards.XINGSHANG, player) && player.distanceTo(entity) <= 25 && player != entity) {
+                if (!player.getTags().contains("xingshang")) voice(player, Sounds.XINGSHANG);
+                player.addTag("xingshang"); //防止同时触发大量语音播放
+                give(player, stack.copy());
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void lianyingTrigger(Player player) {

@@ -29,6 +29,7 @@ public class SkillCards {
     public static Item LONGDAN = AllRegs.Skills.LONGDAN.get();
     public static Item RENDE = AllRegs.Skills.RENDE.get();
     public static Item TIEJI = AllRegs.Skills.TIEJI.get();
+    public static Item WUSHENG = AllRegs.Skills.WUSHENG.get();
     //吴
     public static Item BUQU = AllRegs.Skills.BUQU.get();
     public static Item GONGXIN = AllRegs.Skills.GONGXIN.get();
@@ -45,6 +46,7 @@ public class SkillCards {
     public static Item LEIJI = AllRegs.Skills.LEIJI.get();
     public static Item LUANJI = AllRegs.Skills.LUANJI.get();
     public static Item TAOLUAN = AllRegs.Skills.TAOLUAN.get();
+    public static Item WEIMU = AllRegs.Skills.WEIMU.get();
     public static Item MASHU = AllRegs.Skills.MASHU.get();
 
     public static Item FEIYING = AllRegs.Skills.FEIYING.get();

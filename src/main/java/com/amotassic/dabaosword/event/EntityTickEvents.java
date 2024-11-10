@@ -31,6 +31,11 @@ public class EntityTickEvents {
     public static void endLivingTick(EntityTickEvent.Post event) {
         Entity en = event.getEntity();
         if (en.level() instanceof ServerLevel world && en instanceof LivingEntity entity) {
+            if (world.getGameTime() % 2 == 0) {
+                entity.getTags().remove("sha");
+                en.getTags().remove("juedou");
+            }
+
             Player closestPlayer = world.getNearestPlayer(entity, 5);
             if (closestPlayer != null && hasTrinket(ModItems.FANGTIAN, closestPlayer) && entity.isAlive()) {
                 ItemStack stack = trinketItem(ModItems.FANGTIAN, closestPlayer);
@@ -57,8 +62,7 @@ public class EntityTickEvents {
 
             if (time % giveCard == 0) { // 每分钟摸两张牌
                 if (hasTrinket(ModItems.CARD_PILE, player) && !player.isCreative() && !player.isSpectator() && player.isAlive()) {
-                    if (countCards(player) > player.getMaxHealth() && limit) return;
-                    else { //如果不限制摸牌就继续发牌
+                    if (countCards(player) < player.getMaxHealth() || !limit) {
                         draw(player, 2);
                         player.displayClientMessage(Component.translatable("dabaosword.draw"),true);
                     }
@@ -77,9 +81,7 @@ public class EntityTickEvents {
             }
 
             if (time % 2 == 0) {
-                player.getTags().remove("sha");
                 player.getTags().remove("benxi");
-                player.getTags().remove("juedou");
                 player.getTags().remove("xingshang");
 
                 //牌堆恢复饱食度
@@ -98,21 +100,26 @@ public class EntityTickEvents {
                 }
             }
 
-            int level1 = 0; int level2 = 0; //马术和飞影的效果
-            if (shouldMashu(player)) {
-                if (hasTrinket(ModItems.CHITU, player)) level1++;
-                if (hasTrinket(SkillCards.MASHU, player)) level1++;
-                if (level1 > 0) player.addEffect(new MobEffectInstance(ModItems.REACH, 10,level1,false,false,true));
+            //处理所有加触及距离和近战防御距离的效果
+            int level1 = 0; int longHand = 0; int level2 = 0;
+            ItemStack mainHand = player.getMainHandItem();
+            if (hasTrinket(SkillCards.BENXI, player)) longHand += getTag(trinketItem(SkillCards.BENXI, player));
+            if (mainHand.is(ModItems.DISCARD) || mainHand.is(ModItems.JUEDOU)) longHand += 114;
+            if (noTieji(player)) {
+                if (hasTrinket(SkillCards.LIEGONG, player) && !player.hasEffect(ModItems.COOLDOWN)) longHand += 13;
+                if (hasTrinket(SkillCards.WUSHENG, player) && isSha.test(mainHand)) longHand += 13;
             }
+            if (hasTrinket(ModItems.CHITU, player)) level1++;
+            if (hasTrinket(SkillCards.MASHU, player)) level1++;
+            //如果有马术或赤兔，则等级加上额外加成数，否则为额外加成数-1
+            level1 = level1 > 0 ? level1 + longHand : longHand - 1;
+            if (level1 >= 0) player.addEffect(new MobEffectInstance(ModItems.REACH, 2,level1,false,false,false));
+
             if (hasTrinket(ModItems.DILU, player)) level2++;
             if (hasTrinket(SkillCards.FEIYING, player)) level2++;
-            if (level2 > 0) player.addEffect(new MobEffectInstance(ModItems.DEFEND, 10,level2,false,false,true));
+            if (level2 > 0) player.addEffect(new MobEffectInstance(ModItems.DEFEND, 2,level2,false,false,false));
 
         }
-    }
-
-    static boolean shouldMashu(Player player) {
-        return !hasTrinket(SkillCards.BENXI, player) && player.getMainHandItem().getItem() != ModItems.JUEDOU && player.getMainHandItem().getItem() != ModItems.DISCARD;
     }
 
     static boolean isLooking(Player player, Entity entity) {

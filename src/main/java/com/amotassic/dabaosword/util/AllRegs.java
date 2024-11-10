@@ -2,15 +2,14 @@ package com.amotassic.dabaosword.util;
 
 import com.amotassic.dabaosword.effect.*;
 import com.amotassic.dabaosword.item.BBjiItem;
+import com.amotassic.dabaosword.item.GiftBoxItem;
 import com.amotassic.dabaosword.item.LetMeCCItem;
 import com.amotassic.dabaosword.item.card.*;
-import com.amotassic.dabaosword.item.equipment.ArrowRainItem;
-import com.amotassic.dabaosword.item.equipment.Equipment;
-import com.amotassic.dabaosword.item.equipment.GudingdaoItem;
-import com.amotassic.dabaosword.item.equipment.SunshineSmile;
+import com.amotassic.dabaosword.item.equipment.*;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.ui.FullInvScreenHandler;
+import com.amotassic.dabaosword.ui.PileScreenHandler;
 import com.amotassic.dabaosword.ui.PlayerInvScreenHandler;
 import com.amotassic.dabaosword.ui.SimpleMenuHandler;
 import net.minecraft.core.component.DataComponentType;
@@ -41,7 +40,7 @@ public class AllRegs {
         public static final DeferredRegister<Item> ITEMS = DeferredRegister.createItems("dabaosword");
 
         public static final DeferredHolder<Item, Item> GAIN_CARD = ITEMS.register("gain_card", ()-> new GainCardItem(new Item.Properties()));
-        public static final DeferredHolder<Item, Item> CARD_PILE = ITEMS.register("card_pile", ()-> new Equipment(new Item.Properties().stacksTo(1)));
+        public static final DeferredHolder<Item, Item> CARD_PILE = ITEMS.register("card_pile", ()-> new CardPile(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> GUDINGDAO = ITEMS.register("gudingdao", GudingdaoItem::new);
         public static final DeferredHolder<Item, Item> GUDING_WEAPON = ITEMS.register("guding_dao", ()-> new Equipment.GudingWeapon(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> INCOMPLETE_GUDINGDAO = ITEMS.register("incomplete_gdd", ()-> new Item(new Item.Properties().stacksTo(1)));
@@ -50,15 +49,16 @@ public class AllRegs {
         public static final DeferredHolder<Item, Item> HANBING = ITEMS.register("hanbing", ()-> new Equipment.HanbingWeapon(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> QINGGANG = ITEMS.register("qinggang", ()-> new Equipment.QinggangWeapon(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> QINGLONG = ITEMS.register("qinglong", ()-> new Equipment.QinglongWeapon(new Item.Properties().stacksTo(1)));
+        public static final DeferredHolder<Item, Item> ZHANGBA = ITEMS.register("zhangba", ()-> new Equipment.ZhangbaWeapon(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> BAGUA = ITEMS.register("bagua", ()-> new Equipment.BaguaArmor(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> BAIYIN = ITEMS.register("baiyin", ()-> new Equipment.BaiyinArmor(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> RATTAN_ARMOR = ITEMS.register("rattan_armor", ()-> new Equipment.RattanArmor(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> CHITU = ITEMS.register("chitu", ()-> new Equipment(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> DILU = ITEMS.register("dilu", ()-> new Equipment(new Item.Properties().stacksTo(1)));
 
-        public static final DeferredHolder<Item, Item> SHA = ITEMS.register("sha", ()-> new CardItem(new Item.Properties()));
-        public static final DeferredHolder<Item, Item> FIRE_SHA = ITEMS.register("fire_sha", ()-> new CardItem(new Item.Properties()));
-        public static final DeferredHolder<Item, Item> THUNDER_SHA = ITEMS.register("thunder_sha", ()-> new CardItem(new Item.Properties()));
+        public static final DeferredHolder<Item, Item> SHA = ITEMS.register("sha", ()-> new CardItem.Sha(new Item.Properties()));
+        public static final DeferredHolder<Item, Item> FIRE_SHA = ITEMS.register("fire_sha", ()-> new CardItem.Sha(new Item.Properties()));
+        public static final DeferredHolder<Item, Item> THUNDER_SHA = ITEMS.register("thunder_sha", ()-> new CardItem.Sha(new Item.Properties()));
         public static final DeferredHolder<Item, Item> SHAN = ITEMS.register("shan", ()-> new ShanItem(new Item.Properties()));
         public static final DeferredHolder<Item, Item> PEACH = ITEMS.register("peach", ()-> new PeachItem(new Item.Properties()));
         public static final DeferredHolder<Item, Item> JIU = ITEMS.register("jiu", ()-> new JiuItem(new Item.Properties()));
@@ -93,6 +93,7 @@ public class AllRegs {
                             o.accept(HANBING.get());
                             o.accept(QINGGANG.get());
                             o.accept(QINGLONG.get());
+                            o.accept(ZHANGBA.get());
                             o.accept(BAGUA.get());
                             o.accept(BAIYIN.get());
                             o.accept(RATTAN_ARMOR.get());
@@ -144,6 +145,7 @@ public class AllRegs {
                             o.accept(SkillCards.LONGDAN);
                             o.accept(SkillCards.RENDE);
                             o.accept(SkillCards.TIEJI);
+                            o.accept(SkillCards.WUSHENG);
                             //吴
                             o.accept(SkillCards.BUQU);
                             o.accept(SkillCards.GONGXIN);
@@ -160,6 +162,7 @@ public class AllRegs {
                             o.accept(SkillCards.LEIJI);
                             o.accept(SkillCards.LUANJI);
                             o.accept(SkillCards.TAOLUAN);
+                            o.accept(SkillCards.WEIMU);
                             o.accept(SkillCards.MASHU);
                             o.accept(SkillCards.FEIYING);
 
@@ -197,6 +200,7 @@ public class AllRegs {
         public static final DeferredHolder<Item, Item> LONGDAN = ITEMS.register("longdan", ()-> new SkillItem.Longdan(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> RENDE = ITEMS.register("rende", ()-> new SkillItem.Rende(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> TIEJI = ITEMS.register("tieji", ()-> new SkillItem.Tieji(new Item.Properties().stacksTo(1)));
+        public static final DeferredHolder<Item, Item> WUSHENG = ITEMS.register("wusheng", ()-> new SkillItem.Wusheng(new Item.Properties().stacksTo(1)));
         //吴
         public static final DeferredHolder<Item, Item> BUQU = ITEMS.register("buqu", ()-> new SkillItem.Buqu(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> GONGXIN = ITEMS.register("gongxin", ()-> new SkillItem.Gongxin(new Item.Properties().stacksTo(1)));
@@ -213,6 +217,7 @@ public class AllRegs {
         public static final DeferredHolder<Item, Item> LEIJI = ITEMS.register("leiji", ()-> new SkillItem(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> LUANJI = ITEMS.register("luanji", ()-> new SkillItem.Luanji(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> TAOLUAN = ITEMS.register("taoluan", ()-> new SkillItem.Taoluan(new Item.Properties().stacksTo(1)));
+        public static final DeferredHolder<Item, Item> WEIMU = ITEMS.register("weimu", ()-> new SkillItem.Weimu(new Item.Properties().stacksTo(1)));
         public static final DeferredHolder<Item, Item> MASHU = ITEMS.register("mashu", ()-> new SkillItem(new Item.Properties().stacksTo(1)));
 
         public static final DeferredHolder<Item, Item> FEIYING = ITEMS.register("feiying", ()-> new SkillItem(new Item.Properties().stacksTo(1)));
@@ -257,10 +262,13 @@ public class AllRegs {
         public static final Supplier<MenuType<SimpleMenuHandler>> SIMPLE_MENU_HANDLER = MENU.register("simple_menu", () -> IMenuTypeExtension.create(SimpleMenuHandler::new));
         public static final Supplier<MenuType<PlayerInvScreenHandler>> PLAYER_INV_SCREEN_HANDLER = MENU.register("player_inv", () -> IMenuTypeExtension.create(PlayerInvScreenHandler::new));
         public static final Supplier<MenuType<FullInvScreenHandler>> FULL_INV_SCREEN_HANDLER = MENU.register("full_inv", () -> IMenuTypeExtension.create(FullInvScreenHandler::new));
+        public static final Supplier<MenuType<PileScreenHandler>> PILE_SCREEN_HANDLER = MENU.register("card_pile", () -> IMenuTypeExtension.create(PileScreenHandler::new));
     }
 
     public static class Sounds {
         public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(BuiltInRegistries.SOUND_EVENT, "dabaosword");
+        public static final DeferredHolder<SoundEvent, SoundEvent> WUSHENG = register("wusheng");
+        public static final DeferredHolder<SoundEvent, SoundEvent> WEIMU = register("weimu");
         public static final DeferredHolder<SoundEvent, SoundEvent> SHENSU = register("shensu");
         public static final DeferredHolder<SoundEvent, SoundEvent> LIANYING = register("lianying");
         public static final DeferredHolder<SoundEvent, SoundEvent> XIAOJI = register("xiaoji");
@@ -315,17 +323,18 @@ public class AllRegs {
         public static final DeferredHolder<SoundEvent, SoundEvent> QINGLONG = register("qinglong");
         public static final DeferredHolder<SoundEvent, SoundEvent> TENGJIA1 = register("tengjia1");
         public static final DeferredHolder<SoundEvent, SoundEvent> TENGJIA2 = register("tengjia2");
+        public static final DeferredHolder<SoundEvent, SoundEvent> ZHANGBA = register("zhangba");
 
         public static final DeferredHolder<SoundEvent, SoundEvent> BINGLIANG = register("bingliang");
-        public static final DeferredHolder<SoundEvent, SoundEvent> GUOHE = register("guohe");
+        public static final DeferredHolder<SoundEvent, SoundEvent> GUOHE = register("discard");
         public static final DeferredHolder<SoundEvent, SoundEvent> HUOGONG = register("huogong");
         public static final DeferredHolder<SoundEvent, SoundEvent> JIEDAO = register("jiedao");
         public static final DeferredHolder<SoundEvent, SoundEvent> JIU = register("jiu");
         public static final DeferredHolder<SoundEvent, SoundEvent> JUEDOU = register("juedou");
-        public static final DeferredHolder<SoundEvent, SoundEvent> LEBU = register("lebu");
-        public static final DeferredHolder<SoundEvent, SoundEvent> RECOVER = register("recover");
+        public static final DeferredHolder<SoundEvent, SoundEvent> LEBU = register("too_happy");
+        public static final DeferredHolder<SoundEvent, SoundEvent> RECOVER = register("peach");
         public static final DeferredHolder<SoundEvent, SoundEvent> SHAN = register("shan");
-        public static final DeferredHolder<SoundEvent, SoundEvent> SHUNSHOU = register("shunshou");
+        public static final DeferredHolder<SoundEvent, SoundEvent> SHUNSHOU = register("steal");
         public static final DeferredHolder<SoundEvent, SoundEvent> TAOYUAN = register("taoyuan");
         public static final DeferredHolder<SoundEvent, SoundEvent> TIESUO = register("tiesuo");
         public static final DeferredHolder<SoundEvent, SoundEvent> WANJIAN = register("wanjian");
@@ -333,8 +342,8 @@ public class AllRegs {
         public static final DeferredHolder<SoundEvent, SoundEvent> WUZHONG = register("wuzhong");
         public static final DeferredHolder<SoundEvent, SoundEvent> NANMAN = register("nanman");
         public static final DeferredHolder<SoundEvent, SoundEvent> SHA = register("sha");
-        public static final DeferredHolder<SoundEvent, SoundEvent> SHA_FIRE = register("sha_fire");
-        public static final DeferredHolder<SoundEvent, SoundEvent> SHA_THUNDER = register("sha_thunder");
+        public static final DeferredHolder<SoundEvent, SoundEvent> SHA_FIRE = register("fire_sha");
+        public static final DeferredHolder<SoundEvent, SoundEvent> SHA_THUNDER = register("thunder_sha");
 
         public static DeferredHolder<SoundEvent, SoundEvent> register(String name){
             ResourceLocation location = ResourceLocation.fromNamespaceAndPath("dabaosword", name);

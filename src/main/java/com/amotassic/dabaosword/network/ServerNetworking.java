@@ -1,13 +1,17 @@
 package com.amotassic.dabaosword.network;
 
 import com.amotassic.dabaosword.DabaoSword;
+import com.amotassic.dabaosword.api.CardPileInventory;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
+import com.amotassic.dabaosword.ui.PileScreenHandler;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
@@ -59,7 +63,22 @@ public class ServerNetworking {
 
         registrar.playToServer(QuickSwapPayload.ID, QuickSwapPayload.CODEC, (p, c) -> {
             Player player = c.player();
-            openInv(player, player, Component.translatable("key.dabaosword.select_card"), targetInv(player, false, false, 3, new ItemStack(ModItems.SUNSHINE_SMILE)));
+            int i = p.id();
+            if (i == 0) openInv(player, player, Component.translatable("key.dabaosword.select_card"), new ItemStack(ModItems.WANJIAN), true, false, false, 2);
+            if (i == 1) openInv(player, player, Component.translatable("key.dabaosword.select_card"), new ItemStack(ModItems.SUNSHINE_SMILE), true, false, false, 3);
+            if (i == 2) player.openMenu(new SimpleMenuProvider((id, inv, player1) -> new PileScreenHandler(id, inv, new CardPileInventory(inv.player)), Component.translatable("card_pile.title")), (buf -> buf.writeInt(0)));
+            if (i == 3) {
+                var pair = getDamage(player);
+                if (pair != null) {
+                    //取消闪避后，先移除记录的伤害，给玩家一个CD防止闪触发
+                    ItemStack stack = trinketItem(ModItems.CARD_PILE, player);
+                    CompoundTag nbt = getOrCreateNbt(stack); nbt.remove("DamageDodged");
+                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
+                    player.addEffect(new MobEffectInstance(ModItems.COOLDOWN2,2,0,false,false,false));
+                    player.hurt(pair.getA().getA(), pair.getA().getB());
+                    give(player, pair.getB());
+                }
+            }
         });
     }
 }
