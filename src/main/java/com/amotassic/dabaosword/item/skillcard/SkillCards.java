@@ -10,6 +10,7 @@ public class SkillCards {
     public static Item XINGSHANG = AllRegs.Skills.XINGSHANG.get();
     public static Item GANGLIE = AllRegs.Skills.GANGLIE.get();
     public static Item GONGAO = AllRegs.Skills.GONGAO.get();
+    public static Item JIANXIONG = AllRegs.Skills.JIANXIONG.get();
     public static Item JUEQING = AllRegs.Skills.JUEQING.get();
     public static Item LUOSHEN = AllRegs.Skills.LUOSHEN.get();
     public static Item QINGGUO = AllRegs.Skills.QINGGUO.get();
@@ -40,9 +41,11 @@ public class SkillCards {
     public static Item POJUN = AllRegs.Skills.POJUN.get();
     public static Item QIXI = AllRegs.Skills.QIXI.get();
     public static Item XIAOJI = AllRegs.Skills.XIAOJI.get();
+    public static Item YINGZI = AllRegs.Skills.YINGZI.get();
     public static Item ZHIHENG = AllRegs.Skills.ZHIHENG.get();
     public static Item ZHIJIAN = AllRegs.Skills.ZHIJIAN.get();
     //群
+    public static Item JIZHAN = AllRegs.Skills.JIZHAN.get();
     public static Item LEIJI = AllRegs.Skills.LEIJI.get();
     public static Item LUANJI = AllRegs.Skills.LUANJI.get();
     public static Item TAOLUAN = AllRegs.Skills.TAOLUAN.get();

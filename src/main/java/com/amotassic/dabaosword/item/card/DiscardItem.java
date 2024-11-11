@@ -18,8 +18,6 @@ import java.util.stream.IntStream;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class DiscardItem extends CardItem {
-    public DiscardItem(Properties p_41383_) {super(p_41383_);}
-
     @Override
     public @NotNull InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
         if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND) {

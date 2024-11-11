@@ -11,8 +11,6 @@ import net.minecraft.world.item.ItemStack;
 import static com.amotassic.dabaosword.util.ModTools.cardUsePre;
 
 public class TooHappyItem extends CardItem {
-    public TooHappyItem(Properties p_41383_) {super(p_41383_);}
-
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
         if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND) {

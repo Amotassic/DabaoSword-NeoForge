@@ -46,15 +46,13 @@ import static com.amotassic.dabaosword.util.ModTools.*;
 import static com.amotassic.dabaosword.util.ModifyDamage.shan;
 
 public class Equipment extends Item implements ICurioItem, Skill, Card {
-    public Equipment(Properties p_41383_) {super(p_41383_);}
+    public Equipment() {super(new Properties().stacksTo(1));}
 
     public static class BaguaArmor extends Equipment {
-        public BaguaArmor(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.bagua.tooltip"));
+            tooltip.add(Component.translatable("item.dabaosword.bagua.tooltip").withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -75,12 +73,10 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
     }
 
     public static class BaiyinArmor extends Equipment {
-        public BaiyinArmor(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.baiyin.tooltip"));
+            tooltip.add(Component.translatable("item.dabaosword.baiyin.tooltip").withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -94,8 +90,6 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
     }
 
     public static class FangtianWeapon extends Equipment {
-        public FangtianWeapon(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             super.appendHoverText(stack, context, tooltip, tooltipFlag);
@@ -122,8 +116,6 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
     }
 
     public static class GudingWeapon extends Equipment {
-        public GudingWeapon(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             super.appendHoverText(stack, context, tooltip, tooltipFlag);
@@ -146,8 +138,6 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
     }
 
     public static class HanbingWeapon extends Equipment {
-        public HanbingWeapon(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             super.appendHoverText(stack, context, tooltip, tooltipFlag);
@@ -163,8 +153,6 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
     }
 
     public static class QinggangWeapon extends Equipment {
-        public QinggangWeapon(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             super.appendHoverText(stack, context, tooltip, tooltipFlag);
@@ -182,8 +170,6 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
     }
 
     public static class QinglongWeapon extends Equipment {
-        public QinglongWeapon(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             super.appendHoverText(stack, context, tooltip, tooltipFlag);
@@ -201,8 +187,17 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
         }
     }
 
+    public static class RenwangArmor extends Equipment {
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            super.appendHoverText(stack, context, tooltip, tooltipFlag);
+            tooltip.add(Component.translatable("item.dabaosword.renwang.tooltip1"));
+            tooltip.add(Component.translatable("item.dabaosword.renwang.tooltip2").withStyle(ChatFormatting.AQUA));
+        }
+    }
+
     public static class RattanArmor extends Equipment {
-        public RattanArmor(Properties p_41383_) {super(p_41383_);}
+        public RattanArmor() {super();}
 
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
@@ -242,6 +237,7 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
         @Override
         public boolean cancelDamage(LivingEntity target, DamageSource source, float amount) {
+            ItemStack stack = trinketItem(ModItems.RATTAN_ARMOR, target);
             //弹射物对藤甲无效
             if (source.is(DamageTypeTags.IS_PROJECTILE) && inrattan(target)) {
                 Entity projectile = source.getDirectEntity();
@@ -250,7 +246,6 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
                     voice(target, Sounds.TENGJIA1);
                     return true;
                 }
-                ItemStack stack = trinketItem(ModItems.RATTAN_ARMOR, target);
                 if (getCD(stack) == 0) {
                     if (projectile != null) projectile.discard();
                     setCD(stack, 5);
@@ -261,7 +256,6 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
             }
             //若攻击者主手没有物品，则无法击穿藤甲
             if (source.getDirectEntity() instanceof LivingEntity s && inrattan(target) && s.getMainHandItem().isEmpty()) {
-                ItemStack stack = trinketItem(ModItems.RATTAN_ARMOR, target);
                 if (getCD(stack) == 0) {
                     setCD(stack, 5);
                     target.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 10,0,false,false,false));
@@ -276,7 +270,7 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
     }
 
     public static class ZhangbaWeapon extends Equipment {
-        public ZhangbaWeapon(Properties p_41383_) {super(p_41383_);}
+        public ZhangbaWeapon() {super();}
 
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {

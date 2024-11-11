@@ -25,16 +25,16 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Unique LivingEntity dabaoSword$living = (LivingEntity) (Object) this;
 
-    @Unique DamageSource dabaoSword$source;
-
-    @Inject(method = "hurt", at = @At(value = "HEAD"))
-    private void cancelDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        dabaoSword$source = source;
+    @Inject(method = "hurt", at = @At(value = "INVOKE", target = "Ljava/util/Stack;push(Ljava/lang/Object;)Ljava/lang/Object;"), cancellable = true)
+    public void hurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        int i = ModifyDamage.shouldCancel(dabaoSword$living, source, amount);
+        if (i == 1) cir.setReturnValue(false);
+        if (i == 2) cir.setReturnValue(true);
     }
 
     @ModifyVariable(method = "getDamageAfterArmorAbsorb", at = @At(value = "HEAD"), argsOnly = true)
-    protected float modifyDamageBeforeArmor(float amount) {
-        return ModifyDamage.modify(dabaoSword$living, dabaoSword$source, amount);
+    protected float modifyDamageBeforeArmor(float amount, DamageSource source) {
+        return ModifyDamage.modify(dabaoSword$living, source, amount);
     }
 
     //翻面的生物无法发起攻击

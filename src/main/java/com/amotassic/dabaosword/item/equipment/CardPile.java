@@ -18,8 +18,6 @@ import top.theillusivec4.curios.api.SlotContext;
 import java.util.List;
 
 public class CardPile extends Equipment {
-    public CardPile(Properties p_41383_) {super(p_41383_);}
-
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
         tooltip.add(Component.translatable("item.dabaosword.card_pile.tooltip"));
@@ -55,4 +53,7 @@ public class CardPile extends Equipment {
             }
         }
     }
+
+    @Override
+    public int onDrawPhase(Player player, ItemStack stack) {return 2;}
 }

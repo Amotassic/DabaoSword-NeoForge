@@ -1,6 +1,5 @@
 package com.amotassic.dabaosword.item.equipment;
 
-import com.amotassic.dabaosword.item.card.CardItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -11,28 +10,38 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Arrow;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 
-public class ArrowRainItem extends CardItem {
-    public ArrowRainItem(Properties p_41383_) {super(p_41383_);}
+import java.util.List;
+
+@SuppressWarnings("all")
+public class ArrowRainItem extends Item {
+    public ArrowRainItem() {super(new Properties().durability(50).rarity(Rarity.UNCOMMON));}
+
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+        tooltip.add(Component.translatable("item.dabaosword.arrowrain.tooltip"));
+    }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (!world.isClientSide && hand == InteractionHand.MAIN_HAND) {
-            arrowRain(player, 5);
+            arrowRain(player, 5, 5);
             if (!player.isCreative()) stack.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
             return InteractionResultHolder.success(stack);
         }
         return InteractionResultHolder.pass(stack);
     }
 
-    public static void arrowRain(LivingEntity entity, float speed) {
+    public static void arrowRain(LivingEntity entity, float speed, int count) {
         ServerLevel world = (ServerLevel) entity.level();
-        int[] angles = {10, 5, 0, -5, -10};
-        for (int angle : angles) {summonArrow(entity, angle, speed);}
+        for (int i = 0; i < count; i++) {
+            int j;
+            if (i % 2 == 0) j = -5 * i / 2; else j = 5 * (i + 1) / 2;
+            summonArrow(entity, j, speed);
+        }
         world.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F / (world.getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
     }
 

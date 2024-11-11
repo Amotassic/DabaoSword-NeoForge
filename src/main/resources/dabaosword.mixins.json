@@ -6,6 +6,7 @@
   "refmap": "dabaosword.refmap.json",
   "mixins": [
     "ArrowEntityMixin",
+    "EntityMixin",
     "ItemEntityMixin",
     "LargeFireballMixin",
     "LivingEntityMixin",
@@ -16,7 +17,8 @@
   "client": [
     "client.DrawContextMixin",
     "client.GameRendererMixin",
-    "client.LivingEntityRendererMixin"
+    "client.LivingEntityRendererMixin",
+    "client.ModelLoaderMixin"
   ],
   "injectors": {
     "defaultRequire": 1

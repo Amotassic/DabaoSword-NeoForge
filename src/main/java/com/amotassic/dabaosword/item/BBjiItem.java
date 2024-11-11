@@ -18,7 +18,7 @@ import java.util.List;
 import static com.amotassic.dabaosword.util.ModTools.voice;
 
 public class BBjiItem extends Item {
-    public BBjiItem(Properties p_41383_) {super(p_41383_);}
+    public BBjiItem() {super(new Item.Properties().durability(250));}
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {

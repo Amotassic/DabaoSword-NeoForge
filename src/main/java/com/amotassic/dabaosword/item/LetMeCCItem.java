@@ -25,7 +25,7 @@ import static com.amotassic.dabaosword.command.InfoCommand.openFullInv;
 import static com.amotassic.dabaosword.util.ModTools.voice;
 
 public class LetMeCCItem extends Item {
-    public LetMeCCItem(Properties properties) {super(properties);}
+    public LetMeCCItem() {super(new Item.Properties().stacksTo(1));}
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {

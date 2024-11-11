@@ -10,7 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import java.util.Objects;
 
 public class TooHappyEffect extends MobEffect {
-    public TooHappyEffect(MobEffectCategory p_19451_, int p_19452_) {super(p_19451_, p_19452_);}
+    public TooHappyEffect() {super(MobEffectCategory.HARMFUL, 0xF73C0A);}
 
     @Override
     public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {return true;}

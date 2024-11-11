@@ -12,12 +12,10 @@ import net.minecraft.world.level.Level;
 import static com.amotassic.dabaosword.util.ModTools.cardUsePre;
 
 public class JiuItem extends CardItem {
-    public JiuItem(Properties p_41383_) {super(p_41383_);}
-
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         if (!user.hasEffect(MobEffects.DAMAGE_BOOST) && !world.isClientSide && hand == InteractionHand.MAIN_HAND) {
-            if (cardUsePre(user, user.getMainHandItem(), null)) return InteractionResultHolder.success(user.getMainHandItem());
+            if (cardUsePre(user, user.getMainHandItem(), user)) return InteractionResultHolder.success(user.getMainHandItem());
         }
         return InteractionResultHolder.success(user.getItemInHand(hand));
     }

@@ -6,7 +6,8 @@
     "armor",
     "weapon",
     "skills",
-    "horses",
+    "attack",
+    "defend",
     "card_pile"
   ]
 }

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 public class InvulnerableEffect extends MobEffect {
-    public InvulnerableEffect(MobEffectCategory category, int color) {super(category, color);}
+    public InvulnerableEffect() {super(MobEffectCategory.BENEFICIAL,0x35F5DF);}
 
     @Override
     public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {return true;}

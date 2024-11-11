@@ -17,6 +17,7 @@ public class ModItems {
     public static Item QINGLONG = AllRegs.Items.QINGLONG.get();
     public static Item BAGUA = AllRegs.Items.BAGUA.get();
     public static Item BAIYIN = AllRegs.Items.BAIYIN.get();
+    public static Item RENWANG = AllRegs.Items.RENWANG.get();
     public static Item RATTAN_ARMOR = AllRegs.Items.RATTAN_ARMOR.get();
     public static Item CHITU = AllRegs.Items.CHITU.get();
     public static Item DILU = AllRegs.Items.DILU.get();
@@ -30,6 +31,7 @@ public class ModItems {
 
     public static Item BINGLIANG_ITEM = AllRegs.Items.BINGLIANG_ITEM.get();
     public static Item TOO_HAPPY_ITEM = AllRegs.Items.TOO_HAPPY_ITEM.get();
+    public static Item SHANDIAN_ITEM = AllRegs.Items.SHANDIAN_ITEM.get();
     public static Item DISCARD = AllRegs.Items.DISCARD.get();
     public static Item FIRE_ATTACK = AllRegs.Items.FIRE_ATTACK.get();
     public static Item JUEDOU = AllRegs.Items.JUEDOU.get();
@@ -45,6 +47,8 @@ public class ModItems {
     public static Item GIFT_BOX = AllRegs.Items.GIFT_BOX.get();
     public static Item BBJI = AllRegs.Items.BBJI.get();
     public static Item SUNSHINE_SMILE = AllRegs.Items.SUNSHINE_SMILE.get();
+    public static Item YES = AllRegs.Items.YES.get();
+    public static Item NO = AllRegs.Items.NO.get();
 
     //状态效果
     public static Holder<MobEffect> BINGLIANG = AllRegs.Effects.BINGLIANG;
@@ -63,4 +67,5 @@ public class ModItems {
     public static Holder<MobEffect> TURNOVER = AllRegs.Effects.TURNOVER;
     //铁骑效果
     public static Holder<MobEffect> TIEJI = AllRegs.Effects.TIEJI;
+    public static Holder<MobEffect> SHANDIAN = AllRegs.Effects.SHANDIAN;
 }

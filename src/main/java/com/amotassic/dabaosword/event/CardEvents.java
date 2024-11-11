@@ -15,12 +15,13 @@ import net.neoforged.fml.common.EventBusSubscriber;
 
 import static com.amotassic.dabaosword.util.ModTools.*;
 
+@SuppressWarnings("unused")
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class CardEvents {
     @SubscribeEvent
     public static void cardUsePre(CardCBs.UsePre event) {
-        LivingEntity user = event.getEntity(); LivingEntity target = event.getTarget();
-        ItemStack stack = event.getStack();
+        LivingEntity user = event.getEntity(); LivingEntity target = event.target;
+        ItemStack stack = event.stack;
 
         if (target != null) {
             if (isBlackCard.test(stack) && stack.is(Tags.ARMOURY_CARD) && hasTrinket(SkillCards.WEIMU, target)) {
@@ -38,8 +39,8 @@ public class CardEvents {
 
     @SubscribeEvent
     public static void cardUsePost(CardCBs.UsePost event) {
-        LivingEntity user = event.getEntity(); LivingEntity target = event.getTarget();
-        ItemStack stack = event.getStack();
+        LivingEntity user = event.getEntity(); LivingEntity target = event.target;
+        ItemStack stack = event.stack;
 
         if (user instanceof Player player) {
             //集智技能触发
@@ -65,8 +66,8 @@ public class CardEvents {
     @SubscribeEvent
     public static void cardDiscard(CardCBs.Discard event) {
         LivingEntity entity = event.getEntity();
-        ItemStack stack = event.getStack();
-        boolean fromEquip = event.isFromEquip();
+        ItemStack stack = event.stack;
+        boolean fromEquip = event.fromEquip;
 
         if (XingshangTrigger(entity, stack)) return; //todo 卡牌弃置后并被他人获得后，与其他技能的交互处理
 
@@ -80,9 +81,9 @@ public class CardEvents {
 
     @SubscribeEvent
     public static void cardMove(CardCBs.Move event) {
-        LivingEntity from = event.getFrom(); Player to = event.getEntity();
-        ItemStack stack = event.getStack();
-        CardCBs.T type = event.getType();
+        LivingEntity from = event.from; Player to = event.getEntity();
+        ItemStack stack = event.stack;
+        CardCBs.T type = event.type;
 
         if (type == CardCBs.T.INV_TO_EQUIP || type == CardCBs.T.INV_TO_INV) {
             if (from instanceof Player player && hasTrinket(SkillCards.LIANYING, player) && countCards(player) == 0) lianyingTrigger(player);

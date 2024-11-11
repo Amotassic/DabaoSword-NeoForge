@@ -57,10 +57,13 @@ public class Sounds {
     public static SoundEvent HANBING = AllRegs.Sounds.HANBING.get();
     public static SoundEvent QINGGANG = AllRegs.Sounds.QINGGANG.get();
     public static SoundEvent QINGLONG = AllRegs.Sounds.QINGLONG.get();
+    public static SoundEvent RENWANG = AllRegs.Sounds.RENWANG.get();
     public static SoundEvent TENGJIA1 = AllRegs.Sounds.TENGJIA1.get();
     public static SoundEvent TENGJIA2 = AllRegs.Sounds.TENGJIA2.get();
     public static SoundEvent ZHANGBA = AllRegs.Sounds.ZHANGBA.get();
 
     public static SoundEvent RECOVER = AllRegs.Sounds.RECOVER.get();
     public static SoundEvent TAOYUAN = AllRegs.Sounds.TAOYUAN.get();
+    public static SoundEvent SHANDIAN = AllRegs.Sounds.SHANDIAN.get();
+    public static SoundEvent WUGU = AllRegs.Sounds.WUGU.get();
 }

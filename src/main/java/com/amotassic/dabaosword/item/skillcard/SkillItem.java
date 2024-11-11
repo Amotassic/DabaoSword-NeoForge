@@ -54,11 +54,9 @@ import java.util.stream.IntStream;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class SkillItem extends Item implements ICurioItem, Skill {
-    public SkillItem(Properties p_41383_) {super(p_41383_);}
+    public SkillItem() {super(new Properties().stacksTo(1));}
 
     public static class Benxi extends SkillItem {
-        public Benxi(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             int benxi = getTag(stack);
@@ -82,8 +80,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Buqu extends SkillItem {
-        public Buqu(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             int c = getTag(stack);
@@ -115,8 +111,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Duanliang extends SkillItem {
-        public Duanliang(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.literal("CD: 5s"));
@@ -132,8 +126,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Fangzhu extends SkillItem {
-        public Fangzhu(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.fangzhu.tooltip").withStyle(ChatFormatting.BLUE));
@@ -150,8 +142,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Ganglie extends SkillItem {
-        public Ganglie(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.ganglie.tooltip1").withStyle(ChatFormatting.BLUE));
@@ -203,8 +193,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Gongao extends SkillItem {
-        public Gongao(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.gongao.tooltip1").withStyle(ChatFormatting.BLUE));
@@ -257,8 +245,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Gongxin extends ActiveSkillWithTarget {
-        public Gongxin(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             int cd = getCD(stack);
@@ -286,8 +272,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Guose extends SkillItem {
-        public Guose(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             int cd = getCD(stack);
@@ -303,8 +287,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Huoji extends SkillItem {
-        public Huoji(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             int cd = getCD(stack);
@@ -319,9 +301,65 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         }
     }
 
-    public static class Jueqing extends SkillItem {
-        public Jueqing(Properties p_41383_) {super(p_41383_);}
+    public static class Jianxiong extends SkillItem {
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            tooltip.add(Component.literal("CD: 15s"));
+            tooltip.add(Component.translatable("item.dabaosword.jianxiong.tooltip1").withStyle(ChatFormatting.BLUE));
+            tooltip.add(Component.translatable("item.dabaosword.jianxiong.tooltip2").withStyle(ChatFormatting.BLUE));
+        }
 
+        @Override
+        public void onHurt(ItemStack stack, LivingEntity entity, DamageSource source, float amount) {
+            if (source.getEntity() instanceof Entity && !entity.hasEffect(ModItems.COOLDOWN)) {
+                voice(entity, stack);
+                if (entity instanceof Player player) draw(player);
+                entity.addEffect(new MobEffectInstance(ModItems.COOLDOWN, 20 * 15,0,false,false,true));
+            }
+        }
+    }
+
+    public static class Jizhan extends SkillItem {
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            tooltip.add(Component.translatable("item.dabaosword.jizhan.tooltip1"));
+            tooltip.add(Component.translatable("item.dabaosword.jizhan.tooltip2"));
+        }
+
+        @Override
+        public int onDrawPhase(Player player, ItemStack stack) {
+            voice(player, stack);
+            var inv = yesAndNo();
+            inv.setItem(18, stack);
+            openSimpleMenu(player, player, inv, Component.translatable("jizhan.title", stack.getHoverName()));
+            ItemStack last = newCard();
+            give(player, last); //先让玩家摸一张牌，保存到lastCard
+            player.level().players().forEach(p -> p.displayClientMessage(Component.translatable("jizhan.draw", player.getDisplayName(), stack.getDisplayName(), last.getDisplayName(), Objects.requireNonNull(getRank(last)).rank), false));
+            CompoundTag tag = getOrCreateNbt(stack);
+            tag.put("lastCard", last.save(player.registryAccess()));
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+            return -114;
+        }
+
+        @Override @SuppressWarnings("all")
+        public void onClickGUISlot(Player player, ItemStack stack, Player target, ItemStack selected, int slotIndex) {
+            if (selected.isEmpty()) return;
+            ItemStack last = ItemStack.parse(player.registryAccess(), getOrCreateNbt(stack).getCompound("lastCard")).orElse(ItemStack.EMPTY);
+            ItemStack next = newCard();
+            give(player, next); //又让玩家摸一张牌后，比较两张牌的点数，如果玩家选对了，就把新的牌保存到lastCard，否则关闭菜单
+            player.level().players().forEach(p -> p.displayClientMessage(Component.translatable("jizhan.draw", player.getDisplayName(), stack.getDisplayName(), next.getDisplayName(), Objects.requireNonNull(getRank(next)).rank), false));
+            if ((yes.test(selected) && getRank(next).ordinal() > getRank(last).ordinal()) || (no.test(selected) && getRank(next).ordinal() < getRank(last).ordinal())) {
+                CompoundTag tag = getOrCreateNbt(stack);
+                tag.put("lastCard", next.save(player.registryAccess()));
+                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+            } else closeGUI(player);
+        }
+
+        @Override
+        public boolean canCloseGUI(ItemStack stack) {return false;}
+    }
+
+    public static class Jueqing extends SkillItem {
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.jueqing.tooltip1").withStyle(ChatFormatting.BLUE));
@@ -343,8 +381,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Kanpo extends SkillItem {
-        public Kanpo(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             int cd = getCD(stack);
@@ -360,8 +396,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Kuanggu extends SkillItem {
-        public Kuanggu(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.literal("CD: 8s"));
@@ -380,8 +414,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Kurou extends ActiveSkill {
-        public Kurou(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.kurou.tooltip").withStyle(ChatFormatting.GREEN));
@@ -401,8 +433,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Lianying extends SkillItem {
-        public Lianying(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.lianying.tooltip").withStyle(ChatFormatting.GREEN));
@@ -423,8 +453,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Liegong extends SkillItem {
-        public Liegong(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.liegong.tooltip1").withStyle(ChatFormatting.RED));
@@ -454,8 +482,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Liuli extends SkillItem {
-        public Liuli(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.liuli.tooltip").withStyle(ChatFormatting.GREEN));
@@ -500,8 +526,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Longdan extends SkillItem {
-        public Longdan(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.longdan.tooltip1").withStyle(ChatFormatting.RED));
@@ -526,8 +550,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Luanji extends SkillItem {
-        public Luanji(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             int cd = getCD(stack);
@@ -569,8 +591,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Luoshen extends ActiveSkill {
-        public Luoshen(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             int cd = getCD(stack);
@@ -596,8 +616,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Luoyi extends SkillItem {
-        public Luoyi(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.luoyi.tooltip").withStyle(ChatFormatting.BLUE));
@@ -633,8 +651,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Pojun extends SkillItem {
-        public Pojun(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.literal("CD: 10s"));
@@ -668,8 +684,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Qice extends ActiveSkill {
-        public Qice(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             int cd = getCD(stack);
@@ -708,8 +722,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Qingguo extends SkillItem {
-        public Qingguo(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.literal("CD: 5s"));
@@ -724,8 +736,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Qixi extends SkillItem {
-        public Qixi(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.literal("CD: 5s"));
@@ -740,8 +750,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Quanji extends SkillItem {
-        public Quanji(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             int quan = getTag(stack);
@@ -782,8 +790,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Rende extends ActiveSkillWithTarget {
-        public Rende(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             int cd = getCD(stack);
@@ -814,8 +820,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Shanzhuan extends SkillItem {
-        public Shanzhuan(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.literal("CD: 8s"));
@@ -853,8 +857,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Shensu extends SkillItem {
-        public Shensu(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.shensu.tooltip1").withStyle(ChatFormatting.BLUE));
@@ -898,8 +900,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Taoluan extends ActiveSkill {
-        public Taoluan(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.taoluan.tooltip"));
@@ -932,8 +932,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Tieji extends SkillItem {
-        public Tieji(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.tieji.tooltip1").withStyle(ChatFormatting.RED));
@@ -951,8 +949,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Weimu extends SkillItem {
-        public Weimu(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.weimu.tooltip"));
@@ -973,8 +969,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Wusheng extends SkillItem {
-        public Wusheng(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.literal("CD: 5s"));
@@ -991,8 +985,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Yiji extends ActiveSkillWithTarget {
-        public Yiji(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.literal("CD: 20s"));
@@ -1028,9 +1020,20 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         }
     }
 
-    public static class Zhiheng extends ActiveSkill {
-        public Zhiheng(Properties p_41383_) {super(p_41383_);}
+    public static class Yingzi extends SkillItem {
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            tooltip.add(Component.translatable("item.dabaosword.yingzi.tooltip").withStyle(ChatFormatting.GREEN));
+        }
 
+        @Override
+        public int onDrawPhase(Player player, ItemStack stack) {
+            voice(player, stack);
+            return 1;
+        }
+    }
+
+    public static class Zhiheng extends ActiveSkill {
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             int z = getTag(stack);
@@ -1070,8 +1073,6 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static class Zhijian extends ActiveSkillWithTarget {
-        public Zhijian(Properties p_41383_) {super(p_41383_);}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             tooltip.add(Component.translatable("item.dabaosword.zhijian.tooltip1").withStyle(ChatFormatting.GREEN));
@@ -1164,17 +1165,13 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static void changeSkill(Player player) {
-        var selectedId = parseLootTable(ResourceLocation.fromNamespaceAndPath("dabaosword", "loot_tables/change_skill.json"));
+        var selectedId = parseLootTable(ResourceLocation.fromNamespaceAndPath("dabaosword", "loot_tables/draw_skill.json"));
         ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(selectedId));
         if (stack.getItem() != Items.AIR) voice(player, Sounds.GIFTBOX,3);
         give(player, stack);
     }
 
-    public static class ActiveSkill extends SkillItem {
-        public ActiveSkill(Properties p_41383_) {super(p_41383_);}
-    }
+    public static class ActiveSkill extends SkillItem {}
 
-    public static class ActiveSkillWithTarget extends SkillItem {
-        public ActiveSkillWithTarget(Properties p_41383_) {super(p_41383_);}
-    }
+    public static class ActiveSkillWithTarget extends SkillItem {}
 }

@@ -12,8 +12,6 @@ import net.minecraft.world.level.Level;
 import static com.amotassic.dabaosword.util.ModTools.cardUsePre;
 
 public class WanjianItem extends CardItem {
-    public WanjianItem(Properties p_41383_) {super(p_41383_);}
-
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         if (!world.isClientSide && hand == InteractionHand.MAIN_HAND) {

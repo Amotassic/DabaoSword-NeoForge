@@ -9,7 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 import java.util.Objects;
 
 public class TurnOverEffect extends MobEffect {
-    public TurnOverEffect(MobEffectCategory p_19451_, int p_19452_) {super(p_19451_, p_19452_);}
+    public TurnOverEffect() {super(MobEffectCategory.HARMFUL, 0x07050F);}
 
     @Override
     public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {return true;}

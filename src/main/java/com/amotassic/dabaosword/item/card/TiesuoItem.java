@@ -12,8 +12,6 @@ import net.minecraft.world.phys.AABB;
 import static com.amotassic.dabaosword.util.ModTools.cardUsePre;
 
 public class TiesuoItem extends CardItem {
-    public TiesuoItem(Properties p_41383_) {super(p_41383_);}
-
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
         if (!user.level().isClientSide && !entity.isCurrentlyGlowing() && hand == InteractionHand.MAIN_HAND) {

@@ -11,13 +11,11 @@ import net.minecraft.world.level.Level;
 import static com.amotassic.dabaosword.util.ModTools.cardUsePre;
 
 public class PeachItem extends CardItem {
-    public PeachItem(Properties p_41383_) {super(p_41383_);}
-
     //非潜行时右键，给自己回血
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
         if (!world.isClientSide && player.getHealth() < player.getMaxHealth() && !player.isShiftKeyDown() && hand == InteractionHand.MAIN_HAND) {
-            if (cardUsePre(player, player.getMainHandItem(), null)) return InteractionResultHolder.success(player.getMainHandItem());
+            if (cardUsePre(player, player.getMainHandItem(), player)) return InteractionResultHolder.success(player.getMainHandItem());
         }
         return super.use(world, player, hand);
     }

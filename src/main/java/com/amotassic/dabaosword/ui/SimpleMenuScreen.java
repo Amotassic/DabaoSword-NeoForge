@@ -1,10 +1,14 @@
 package com.amotassic.dabaosword.ui;
 
+import com.amotassic.dabaosword.api.Skill;
+import com.amotassic.dabaosword.item.skillcard.SkillCards;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 
 public class SimpleMenuScreen extends AbstractContainerScreen<SimpleMenuHandler> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("dabaosword", "textures/gui/menu_18.png");
@@ -23,11 +27,22 @@ public class SimpleMenuScreen extends AbstractContainerScreen<SimpleMenuHandler>
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float v, int i, int i1) {
         int x = this.leftPos; int y = this.topPos;
-        guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
+        if (menu.slots.get(18).getItem().is(SkillCards.JIZHAN)) guiGraphics.blit(TEXTURE, x, y,0,75, imageWidth, imageHeight);
+        else guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
     }
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         guiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
+    }
+
+    @Override @SuppressWarnings("all")
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        ItemStack stack = menu.slots.get(18).getItem();
+        boolean canClose = !(stack.getItem() instanceof Skill skill) || skill.canCloseGUI(stack);
+        if (!canClose) {
+            if (minecraft.options.keyInventory.isActiveAndMatches(InputConstants.getKey(keyCode, scanCode)) || keyCode == 256) return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 }

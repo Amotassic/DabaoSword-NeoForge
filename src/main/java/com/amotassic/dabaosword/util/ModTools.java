@@ -36,10 +36,14 @@ import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.projectile.LargeFireball;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
@@ -60,14 +64,38 @@ public class ModTools {
     public static final Predicate<ItemStack> isSha = s -> s.getItem() instanceof CardItem.Sha;
     //public static final Predicate<ItemStack> nonBasic = s -> s.isIn(Tags.Items.CARD) && !s.isIn(Tags.Items.BASIC_CARD);
     //判断是否是卡牌
-    public static final Predicate<ItemStack> isCard = s -> s.is(Tags.CARD);
-    public static boolean isCard(ItemStack stack) {return stack.is(Tags.CARD);}
+    public static final Predicate<ItemStack> isCard = ModTools::isCard;
+    public static boolean isCard(ItemStack stack) {return !stack.is(ModItems.CARD_PILE) && stack.getItem() instanceof Card;}
     public static final Predicate<ItemStack> isDiamondCard = s -> getSuit(s) == Card.Suits.Diamond;
     public static final Predicate<ItemStack> isHeartCard = s -> getSuit(s) == Card.Suits.Heart;
     public static final Predicate<ItemStack> isClubCard = s -> getSuit(s) == Card.Suits.Club;
     public static final Predicate<ItemStack> isSpadeCard = s -> getSuit(s) == Card.Suits.Spade;
     public static final Predicate<ItemStack> isRedCard = isDiamondCard.or(isHeartCard);
     public static final Predicate<ItemStack> isBlackCard = isClubCard.or(isSpadeCard);
+    public static Container yesAndNo() {
+        SimpleContainer inventory = new SimpleContainer(20);
+        for (int i = 0; i < 18; i++) {
+            switch (i) {
+                case 0, 1, 2, 9, 10, 11 -> inventory.setItem(i, new ItemStack(ModItems.YES));
+                case 6, 7, 8, 15, 16, 17 -> inventory.setItem(i, new ItemStack(ModItems.NO));
+            }
+        }
+        return inventory;
+    }
+    public static final Predicate<ItemStack> yes = s -> s.is(ModItems.YES);
+    public static final Predicate<ItemStack> no = s -> s.is(ModItems.NO);
+    public static boolean isNanman(DamageSource source) {
+        return source.getDirectEntity() instanceof Wolf dog && dog.hasEffect(ModItems.INVULNERABLE);
+    }
+    public static boolean isWanjian(DamageSource source) {
+        return source.getDirectEntity() instanceof Arrow arrow && Objects.equals(arrow.getCustomName(), Component.nullToEmpty("a"));
+    }
+    public static boolean isHuogong(DamageSource source) {
+        return source.getDirectEntity() instanceof LargeFireball fireball && Objects.equals(fireball.getCustomName(), Component.nullToEmpty("a"));
+    }
+    public static boolean isShandian(DamageSource source) {
+        return source.getDirectEntity() instanceof LightningBolt lightning && Objects.equals(lightning.getCustomName(), Component.nullToEmpty("a"));
+    }
     
     public static boolean noTieji(LivingEntity entity) {return !entity.hasEffect(ModItems.TIEJI);}
 
@@ -115,7 +143,7 @@ public class ModTools {
     public static boolean hasCard(LivingEntity entity, Predicate<ItemStack> predicate) {
         return !getCard(entity, predicate).getB().isEmpty();
     }
-    /**获取牌堆或背包中的一张符合条件的卡牌*/
+    /**获取牌堆或背包中的一张符合条件的卡牌*/@SuppressWarnings("all")
     public static Tuple<CardPileInventory, ItemStack> getCard(LivingEntity entity, Predicate<ItemStack> predicate) {
         if (entity instanceof Player player) {
             CardPileInventory inventory = new CardPileInventory(player);
@@ -127,12 +155,12 @@ public class ModTools {
         return new Tuple<>(null, getItem(entity, predicate));
     }
 
-    /**专为处理卡牌减少而写的方法，牌堆中的卡牌减少，需要保存nbt*/
+    /**专为处理卡牌减少而写的方法，牌堆中的卡牌减少，需要保存nbt*/@SuppressWarnings("all")
     public static void cardDecrement(Tuple<CardPileInventory, ItemStack> stack, int count) {
         if (stack.getA() == null) stack.getB().shrink(count);
         else stack.getA().removeStack(stack.getB(), count);
     }
-    /**另一个用于处理卡牌减少的方法，暂时只用于卡牌弃置和移动的方法中*/
+    /**另一个用于处理卡牌减少的方法，暂时只用于卡牌弃置和移动的方法中*/@SuppressWarnings("all")
     public static void cardDecrement(LivingEntity entity, ItemStack stack, int count) {
         var pair = getCard(entity, s -> ItemStack.matches(s, stack));
         //如果是牌堆中的卡牌，需要调用牌堆的方法来减少，以保存nbt
@@ -247,17 +275,24 @@ public class ModTools {
                     player.addEffect(new MobEffectInstance(ModItems.BINGLIANG, -1, amplifier - 1));
                 } //如果有兵粮寸断效果就不摸牌，改为将debuff等级减一
             } else {
-                var selectedId = parseLootTable(ResourceLocation.fromNamespaceAndPath("dabaosword", "loot_tables/draw.json"));
-                give(player, new ItemStack(BuiltInRegistries.ITEM.get(selectedId)));
+                give(player, newCard());
                 voice(player, SoundEvents.EXPERIENCE_ORB_PICKUP,1);
             }
         }
+    }
+
+    public static ItemStack newCard() {
+        var selectedId = parseLootTable(ResourceLocation.fromNamespaceAndPath("dabaosword", "loot_tables/draw.json"));
+        ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(selectedId));
+        initSuitsAndRanks(stack);
+        return stack;
     }
 
     public static void give(Player player, ItemStack stack) {
         initSuitsAndRanks(stack);
         ItemEntity item = player.drop(stack, false);
         if (item == null) return;
+        item.setInvulnerable(true);
         item.setNoPickUpDelay();
         item.setTarget(player.getUUID());
     }
@@ -310,6 +345,10 @@ public class ModTools {
     public static Card.Suits getSuit(ItemStack stack) {
         var sr = getSuitAndRank(stack);
         if (sr == null) return null; return sr.getA();
+    }
+    public static Card.Ranks getRank(ItemStack stack) {
+        var sr = getSuitAndRank(stack);
+        if (sr == null) return null; return sr.getB();
     }
     /**仿照1.20代码写的获取物品NBT的方法*/
     public static CompoundTag getOrCreateNbt(ItemStack stack) {
@@ -455,6 +494,19 @@ public class ModTools {
         //如果是移动到装备栏的类型，则目标使用或替换该装备
         if (type == CardCBs.T.INV_TO_EQUIP || type == CardCBs.T.EQUIP_TO_EQUIP) Equipment.equipItem(to, copy);
         NeoForge.EVENT_BUS.post(new CardCBs.Move(from, to, copy, count, type));
+    }
+
+    public static boolean notHurtBy(LivingEntity e,DamageSource s,Item c) {return !canHurtByCard(e,s,new ItemStack(c));}
+    public static boolean canHurtByCard(LivingEntity entity, DamageSource source, ItemStack card) {
+        return !NeoForge.EVENT_BUS.post(new CardCBs.CanHurtByCard(entity, source, card)).isCanceled();
+    }
+    public static void hurtBy(LivingEntity e, DamageSource s, Item c) {hurtByCard(e, s, new ItemStack(c));}
+    public static void hurtByCard(LivingEntity entity, DamageSource source, ItemStack card) {
+        NeoForge.EVENT_BUS.post(new CardCBs.HurtByCard(entity, source, card));
+    }
+
+    public static DamageSource getDamageSource(Entity source, ResourceKey<DamageType> type) {
+        return new DamageSource(source.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(type), source);
     }
 
     public static void writeDamage(DamageSource source, float amount, boolean returnShan, ItemStack stack) {

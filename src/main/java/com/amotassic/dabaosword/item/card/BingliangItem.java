@@ -12,8 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import static com.amotassic.dabaosword.util.ModTools.cardUsePre;
 
 public class BingliangItem extends CardItem {
-    public BingliangItem(Properties p_41383_) {super(p_41383_);}
-
     @Override
     public @NotNull InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
         if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND) {

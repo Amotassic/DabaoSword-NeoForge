@@ -19,8 +19,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import static com.amotassic.dabaosword.util.ModTools.cardUsePre;
 
 public class NanmanItem extends CardItem {
-    public NanmanItem(Properties p_41383_) {super(p_41383_);}
-
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         if (!world.isClientSide && hand == InteractionHand.MAIN_HAND) {

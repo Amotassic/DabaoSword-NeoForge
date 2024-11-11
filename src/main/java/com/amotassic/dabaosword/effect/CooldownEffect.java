@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 public class CooldownEffect extends MobEffect {
-    public CooldownEffect(MobEffectCategory category, int color) {super(category, color);}
+    public CooldownEffect() {super(MobEffectCategory.NEUTRAL, 0xFFFFFF);}
 
     @Override
     public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {return true;}

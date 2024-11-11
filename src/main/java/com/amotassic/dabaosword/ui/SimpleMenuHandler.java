@@ -35,14 +35,13 @@ public class SimpleMenuHandler extends AbstractContainerMenu {
                 this.addSlot(new Slot(inventory, j + i * 9, 8 + j * 18, 16 + i * 18));
             }
         }
+        addSlot(new Slot(inventory, 18, 114514, 114514));
     }
 
     @Override
     public void clicked(int slotIndex, int button, @NotNull ClickType clickType, @NotNull Player player) {
         ItemStack itemStack = inventory.getItem(slotIndex);
-        if (!itemStack.isEmpty()) {
-            if (stack.getItem() instanceof Skill skill) skill.onClickGUISlot(player, stack, target, itemStack, slotIndex);
-        }
+        if (stack.getItem() instanceof Skill skill) skill.onClickGUISlot(player, stack, target, itemStack, slotIndex);
     }
 
     @Override

@@ -13,8 +13,6 @@ import net.minecraft.world.phys.Vec3;
 import static com.amotassic.dabaosword.util.ModTools.cardUsePre;
 
 public class FireAttackItem extends CardItem {
-    public FireAttackItem(Properties p_41383_) {super(p_41383_);}
-
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         if (!world.isClientSide && hand == InteractionHand.MAIN_HAND) {
