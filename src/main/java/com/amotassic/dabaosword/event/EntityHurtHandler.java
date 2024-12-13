@@ -2,11 +2,8 @@ package com.amotassic.dabaosword.event;
 
 import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.api.Skill;
-import com.amotassic.dabaosword.api.event.CardCBs;
 import com.amotassic.dabaosword.effect.ShandianEffect;
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.item.skillcard.SkillCards;
-import com.amotassic.dabaosword.util.Sounds;
 import com.amotassic.dabaosword.util.Tags;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -25,6 +22,8 @@ import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 import java.util.Random;
 
+import static com.amotassic.dabaosword.api.event.CardEvents.cardUsePost;
+import static com.amotassic.dabaosword.api.event.CardEvents.hurtBy;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
@@ -75,10 +74,9 @@ public class EntityHurtHandler {
 
             trySave(entity, amount);
 
-            if (isNanman(source)) hurtBy(entity, source, ModItems.NANMAN);
-            if (isWanjian(source)) hurtBy(entity, source, ModItems.WANJIAN);
-            if (isHuogong(source)) hurtBy(entity, source, ModItems.FIRE_ATTACK);
-            if (isShandian(source)) hurtBy(entity, source, ModItems.SHANDIAN_ITEM);
+            if (isWanjian(source)) hurtBy(entity, ModItems.WANJIAN);
+            if (isHuogong(source)) hurtBy(entity, ModItems.FIRE_ATTACK);
+            if (isShandian(source)) hurtBy(entity, ModItems.SHANDIAN_ITEM);
 
             if (source.getEntity() instanceof LivingEntity living) {
                 if (living.getTags().contains("px")) entity.invulnerableTime = 0;
@@ -93,7 +91,8 @@ public class EntityHurtHandler {
                     }
                 }
                 if (entity instanceof Player) {
-                    draw(player, 2);
+                    if (player.getHealth() < 20) player.heal(20 - player.getHealth());
+                    draw(player);
                     player.displayClientMessage(Component.translatable("dabaosword.draw.player"),true);
                 }
             }
@@ -110,41 +109,6 @@ public class EntityHurtHandler {
                 }
             }
 
-        }
-    }
-
-    @SubscribeEvent
-    public static void canHurtByCard(CardCBs.CanHurtByCard event) {
-        LivingEntity entity = event.getEntity(); ItemStack card = event.card;
-
-        if (isSha.test(card) && isBlackCard.test(card) && hasTrinket(ModItems.RENWANG, entity)) {
-            voice(entity, Sounds.RENWANG); event.setCanceled(true); return;
-        }
-        if (card.is(ModItems.NANMAN)) {
-            if (hasTrinket(SkillCards.WEIMU, entity)) {voice(entity, Sounds.WEIMU); event.setCanceled(true); return;}
-        }
-        event.setCanceled(canTriggerTengjia(entity, card));
-    }
-
-    private static boolean canTriggerTengjia(LivingEntity entity, ItemStack card) {
-        if (card.is(ModItems.WANJIAN) || card.is(ModItems.NANMAN) || card.is(ModItems.SHA)) {
-            if (hasTrinket(ModItems.RATTAN_ARMOR, entity)) {
-                voice(entity, Sounds.TENGJIA1);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @SubscribeEvent
-    public static void hurtByCard(CardCBs.HurtByCard event) {
-        LivingEntity entity = event.getEntity(); ItemStack card = event.card;
-
-        ItemStack jianxiong = trinketItem(SkillCards.JIANXIONG, entity);
-        if (!jianxiong.isEmpty() && getCD(jianxiong) == 0) {
-            voice(entity, jianxiong);
-            setCD(jianxiong, 15);
-            if (entity instanceof Player player) give(player, card.copyWithCount(1));
         }
     }
 }

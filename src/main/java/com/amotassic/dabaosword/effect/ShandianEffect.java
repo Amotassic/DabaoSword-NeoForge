@@ -1,7 +1,6 @@
 package com.amotassic.dabaosword.effect;
 
 import com.amotassic.dabaosword.item.ModItems;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -29,13 +28,13 @@ public class ShandianEffect extends MobEffect {
         return true;
     }
 
-    public static void summonLightning(LivingEntity entity, boolean cosmetic, boolean name) {
+    public static void summonLightning(LivingEntity entity, boolean cosmetic, boolean tag) {
         if (entity.level() instanceof ServerLevel world) {
             LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(world);
             if (lightning != null) {
                 lightning.moveTo(entity.getX(), entity.getY(), entity.getZ());
                 if (cosmetic) lightning.setVisualOnly(true);
-                if (name) lightning.setCustomName(Component.nullToEmpty("a"));
+                if (tag) lightning.addTag("a");
                 world.addFreshEntity(lightning);
             }
         }

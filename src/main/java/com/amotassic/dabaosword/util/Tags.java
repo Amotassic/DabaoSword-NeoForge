@@ -10,8 +10,6 @@ import net.minecraft.world.item.Item;
 public class Tags {
     public static void Tag() {}
 
-    public static final TagKey<Item> BASIC_CARD = createTag("basic_card");
-    public static final TagKey<Item> ARMOURY_CARD = createTag("armoury_card");
     public static final TagKey<Item> LOCK_SKILL = createTag("lock_skill");
     public static final TagKey<Item> TRIGGER_WUXIE = createTag("trigger_wuxie");
 

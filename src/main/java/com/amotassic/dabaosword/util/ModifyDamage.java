@@ -1,17 +1,15 @@
 package com.amotassic.dabaosword.util;
 
+import com.amotassic.dabaosword.api.ISha;
 import com.amotassic.dabaosword.api.Skill;
-import com.amotassic.dabaosword.effect.ShandianEffect;
 import com.amotassic.dabaosword.item.ModItems;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -20,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static com.amotassic.dabaosword.api.event.CardEvents.*;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class ModifyDamage {
@@ -122,14 +121,24 @@ public class ModifyDamage {
             if (AT.hasEffect(ModItems.TOO_HAPPY)) return 1;
         }
 
-        if (isNanman(source) && notHurtBy(entity, source, ModItems.NANMAN)) {((LivingEntity) so).setHealth(0); return 1;}
-        if (isWanjian(source) && notHurtBy(entity, source, ModItems.WANJIAN)) return 1;
-        if (isHuogong(source) && notHurtBy(entity, source, ModItems.FIRE_ATTACK)) return 1;
-        if (isShandian(source) && notHurtBy(entity, source, ModItems.SHANDIAN_ITEM)) return 1;
+        if (isWanjian(source) && notHurtBy(entity, ModItems.WANJIAN)) return 1;
+        if (isHuogong(source) && notHurtBy(entity, ModItems.FIRE_ATTACK)) return 1;
+        if (isShandian(source) && notHurtBy(entity, ModItems.SHANDIAN_ITEM)) return 1;
         if (so instanceof LivingEntity SE && shouldSha(SE)) { //只要能触发杀，伤害就会被取消
             ItemStack sha = isSha.test(SE.getMainHandItem()) ? SE.getMainHandItem() : getItem(SE, isSha);
             SE.addTag("sha");
-            if (canHurtByCard(entity, source, sha)) sha(SE, entity, sha, source, amount);
+            if (canHurtByCard(entity, sha)) {
+                ISha iSha = (ISha) sha.getItem();
+                if (iSha.sha(SE, entity, amount)) iSha.shaEffect(SE, entity, sha);
+                else { //如果杀被无效化了，就会尝试触发贯石斧的效果
+                    var guanshi = trinketItem(ModItems.GUANSHI, SE);
+                    if (!guanshi.isEmpty() && getCD(guanshi) == 0 && entity.hasEffect(ModItems.INVULNERABLE)) {
+                        setCD(guanshi, 10); voice(SE, guanshi);
+                        entity.removeEffect(ModItems.INVULNERABLE);
+                        if (iSha.sha(SE, entity, amount)) iSha.shaEffect(SE, entity, sha);
+                    }
+                }
+            }
             cardUsePost(SE, sha, entity);
             return 2;
         }
@@ -140,20 +149,19 @@ public class ModifyDamage {
         if (execute(entity, source, amount, list, 2)) return 1;
         //3.低优先度执行：卡牌 闪以及响应南蛮的杀
         if (execute(entity, source, amount, list, 3)) return 1;
-        if (isNanman(source)) {
+        if (at != null && at.getTags().contains("nanman")) {
             var stack = getCard(entity, isSha).getB();
-            if (!stack.isEmpty() || entity instanceof Player) ((LivingEntity) so).setHealth(0);
-            //被南蛮入侵的狗打中可以消耗杀以免疫伤害
             if (!stack.isEmpty()) {
                 voice(entity, stack);
                 cardUsePost(entity, stack, null);
+                entity.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 2, 0, false, false, false)); //防止被其他南蛮入侵召唤物误伤
                 return 1;
             }
         }
         if (at instanceof LivingEntity) {
             if (!entity.hasEffect(ModItems.COOLDOWN2)) {
                 //此处条件是故意设置得与八卦阵条件不一样的，虽然感觉没啥用
-                if (hasCard(entity, s -> s.is(ModItems.SHAN)) && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+                if (hasCard(entity, p(ModItems.SHAN)) && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
                     shan(entity, false, source, amount);
                     return 1;
                 }
@@ -165,19 +173,7 @@ public class ModifyDamage {
     }
 
     private static boolean shouldSha(LivingEntity entity) {
-        return hasItem(entity, isSha) && !entity.getTags().contains("sha") && !entity.getTags().contains("juedou");
-    }
-
-    private static void sha(LivingEntity user, LivingEntity entity, ItemStack sha, DamageSource source, float amount) {
-        if (sha.is(ModItems.SHA) && entity.hurt(source, amount + 5)) hurtByCard(entity, source, sha);
-        if (sha.is(ModItems.FIRE_SHA) && entity.hurt(getDamageSource(user, DamageTypes.IN_FIRE), amount)) {
-            entity.setRemainingFireTicks(120);
-            hurtByCard(entity, source, sha);
-        }
-        if (sha.is(ModItems.THUNDER_SHA) && entity.hurt(getDamageSource(user, DamageTypes.LIGHTNING_BOLT), amount + 5)) {
-            ShandianEffect.summonLightning(entity, true, false);
-            hurtByCard(entity, source, sha);
-        }
+        return hasItem(entity, isSha) && !entity.getTags().contains("sha") && !entity.getTags().contains("juedou") && !entity.getTags().contains("nanman");
     }
 
     public static void shan(LivingEntity entity, boolean bl, DamageSource source, float amount) {

@@ -1,7 +1,6 @@
 package com.amotassic.dabaosword.item.card;
 
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -11,10 +10,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-import static com.amotassic.dabaosword.util.ModTools.cardUsePre;
-import static com.amotassic.dabaosword.util.ModTools.hasTrinket;
+import static com.amotassic.dabaosword.api.event.CardEvents.cardUsePre;
 
 public class ShanItem extends CardItem {
+    @Override public Type getType() {return Type.BASIC;}
+
     //使用后，向前冲刺一段距离，无敌0.5秒，冷却时间1秒
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
@@ -29,8 +29,7 @@ public class ShanItem extends CardItem {
     public void cardUse(LivingEntity user, ItemStack stack, LivingEntity target) {
         Vec3 momentum = user.getForward().scale(3);
         user.hurtMarked = true; user.setDeltaMovement(momentum.x,0 ,momentum.z);
-        int i = hasTrinket(SkillCards.LEIJI, user) ? 3 : 0;
         user.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 20,0,false,false,false));
-        user.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 20,i,false,false,false));
+        user.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 20,0,false,false,false));
     }
 }

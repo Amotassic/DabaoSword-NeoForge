@@ -3,7 +3,6 @@ package com.amotassic.dabaosword.ui;
 import com.amotassic.dabaosword.api.CardPileInventory;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.AllRegs;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.Container;
@@ -13,9 +12,9 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import org.jetbrains.annotations.NotNull;
 
+import static com.amotassic.dabaosword.api.event.CardEvents.cardDiscard;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class PileScreenHandler extends AbstractContainerMenu {
@@ -53,20 +52,18 @@ public class PileScreenHandler extends AbstractContainerMenu {
 
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
-        if (button == 114) {
-            if (!player.level().isClientSide && countCards(player) > 10) {
-                ItemStack pile = trinketItem(ModItems.CARD_PILE, player);
-                CompoundTag nbt = getOrCreateNbt(pile);
-                int dropped = nbt.getInt("DroppedCards");
-                ItemStack stack = getSlot(slotId).getItem();
-                if (isCard(stack)) { //按下delete键后，如果卡片数量大于10，则丢弃卡片，当丢弃3张卡片后，摸一张牌
-                    cardDiscard(player, stack, 1, false);
-                    if (dropped == 2) {
-                        nbt.remove("DroppedCards");
-                        draw(player);
-                    } else nbt.putInt("DroppedCards", dropped + 1);
-                    pile.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
-                }
+        if (button == 114 && !player.level().isClientSide) {
+            ItemStack pile = trinketItem(ModItems.CARD_PILE, player);
+            CompoundTag nbt = getOrCreateNbt(pile);
+            int dropped = nbt.getInt("DroppedCards");
+            ItemStack stack = getSlot(slotId).getItem();
+            if (isCard(stack)) { //按下delete键后丢弃卡片，当丢弃3张卡片后，摸一张牌
+                cardDiscard(player, stack, 1, false);
+                if (dropped == 2) {
+                    nbt.remove("DroppedCards");
+                    draw(player);
+                } else nbt.putInt("DroppedCards", dropped + 1);
+                setNbt(pile, nbt);
             }
             return;
         }

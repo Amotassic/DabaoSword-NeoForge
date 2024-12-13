@@ -1,9 +1,9 @@
 package com.amotassic.dabaosword.event;
 
 import com.amotassic.dabaosword.DabaoSword;
+import com.amotassic.dabaosword.api.ReachDefend;
 import com.amotassic.dabaosword.api.Skill;
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.util.Gamerule;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -35,6 +35,7 @@ public class EntityTickEvents {
             if (world.getGameTime() % 2 == 0) {
                 entity.getTags().remove("sha");
                 en.getTags().remove("juedou");
+                entity.getTags().remove("nanman");
             }
 
             Player closestPlayer = world.getNearestPlayer(entity, 5);
@@ -68,7 +69,7 @@ public class EntityTickEvents {
                     else if (countCards(player) < player.getMaxHealth() || !limit) {
                         int draw = 0;
                         for (var stack : allTrinkets(player)) {
-                            if (stack.getItem() instanceof Skill s) {
+                            if (stack.getItem() instanceof Skill s && canTrigger(stack, player)) {
                                 int i = s.onDrawPhase(player, stack);
                                 if (i <= -114) {draw = 0; break;}
                                 draw += i;
@@ -111,23 +112,17 @@ public class EntityTickEvents {
             }
 
             //处理所有加触及距离和近战防御距离的效果
-            int level1 = 0; int longHand = 0; int level2 = 0;
+            int level1 = 0; int level2 = 0;
             ItemStack mainHand = player.getMainHandItem();
-            if (hasTrinket(SkillCards.BENXI, player)) longHand += getTag(trinketItem(SkillCards.BENXI, player));
-            if (mainHand.is(ModItems.DISCARD) || mainHand.is(ModItems.JUEDOU)) longHand += 114;
-            if (noTieji(player)) {
-                if (hasTrinket(SkillCards.LIEGONG, player) && !player.hasEffect(ModItems.COOLDOWN)) longHand += 13;
-                if (hasTrinket(SkillCards.WUSHENG, player) && isSha.test(mainHand)) longHand += 13;
+            if (mainHand.is(ModItems.DISCARD) || mainHand.is(ModItems.JUEDOU)) level1 += 114;
+            for (var stack : allTrinkets(player)) {
+                if (stack.getItem() instanceof ReachDefend rd && canTrigger(stack, player)) {
+                    level1 += rd.getExtraReach(player, stack);
+                    level2 += rd.getDefend(player, stack);
+                }
             }
-            if (hasTrinket(ModItems.CHITU, player)) level1++;
-            if (hasTrinket(SkillCards.MASHU, player)) level1++;
-            //如果有马术或赤兔，则等级加上额外加成数，否则为额外加成数-1
-            level1 = level1 > 0 ? level1 + longHand : longHand - 1;
-            if (level1 >= 0) player.addEffect(new MobEffectInstance(ModItems.REACH, 2,level1,false,false,false));
-
-            if (hasTrinket(ModItems.DILU, player)) level2++;
-            if (hasTrinket(SkillCards.FEIYING, player)) level2++;
-            if (level2 > 0) player.addEffect(new MobEffectInstance(ModItems.DEFEND, 2,level2,false,false,false));
+            if (level1 > 0) player.addEffect(new MobEffectInstance(ModItems.REACH, 2,level1 - 1,false,false,false));
+            if (level2 > 0) player.addEffect(new MobEffectInstance(ModItems.DEFEND, 2,level2 - 1,false,false,false));
 
         }
     }

@@ -1,35 +1,27 @@
 package com.amotassic.dabaosword.api;
 
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.util.ModTools;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
+import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class CardPileInventory implements Container {
     public NonNullList<ItemStack> cards;
     public Player player;
     public ItemStack pile;
-    public NonNullList<ItemStack> nonEmpty = NonNullList.create();
 
     public CardPileInventory(Player player) {
         this.player = player;
-        this.pile = ModTools.trinketItem(ModItems.CARD_PILE, player);
+        this.pile = trinketItem(ModItems.CARD_PILE, player);
         this.cards = NonNullList.withSize(36, ItemStack.EMPTY);
         readNbt();
-        for (var stack : cards) { //生成非空的卡牌列表
-            if (stack.isEmpty()) continue;
-            nonEmpty.add(stack);
-        }
     }
 
     @Override
@@ -44,8 +36,8 @@ public class CardPileInventory implements Container {
     }
 
     public void readNbt() {
-        if (pile.get(DataComponents.CUSTOM_DATA) != null) {
-            ListTag list = (ListTag) Objects.requireNonNull(pile.get(DataComponents.CUSTOM_DATA)).copyTag().get("Items");
+        if (getOrCreateNbt(pile).contains("Items")) {
+            ListTag list = (ListTag) getOrCreateNbt(pile).get("Items");
             if (list != null) readNbt(list);
         }
     }
@@ -70,9 +62,9 @@ public class CardPileInventory implements Container {
             nbtCompound.putByte("Slot", (byte) i);
             nbtList.add(cards.get(i).save(player.registryAccess(), nbtCompound));
         }
-        nbtCompound = ModTools.getOrCreateNbt(pile);
+        nbtCompound = getOrCreateNbt(pile);
         nbtCompound.put("Items", nbtList);
-        pile.set(DataComponents.CUSTOM_DATA, CustomData.of(nbtCompound));
+        setNbt(pile, nbtCompound);
     }
 
     @Override
@@ -143,7 +135,7 @@ public class CardPileInventory implements Container {
     }
 
     public void insertStack(ItemStack stack) {
-        if (insertStack(-1, stack)) writeNbtToStack();;
+        if (insertStack(-1, stack)) writeNbtToStack();
     }
 
     public boolean insertStack(int slot, ItemStack stack) {

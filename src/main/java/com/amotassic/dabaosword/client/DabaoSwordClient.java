@@ -2,6 +2,10 @@ package com.amotassic.dabaosword.client;
 
 import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.api.Card;
+import com.amotassic.dabaosword.entity.ModEntity;
+import com.amotassic.dabaosword.entity.client.ModModelLayers;
+import com.amotassic.dabaosword.entity.client.XuyouModel;
+import com.amotassic.dabaosword.entity.client.XuyouRenderer;
 import com.amotassic.dabaosword.ui.FullInvHandledScreen;
 import com.amotassic.dabaosword.ui.PileHandledScreen;
 import com.amotassic.dabaosword.ui.PlayerInvHandledScreen;
@@ -16,6 +20,7 @@ import net.minecraft.world.item.Item;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.lwjgl.glfw.GLFW;
@@ -41,6 +46,16 @@ public class DabaoSwordClient {
         event.register(AllRegs.Other.PLAYER_INV_SCREEN_HANDLER.get(), PlayerInvHandledScreen::new);
         event.register(AllRegs.Other.FULL_INV_SCREEN_HANDLER.get(), FullInvHandledScreen::new);
         event.register(AllRegs.Other.PILE_SCREEN_HANDLER.get(), PileHandledScreen::new);
+    }
+
+    @SubscribeEvent
+    public static void registerModel(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(ModModelLayers.XUYOU, XuyouModel::getTexturedModelData);
+    }
+
+    @SubscribeEvent
+    public static void registerRenderer(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(ModEntity.XUYOU.get(), XuyouRenderer::new);
     }
 
     private static void registerPredicates() {

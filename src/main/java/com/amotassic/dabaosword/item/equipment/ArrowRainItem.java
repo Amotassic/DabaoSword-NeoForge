@@ -49,7 +49,7 @@ public class ArrowRainItem extends Item {
         ItemStack stack = new ItemStack(Items.ARROW);
         ServerLevel world = (ServerLevel) entity.level();
         Arrow arrow = new Arrow(world, entity, stack, null);
-        arrow.setCustomName(Component.nullToEmpty("a"));
+        arrow.addTag("a");
         arrow.shootFromRotation(entity, entity.getXRot(), entity.getYRot() + angle, 0.0F, speed, 1.0F);
         arrow.setCritArrow(true);
         world.addFreshEntity(arrow);

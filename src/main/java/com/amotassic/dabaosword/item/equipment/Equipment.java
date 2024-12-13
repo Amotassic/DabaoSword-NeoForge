@@ -1,15 +1,17 @@
 package com.amotassic.dabaosword.item.equipment;
 
 import com.amotassic.dabaosword.api.Card;
+import com.amotassic.dabaosword.api.ICardEvent;
+import com.amotassic.dabaosword.api.ReachDefend;
 import com.amotassic.dabaosword.api.Skill;
 import com.amotassic.dabaosword.item.ModItems;
+import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.util.Sounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -19,6 +21,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -26,7 +29,6 @@ import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
@@ -36,10 +38,14 @@ import top.theillusivec4.curios.api.type.capability.ICurioItem;
 import top.theillusivec4.curios.api.type.inventory.ICurioStacksHandler;
 import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import static com.amotassic.dabaosword.api.event.CardEvents.cardDiscard;
+import static com.amotassic.dabaosword.api.event.CardEvents.cardUsePre;
+import static com.amotassic.dabaosword.item.card.CardItem.addSRTip;
 import static com.amotassic.dabaosword.item.skillcard.SkillItem.equipped;
 import static com.amotassic.dabaosword.item.skillcard.SkillItem.setEquipped;
 import static com.amotassic.dabaosword.util.ModTools.*;
@@ -47,6 +53,8 @@ import static com.amotassic.dabaosword.util.ModifyDamage.shan;
 
 public class Equipment extends Item implements ICurioItem, Skill, Card {
     public Equipment() {super(new Properties().stacksTo(1));}
+
+    @Override public Type getType() {return Type.EQUIPMENT;}
 
     public static class BaguaArmor extends Equipment {
         @Override
@@ -89,6 +97,22 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
         }
     }
 
+    public static class CixiongWeapon extends Equipment implements ICardEvent {
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            super.appendHoverText(stack, context, tooltip, tooltipFlag);
+            tooltip.add(Component.translatable("item.dabaosword.cixiong.tooltip1"));
+            tooltip.add(Component.translatable("item.dabaosword.cixiong.tooltip2").withStyle(ChatFormatting.AQUA));
+        }
+
+        @Override
+        public void postCardUse(LivingEntity user, ItemStack card, LivingEntity target, ItemStack skill) {
+            if (isSha.test(card) && target != null && new Random().nextFloat() < 0.5) {
+                draw(user); voice(user, skill);
+            }
+        }
+    }
+
     public static class FangtianWeapon extends Equipment {
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
@@ -112,6 +136,15 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
                 voice(player, Sounds.FANGTIAN);
                 player.displayClientMessage(Component.translatable("dabaosword.fangtian").withStyle(ChatFormatting.RED), true);
             }
+        }
+    }
+
+    public static class GuanshiWeapon extends Equipment {
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            super.appendHoverText(stack, context, tooltip, tooltipFlag);
+            tooltip.add(Component.translatable("item.dabaosword.guanshi.tooltip1"));
+            tooltip.add(Component.translatable("item.dabaosword.guanshi.tooltip2").withStyle(ChatFormatting.AQUA));
         }
     }
 
@@ -152,6 +185,58 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
         }
     }
 
+    public static class LiannuWeapon extends Equipment {
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            super.appendHoverText(stack, context, tooltip, tooltipFlag);
+            tooltip.add(Component.translatable("item.dabaosword.liannu.tooltip1"));
+            tooltip.add(Component.translatable("item.dabaosword.liannu.tooltip2").withStyle(ChatFormatting.AQUA));
+        }
+
+        @Override
+        public void preAttack(ItemStack stack, LivingEntity target, Player attacker) {
+            int i = 2;
+            if (hasTrinket(ModItems.CHITU, attacker)) i++;
+            if (hasTrinket(SkillCards.MASHU, attacker)) i++;
+            if (hasTrinket(ModItems.DILU, target)) i--;
+            if (hasTrinket(SkillCards.FEIYING, target)) i--;
+            if (attacker.distanceTo(target) <= i) {
+                attacker.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, 3, 255,false, false, false));
+                voice(attacker, stack);
+            }
+        }
+    }
+
+    public static class QilinWeapon extends Equipment implements ReachDefend {
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            super.appendHoverText(stack, context, tooltip, tooltipFlag);
+            tooltip.add(Component.translatable("item.dabaosword.qilin.tooltip1"));
+            tooltip.add(Component.translatable("item.dabaosword.qilin.tooltip2").withStyle(ChatFormatting.AQUA));
+            tooltip.add(Component.translatable("item.dabaosword.qilin.tooltip3").withStyle(ChatFormatting.AQUA));
+        }
+
+        @Override
+        public int getExtraReach(Player player, ItemStack stack) {return 1;}
+
+        @Override
+        public void postDamage(ItemStack stack, LivingEntity target, LivingEntity attacker, float amount) {
+            if (getCD(stack) != 0) return;
+            ItemStack chitu = trinketItem(ModItems.CHITU, target);
+            ItemStack dilu = trinketItem(ModItems.DILU, target);
+            List<ItemStack> horse = new ArrayList<>();
+            if (!chitu.isEmpty()) horse.add(chitu); if (!dilu.isEmpty()) horse.add(dilu);
+            if (horse.isEmpty()) return;
+            ItemStack selected = horse.get(new Random().nextInt(horse.size()));
+            Component message = Component.translatable("dabaosword.discard", attacker.getDisplayName(), target.getDisplayName(), selected.getDisplayName());
+            if (attacker instanceof Player player) player.displayClientMessage(message, false);
+            if (target instanceof Player player) player.displayClientMessage(message, false);
+            cardDiscard(target, selected, 1, true);
+            voice(attacker, stack);
+            setCD(stack, 30);
+        }
+    }
+
     public static class QinggangWeapon extends Equipment {
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
@@ -187,18 +272,22 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
         }
     }
 
-    public static class RenwangArmor extends Equipment {
+    public static class RenwangArmor extends Equipment implements ICardEvent {
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             super.appendHoverText(stack, context, tooltip, tooltipFlag);
             tooltip.add(Component.translatable("item.dabaosword.renwang.tooltip1"));
             tooltip.add(Component.translatable("item.dabaosword.renwang.tooltip2").withStyle(ChatFormatting.AQUA));
         }
+
+        @Override
+        public boolean canHurtByCard(LivingEntity entity, ItemStack skill, ItemStack card) {
+            if (isSha.test(card) && isBlackCard.test(card)) {voice(entity, skill); return false;}
+            return true;
+        }
     }
 
-    public static class RattanArmor extends Equipment {
-        public RattanArmor() {super();}
-
+    public static class RattanArmor extends Equipment implements ICardEvent {
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             super.appendHoverText(stack, context, tooltip, tooltipFlag);
@@ -230,6 +319,13 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
                 return new Tuple<>(0f, Math.min(amount, 5f));
             }
             return null;
+        }
+
+        @Override
+        public boolean canHurtByCard(LivingEntity entity, ItemStack skill, ItemStack card) {
+            if (card.is(ModItems.WANJIAN) || card.is(ModItems.NANMAN) || card.is(ModItems.SHA)) {
+                voice(entity, Sounds.TENGJIA1); return false;
+            } return true;
         }
 
         @Override
@@ -270,8 +366,6 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
     }
 
     public static class ZhangbaWeapon extends Equipment {
-        public ZhangbaWeapon() {super();}
-
         @Override
         public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
             super.appendHoverText(stack, context, tooltip, tooltipFlag);
@@ -294,38 +388,58 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
                         give(player, new ItemStack(ModItems.SHA));
                         voice(player, Sounds.ZHANGBA);
                     } else {nbt.putBoolean("has_one", true);}
-                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
+                    setNbt(stack, nbt);
                     off.shrink(1);
                 }
             }
         }
     }
 
-    @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-        var sr = getSuitAndRank(stack);
-        if (sr != null) {
-            Card.Suits suit = sr.getA(); Card.Ranks rank = sr.getB();
-            if (isRedCard.test(stack)) tooltip.add(Component.translatable("card.suit_and_rank", suit.suit, rank.rank).withStyle(ChatFormatting.RED));
-            else tooltip.add(Component.translatable("card.suit_and_rank", suit.suit, rank.rank));
+    public static class ZhuqueWeapon extends Equipment {
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            super.appendHoverText(stack, context, tooltip, tooltipFlag);
+            tooltip.add(Component.translatable("item.dabaosword.zhuque.tooltip1"));
+            tooltip.add(Component.translatable("item.dabaosword.zhuque.tooltip2").withStyle(ChatFormatting.AQUA));
         }
 
-        if (stack.getItem() == ModItems.CHITU) {
+        @Override
+        public void postDamage(ItemStack stack, LivingEntity target, LivingEntity attacker, float amount) {
+            voice(attacker, stack);
+            target.setRemainingFireTicks(80);
+        }
+    }
+
+    public static class AttackHorse extends Equipment implements ReachDefend {
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            super.appendHoverText(stack, context, tooltip, tooltipFlag);
             tooltip.add(Component.translatable("item.dabaosword.chitu.tooltip"));
         }
 
-        if (stack.getItem() == ModItems.DILU) {
+        @Override
+        public int getExtraReach(Player player, ItemStack stack) {return 1;}
+    }
+
+    public static class DefendHorse extends Equipment implements ReachDefend {
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+            super.appendHoverText(stack, context, tooltip, tooltipFlag);
             tooltip.add(Component.translatable("item.dabaosword.dilu.tooltip"));
         }
 
-        if (stack.getItem() == ModItems.CARD_PILE) {
-            tooltip.add(Component.translatable("item.dabaosword.card_pile.tooltip"));
-        }
+        @Override
+        public int getDefend(Player player, ItemStack stack) {return 1;}
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+        addSRTip(stack, tooltip);
 
         if(Screen.hasShiftDown()) {
             tooltip.add(Component.translatable("equipment.tip1").withStyle(ChatFormatting.BOLD));
             tooltip.add(Component.translatable("equipment.tip2").withStyle(ChatFormatting.BOLD));
-        } else tooltip.add(Component.translatable("dabaosword.shifttooltip"));
+        } else tooltip.add(Component.translatable("dabaosword.shift_tip", Component.keybind("key.sneak")));
     }
 
     @Override

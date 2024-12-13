@@ -10,6 +10,7 @@ public class ModItems {
     public static Item CARD_PILE = AllRegs.Items.CARD_PILE.get();
 
     public static Item GUDINGDAO = AllRegs.Items.GUDINGDAO.get();
+    public static Item GUANSHI = AllRegs.Items.GUANSHI.get();
     public static Item GUDING_WEAPON = AllRegs.Items.GUDING_WEAPON.get();
     public static Item FANGTIAN = AllRegs.Items.FANGTIAN.get();
     public static Item HANBING = AllRegs.Items.HANBING.get();
@@ -41,14 +42,13 @@ public class ModItems {
     public static Item TAOYUAN = AllRegs.Items.TAOYUAN.get();
     public static Item TIESUO = AllRegs.Items.TIESUO.get();
     public static Item ARROW_RAIN = AllRegs.Items.ARROW_RAIN.get();
+    public static Item WUGU = AllRegs.Items.WUGU.get();
     public static Item WANJIAN = AllRegs.Items.WANJIAN.get();
     public static Item WUXIE = AllRegs.Items.WUXIE.get();
     public static Item WUZHONG = AllRegs.Items.WUZHONG.get();
     public static Item GIFT_BOX = AllRegs.Items.GIFT_BOX.get();
     public static Item BBJI = AllRegs.Items.BBJI.get();
     public static Item SUNSHINE_SMILE = AllRegs.Items.SUNSHINE_SMILE.get();
-    public static Item YES = AllRegs.Items.YES.get();
-    public static Item NO = AllRegs.Items.NO.get();
 
     //状态效果
     public static Holder<MobEffect> BINGLIANG = AllRegs.Effects.BINGLIANG;

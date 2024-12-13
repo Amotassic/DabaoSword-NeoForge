@@ -8,7 +8,6 @@ import com.amotassic.dabaosword.network.QuickSwapPayload;
 import com.amotassic.dabaosword.network.ShensuPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -18,11 +17,9 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-import top.theillusivec4.curios.api.CuriosApi;
-
-import java.util.function.Predicate;
 
 import static com.amotassic.dabaosword.util.ModTools.hasTrinket;
+import static com.amotassic.dabaosword.util.ModTools.isEquipped;
 
 @EventBusSubscriber(value = Dist.CLIENT, modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class OnSkillKeyInput {
@@ -43,7 +40,7 @@ public class OnSkillKeyInput {
             }
 
             if (DabaoSwordClient.ACTIVE_SKILL.consumeClick()) {
-                if (haveSkill(user, stack -> stack.getItem() instanceof SkillItem.ActiveSkillWithTarget)) {
+                if (isEquipped(user, stack -> stack.getItem() instanceof SkillItem.ActiveSkillWithTarget)) {
                     if (result != null && result.getType() == HitResult.Type.ENTITY) {
                         if (((EntityHitResult) result).getEntity() instanceof Player player) {
                             PacketDistributor.sendToServer(new ActiveSkillPayload(player.getId()));
@@ -51,7 +48,7 @@ public class OnSkillKeyInput {
                         }
                     }
                 }
-                if (haveSkill(user, stack -> stack.getItem() instanceof SkillItem.ActiveSkill)) PacketDistributor.sendToServer(new ActiveSkillPayload(user.getId()));
+                if (isEquipped(user, stack -> stack.getItem() instanceof SkillItem.ActiveSkill)) PacketDistributor.sendToServer(new ActiveSkillPayload(user.getId()));
             }
         }
     }
@@ -64,16 +61,5 @@ public class OnSkillKeyInput {
             float speed = (float) (player.position().distanceTo(lastPos) * 20);
             if (speed > 0) PacketDistributor.sendToServer(new ShensuPayload(speed));
         }
-    }
-
-    public static boolean haveSkill(Player player, Predicate<ItemStack> predicate) {
-        var optional = CuriosApi.getCuriosInventory(player);
-        if (optional.isPresent()) {
-            var handler = optional.get().findFirstCurio(predicate);
-            if (handler.isPresent()) {
-                return handler.get().stack() != null;
-            }
-        }
-        return false;
     }
 }

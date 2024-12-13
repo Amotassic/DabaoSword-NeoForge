@@ -1,7 +1,6 @@
 package com.amotassic.dabaosword.ui;
 
 import com.amotassic.dabaosword.api.Skill;
-import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -27,8 +26,7 @@ public class SimpleMenuScreen extends AbstractContainerScreen<SimpleMenuHandler>
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float v, int i, int i1) {
         int x = this.leftPos; int y = this.topPos;
-        if (menu.slots.get(18).getItem().is(SkillCards.JIZHAN)) guiGraphics.blit(TEXTURE, x, y,0,75, imageWidth, imageHeight);
-        else guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
+        guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
     }
 
     @Override

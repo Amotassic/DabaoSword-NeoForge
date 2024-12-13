@@ -12,7 +12,8 @@
     "LivingEntityMixin",
     "MixinReachAttributes",
     "MobEntityMixin",
-    "PlayerMixin"
+    "PlayerMixin",
+    "RavagerMixin"
   ],
   "client": [
     "client.DrawContextMixin",

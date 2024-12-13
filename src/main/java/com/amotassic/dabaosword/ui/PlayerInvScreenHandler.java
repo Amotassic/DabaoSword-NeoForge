@@ -2,11 +2,10 @@ package com.amotassic.dabaosword.ui;
 
 import com.amotassic.dabaosword.api.CardPileInventory;
 import com.amotassic.dabaosword.api.Skill;
-import com.amotassic.dabaosword.api.event.CardCBs;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.AllRegs;
+import com.amotassic.dabaosword.util.ModTools;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
@@ -20,12 +19,11 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
-import java.util.stream.IntStream;
 
+import static com.amotassic.dabaosword.api.event.CardEvents.*;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class PlayerInvScreenHandler extends AbstractContainerMenu {
@@ -120,8 +118,7 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
                     Component message = Component.translatable("dabaosword.steal", player.getDisplayName(), target.getDisplayName(), selectedStack.getDisplayName());
                     player.displayClientMessage(message, false);
                     target.displayClientMessage(message, false);
-                    CardCBs.T type = slotIndex < 4 ? CardCBs.T.EQUIP_TO_INV : CardCBs.T.INV_TO_INV;
-                    if (isCard(selectedStack)) cardMove(target, player, selectedStack, 1, type);
+                    if (isCard(selectedStack)) cardMove(target, player, selectedStack, 1, slotIndex < 4, false);
                         //如果选择的物品是卡牌才触发事件
                     else {give(player, selectedStack.copyWithCount(1)); /*顺手：复制一个物品*/
                         selectedStack.shrink(1);}
@@ -144,16 +141,8 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
     private ItemStack selected(Player player, int slotIndex) {
         var itemStack = getSlot(slotIndex).getItem();
         if (itemStack.isEmpty() && cards == 1 && slotIndex >= 8) {
-            List<ItemStack> candidate = new ArrayList<>(new CardPileInventory(player).nonEmpty);
-            NonNullList<ItemStack> inventory = player.getInventory().items;
-            List<Integer> cardSlots = IntStream.range(0, inventory.size()).filter(i -> isCard(inventory.get(i))).boxed().toList();
-            for (Integer slot : cardSlots) {candidate.add(inventory.get(slot));}
-            ItemStack off = player.getOffhandItem();
-            if (isCard(off)) candidate.add(off);
-            if(!candidate.isEmpty()) {
-                int index = new Random().nextInt(candidate.size());
-                return candidate.get(index);
-            }
+            List<ItemStack> candidate = ModTools.getItems(player, isCard, true, false, false, true);
+            if(!candidate.isEmpty()) return candidate.get(new Random().nextInt(candidate.size()));
         }
         return itemStack;
     }

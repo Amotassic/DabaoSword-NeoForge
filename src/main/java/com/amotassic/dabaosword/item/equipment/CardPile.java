@@ -18,15 +18,17 @@ import top.theillusivec4.curios.api.SlotContext;
 import java.util.List;
 
 public class CardPile extends Equipment {
+    @Override public Type getType() {return null;}
+
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
         tooltip.add(Component.translatable("item.dabaosword.card_pile.tooltip"));
         tooltip.add(Component.empty());
         tooltip.add(Component.translatable("item.dabaosword.card_pile.tip1").withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.translatable("item.dabaosword.card_pile.tip2").withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.translatable("item.dabaosword.card_pile.tip3").withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.translatable("item.dabaosword.card_pile.tip4").withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.translatable("item.dabaosword.card_pile.tip5").withStyle(ChatFormatting.BOLD));
+        tooltip.add(Component.translatable("item.dabaosword.card_pile.tip2", Component.keybind("key.dabaosword.select_card")).withStyle(ChatFormatting.BOLD));
+        tooltip.add(Component.translatable("item.dabaosword.card_pile.tip3", Component.keybind("key.sneak"), Component.keybind("key.dabaosword.select_card")).withStyle(ChatFormatting.BOLD));
+        tooltip.add(Component.translatable("item.dabaosword.card_pile.tip4", Component.keybind("key.sprint"), Component.keybind("key.dabaosword.select_card")).withStyle(ChatFormatting.BOLD));
+        tooltip.add(Component.translatable("item.dabaosword.card_pile.tip5", Component.keybind("key.sprint"), Component.keybind("key.sneak"), Component.keybind("key.dabaosword.select_card")).withStyle(ChatFormatting.BOLD));
     }
 
     @Override

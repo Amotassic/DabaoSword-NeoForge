@@ -7,14 +7,12 @@ import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.ui.PileScreenHandler;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -51,13 +49,10 @@ public class ServerNetworking {
             Player player = c.player();
             float speed = p.f();
             ItemStack stack = trinketItem(SkillCards.SHENSU, player);
-            if (stack != null) {
-                CustomData component = stack.get(DataComponents.CUSTOM_DATA);
-                if (component != null) {
-                    CompoundTag nbt = component.copyTag(); nbt.putFloat("speed", speed);
-                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
-                }
-                //if (Objects.requireNonNull(stack.get(DataComponents.CUSTOM_DATA)).copyTag().getFloat("speed") > 0) player.displayClientMessage(Component.literal("Speed: " + speed), true);
+            if (!stack.isEmpty()) {
+                CompoundTag nbt = getOrCreateNbt(stack); nbt.putFloat("speed", speed);
+                setNbt(stack, nbt);
+                //if (getOrCreateNbt(stack).getFloat("speed") > 0) player.displayClientMessage(Component.literal("Speed: " + speed), true);
             }
         });
 
@@ -73,7 +68,7 @@ public class ServerNetworking {
                     //取消闪避后，先移除记录的伤害，给玩家一个CD防止闪触发
                     ItemStack stack = trinketItem(ModItems.CARD_PILE, player);
                     CompoundTag nbt = getOrCreateNbt(stack); nbt.remove("DamageDodged");
-                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
+                    setNbt(stack, nbt);
                     player.addEffect(new MobEffectInstance(ModItems.COOLDOWN2,2,0,false,false,false));
                     player.hurt(pair.getA().getA(), pair.getA().getB());
                     give(player, pair.getB());
