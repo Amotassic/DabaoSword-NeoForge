@@ -1,7 +1,7 @@
 package com.amotassic.dabaosword.item.skillcard.skills;
 
-
 import com.amotassic.dabaosword.api.ICardEvent;
+import com.amotassic.dabaosword.item.LetMeCCItem;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.equipment.Equipment;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
@@ -13,16 +13,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.phys.AABB;
-import org.jetbrains.annotations.Nullable;
 import top.theillusivec4.curios.api.SlotContext;
 
-import java.util.*;
+import java.util.List;
+import java.util.Random;
 
 import static com.amotassic.dabaosword.api.event.CardEvents.cardDiscard;
 import static com.amotassic.dabaosword.api.event.CardEvents.cardMove;
@@ -116,7 +114,7 @@ public class Wu {
 
         @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
-            viewAs(slotContext.entity(), stack, 15, isDiamondCard, new ItemStack(ModItems.TOO_HAPPY_ITEM));
+            viewAs(slotContext.entity(), stack, 15, isDiamondCard, ModItems.TOO_HAPPY_ITEM);
             super.curioTick(slotContext, stack);
         }
     }
@@ -188,8 +186,8 @@ public class Wu {
         public boolean cancelDamage(LivingEntity target, DamageSource source, float amount) {
             if (source.getEntity() instanceof LivingEntity attacker && target instanceof Player player) {
                 if (hasTrinket(SkillCards.LIULI, player) && hasCard(player, isCard) && !player.hasEffect(ModItems.INVULNERABLE)) {
-                    ItemStack stack = getCard(player, isCard).getB();
-                    LivingEntity nearEntity = getLiuliEntity(player, attacker);
+                    ItemStack stack = getCard(player, isCard);
+                    LivingEntity nearEntity = LetMeCCItem.getClosestEntity(player, LivingEntity.class, 10, entity -> entity != player && entity != attacker);
                     if (nearEntity != null) {
                         player.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 15,0,false,false,false));
                         voice(player, Sounds.LIULI);
@@ -200,22 +198,6 @@ public class Wu {
                 }
             }
             return false;
-        }
-
-        private static @Nullable LivingEntity getLiuliEntity(Entity entity, LivingEntity attacker) {
-            if (entity.level() instanceof ServerLevel world) {
-                AABB box = new AABB(entity.getOnPos()).inflate(10);
-                List<LivingEntity> entities = world.getEntitiesOfClass(LivingEntity.class, box, entity1 -> entity1 != entity && entity1 != attacker);
-                if (!entities.isEmpty()) {
-                    Map<Float, LivingEntity> map = new HashMap<>();
-                    for (var e : entities) {
-                        map.put(e.distanceTo(entity), e);
-                    }
-                    float min = Collections.min(map.keySet());
-                    return map.values().stream().toList().get(map.keySet().stream().toList().indexOf(min));
-                }
-            }
-            return null;
         }
     }
 
@@ -251,7 +233,7 @@ public class Wu {
 
         @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
-            viewAs(slotContext.entity(), stack, 5, isBlackCard, new ItemStack(ModItems.DISCARD));
+            viewAs(slotContext.entity(), stack, 5, isBlackCard, ModItems.DISCARD);
             super.curioTick(slotContext, stack);
         }
     }

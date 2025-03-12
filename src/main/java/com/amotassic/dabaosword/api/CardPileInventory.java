@@ -7,6 +7,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,11 +16,10 @@ import static com.amotassic.dabaosword.util.ModTools.*;
 public class CardPileInventory implements Container {
     public NonNullList<ItemStack> cards;
     public Player player;
-    public ItemStack pile;
+    private static final Item pile = ModItems.CARD_PILE;
 
     public CardPileInventory(Player player) {
         this.player = player;
-        this.pile = trinketItem(ModItems.CARD_PILE, player);
         this.cards = NonNullList.withSize(36, ItemStack.EMPTY);
         readNbt();
     }
@@ -36,10 +36,8 @@ public class CardPileInventory implements Container {
     }
 
     public void readNbt() {
-        if (getOrCreateNbt(pile).contains("Items")) {
-            ListTag list = (ListTag) getOrCreateNbt(pile).get("Items");
-            if (list != null) readNbt(list);
-        }
+        ListTag list = getOrCreateNbt(trinketItem(pile, player)).getList("Items", 10);
+        readNbt(list);
     }
 
     public void readNbt(ListTag nbtList) {
@@ -54,6 +52,7 @@ public class CardPileInventory implements Container {
     }
 
     public void writeNbtToStack() { //当涉及牌堆物品变化后，必须调用这个方法
+        if (player.level().isClientSide) return;
         ListTag nbtList = new ListTag();
         CompoundTag nbtCompound;
         for (int i = 0; i < getContainerSize(); ++i) {
@@ -62,9 +61,10 @@ public class CardPileInventory implements Container {
             nbtCompound.putByte("Slot", (byte) i);
             nbtList.add(cards.get(i).save(player.registryAccess(), nbtCompound));
         }
-        nbtCompound = getOrCreateNbt(pile);
+        ItemStack stack = trinketItem(pile, player);
+        nbtCompound = getOrCreateNbt(stack);
         nbtCompound.put("Items", nbtList);
-        setNbt(pile, nbtCompound);
+        setNbt(stack, nbtCompound);
     }
 
     @Override
@@ -89,19 +89,21 @@ public class CardPileInventory implements Container {
     @Override
     public @NotNull ItemStack getItem(int slot) {return cards.get(slot);}
 
-    public int getSlotWith(ItemStack stack) { //倒序检索
-        for (int i = getContainerSize() - 1; i >= 0; i--) {
+    public int getSlotWith(ItemStack stack) { //倒序检索 3.3放弃了倒序检索，会出现bug
+        for (int i = 0; i < getContainerSize(); i++) {
             ItemStack itemStack = getItem(i);
             if (itemStack.isEmpty()) continue;
-            if (itemStack.equals(stack)) return i;
+            if (ItemStack.matches(itemStack, stack)) return i;
         }
         return -1;
     }
 
-    public void removeStack(ItemStack stack, int count) {
+    /**@return 若成功移除指定物品则返回true，否则为false*/
+    public boolean removeStack(ItemStack stack, int count) {
         int i = getSlotWith(stack);
-        if (i == -1) return;
+        if (i == -1) return false;
         removeItem(i, count);
+        return true;
     }
 
     @Override

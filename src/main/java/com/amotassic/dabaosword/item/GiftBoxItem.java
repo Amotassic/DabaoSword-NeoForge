@@ -1,10 +1,8 @@
 package com.amotassic.dabaosword.item;
 
-import com.amotassic.dabaosword.util.Sounds;
+import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -16,8 +14,6 @@ import net.minecraft.world.level.Level;
 
 import java.util.List;
 import java.util.Random;
-
-import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class GiftBoxItem extends Item {
     public GiftBoxItem(Properties p_41383_) {super(p_41383_);}
@@ -48,10 +44,7 @@ public class GiftBoxItem extends Item {
 
     public InteractionResultHolder<ItemStack> giftBox(Player player, float chance) {
         if (new Random().nextFloat() < chance) {
-            var selectedId = parseLootTable(ResourceLocation.fromNamespaceAndPath("dabaosword", "loot_tables/draw_skill.json"));
-            ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(selectedId));
-            if (stack.getItem() != Items.AIR) voice(player, Sounds.GIFTBOX,3);
-            give(player, stack);
+            SkillItem.changeSkill(player);
             if (!player.isCreative()) player.getMainHandItem().shrink(1);
             return InteractionResultHolder.success(player.getMainHandItem());
         }

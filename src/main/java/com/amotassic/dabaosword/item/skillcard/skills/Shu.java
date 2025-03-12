@@ -69,7 +69,7 @@ public class Shu {
 
         @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
-            viewAs(slotContext.entity(), stack, 15, isRedCard, new ItemStack(ModItems.FIRE_ATTACK));
+            viewAs(slotContext.entity(), stack, 15, isRedCard, ModItems.FIRE_ATTACK);
             super.curioTick(slotContext, stack);
         }
     }
@@ -96,7 +96,7 @@ public class Shu {
 
         @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
-            viewAs(slotContext.entity(), stack, 10, isBlackCard, new ItemStack(ModItems.WUXIE));
+            viewAs(slotContext.entity(), stack, 10, isBlackCard, ModItems.WUXIE);
             super.curioTick(slotContext, stack);
         }
     }
@@ -166,10 +166,10 @@ public class Shu {
                 ItemStack stack1 = player.getOffhandItem(); ItemStack copy = stack1.copy();
                 if (world.getGameTime() % 20 == 0 && isBasic.test(stack1)) {
                     stack1.shrink(1);
-                    if (isSha.test(copy)) give(player, new ItemStack(ModItems.SHAN));
-                    if (copy.is(ModItems.SHAN)) give(player, new ItemStack(ModItems.SHA));
-                    if (copy.is(ModItems.PEACH)) give(player, new ItemStack(ModItems.JIU));
-                    if (copy.is(ModItems.JIU)) give(player, new ItemStack(ModItems.PEACH));
+                    if (isSha.test(copy)) give(player, newCard(ModItems.SHAN));
+                    if (copy.is(ModItems.SHAN)) give(player, newCard(p(ModItems.SHA).and(isRedCard)));
+                    if (copy.is(ModItems.PEACH)) give(player, newCard(ModItems.JIU));
+                    if (copy.is(ModItems.JIU)) give(player, newCard(ModItems.PEACH));
                     voice(player, Sounds.LONGDAN);
                 }
             }
@@ -240,7 +240,7 @@ public class Shu {
         @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
             LivingEntity entity = slotContext.entity();
-            viewAs(slotContext.entity(), stack, 5, isRedCard, new ItemStack(ModItems.SHA));
+            viewAs(slotContext.entity(), stack, 5, isRedCard, newCard(p(ModItems.SHA).and(isRedCard)));
             super.curioTick(slotContext, stack);
         }
     }

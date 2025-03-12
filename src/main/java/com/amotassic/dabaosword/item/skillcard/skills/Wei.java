@@ -30,7 +30,10 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import top.theillusivec4.curios.api.SlotContext;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 
 import static com.amotassic.dabaosword.api.event.CardEvents.*;
 import static com.amotassic.dabaosword.util.ModTools.*;
@@ -47,7 +50,7 @@ public class Wei {
 
         @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
-            viewAs(slotContext.entity(), stack, 5, isBlackCard.and(isArmoury.negate()), new ItemStack(ModItems.BINGLIANG_ITEM));
+            viewAs(slotContext.entity(), stack, 5, isBlackCard.and(isArmoury.negate()), ModItems.BINGLIANG_ITEM);
             super.curioTick(slotContext, stack);
         }
     }
@@ -297,7 +300,7 @@ public class Wei {
         @Override
         public void onClickGUISlot(Player player, ItemStack stack, Player target, ItemStack selected, int slot) {
             if (!player.isCreative()) {
-                while (countCards(player) > 0) {cardDecrement(getCard(player, isCard), 64);}
+                while (countCards(player) > 0) {cardDecrement(player, getCard(player, isCard), 64);}
                 setCD(stack, 20);
             }
             give(player, selected);
@@ -315,7 +318,7 @@ public class Wei {
 
         @Override
         public void curioTick(SlotContext slotContext, ItemStack stack) {
-            viewAs(slotContext.entity(), stack, 5, isBlackCard, new ItemStack(ModItems.SHAN));
+            viewAs(slotContext.entity(), stack, 5, isBlackCard, ModItems.SHAN);
             super.curioTick(slotContext, stack);
         }
     }

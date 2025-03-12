@@ -1,7 +1,6 @@
 package com.amotassic.dabaosword.mixin;
 
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.util.ModTools;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -24,31 +23,30 @@ import java.util.Arrays;
 import java.util.Random;
 
 import static com.amotassic.dabaosword.api.event.CardEvents.cardUsePre;
-import static com.amotassic.dabaosword.util.ModTools.isBasic;
-import static com.amotassic.dabaosword.util.ModTools.isCard;
+import static com.amotassic.dabaosword.util.ModTools.*;
 
-@Mixin(Mob.class)
+@Mixin(Mob.class) @SuppressWarnings("all")
 public abstract class MobEntityMixin extends LivingEntity {
     protected MobEntityMixin(EntityType<? extends LivingEntity> entityType, Level level) {super(entityType, level);}
 
-    @Unique Mob dabaoSword$mob = (Mob) (Object) this;
+    @Unique Mob mob = (Mob) (Object) this;
 
     @Inject(method = "populateDefaultEquipmentSlots", at = @At(value = "TAIL"))
     protected void initEquipment(RandomSource random, DifficultyInstance localDifficulty, CallbackInfo ci) {
-        if (!level().isClientSide && new Random().nextFloat() < dabaoSword$getChance()) dabaoSword$initCards();
+        if (!level().isClientSide && new Random().nextFloat() < getChance()) initCards();
     }
 
     @Inject(method = "doHurtTarget", at = @At(value = "HEAD"))
     public void tryAttack(Entity target, CallbackInfoReturnable<Boolean> cir) {
-        if (isCard(getMainHandItem()) && target instanceof LivingEntity) dabaoSword$tryUseCard(getMainHandItem(), (LivingEntity) target);
+        if (isCard(getMainHandItem()) && target instanceof LivingEntity) tryUseCard(getMainHandItem(), (LivingEntity) target);
     }
 
     @Unique
-    private void dabaoSword$tryUseCard(ItemStack stack, LivingEntity target) {
-        if (!isBasic.test(stack) && !stack.is(ModItems.WUXIE)) cardUsePre(dabaoSword$mob, stack, target);
+    private void tryUseCard(ItemStack stack, LivingEntity target) {
+        if (!isBasic.test(stack) && !stack.is(ModItems.WUXIE)) cardUsePre(mob, stack, target);
     }
 
-    @Unique private float dabaoSword$getChance() {
+    @Unique private float getChance() {
         Difficulty difficulty = level().getDifficulty();
         if (difficulty == Difficulty.EASY) return 0.3f;
         if (difficulty == Difficulty.NORMAL) return 0.6f;
@@ -57,18 +55,16 @@ public abstract class MobEntityMixin extends LivingEntity {
     }
 
     @Unique
-    private void dabaoSword$initCards() {
+    private void initCards() {
         if (getMainHandItem().isEmpty()) {
-            setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(dabaoSword$getMainCard(), (int) (3 * Math.random()) + 1));
-            ModTools.initSuitsAndRanks(getMainHandItem());
+            setItemInHand(InteractionHand.MAIN_HAND, newCard(getMainCard()).copyWithCount((int) (3 * Math.random()) + 1));
         }
         if (getOffhandItem().isEmpty()) {
-            setItemInHand(InteractionHand.OFF_HAND, new ItemStack(dabaoSword$getOffCard(), (int) (2 * Math.random()) + 1));
-            ModTools.initSuitsAndRanks(getOffhandItem());
+            setItemInHand(InteractionHand.OFF_HAND, newCard(getOffCard()).copyWithCount((int) (2 * Math.random()) + 1));
         }
     }
 
-    @Unique private Item dabaoSword$getMainCard() {
+    @Unique private Item getMainCard() {
         if (new Random().nextFloat() > 0.33) {
             Item[] items = {ModItems.BINGLIANG_ITEM, ModItems.TOO_HAPPY_ITEM, ModItems.DISCARD, ModItems.FIRE_ATTACK, ModItems.JIEDAO, ModItems.WANJIAN, ModItems.TIESUO};
             int index = new java.util.Random().nextInt(items.length);
@@ -77,7 +73,7 @@ public abstract class MobEntityMixin extends LivingEntity {
         return ModItems.SHA;
     }
 
-    @Unique private Item dabaoSword$getOffCard() {
+    @Unique private Item getOffCard() {
         if (new Random().nextFloat() < 0.5) return ModItems.SHAN;
         return ModItems.PEACH;
     }

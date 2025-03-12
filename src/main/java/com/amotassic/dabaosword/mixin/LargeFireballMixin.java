@@ -1,6 +1,6 @@
 package com.amotassic.dabaosword.mixin;
 
-import com.amotassic.dabaosword.util.Gamerule;
+import com.amotassic.dabaosword.util.MODConfig;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.Fireball;
 import net.minecraft.world.entity.projectile.LargeFireball;
@@ -16,8 +16,7 @@ public abstract class LargeFireballMixin extends Fireball {
 
     @ModifyArgs(method = "onHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;explode(Lnet/minecraft/world/entity/Entity;DDDFZLnet/minecraft/world/level/Level$ExplosionInteraction;)Lnet/minecraft/world/level/Explosion;"))
     public void onCollision(Args args) {
-        boolean bl = !this.level().getGameRules().getBoolean(Gamerule.FIRE_ATTACK_BREAKS_BLOCK);
-        if (bl && getTags().contains("a")) {
+        if (!MODConfig.FireAttackBreaksBlock && getTags().contains("a")) {
             args.set(5, false);
             args.set(6, Level.ExplosionInteraction.NONE);
         }

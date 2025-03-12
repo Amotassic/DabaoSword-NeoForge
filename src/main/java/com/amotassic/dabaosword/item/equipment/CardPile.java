@@ -1,24 +1,26 @@
 package com.amotassic.dabaosword.item.equipment;
 
-import com.amotassic.dabaosword.api.CardPileInventory;
 import com.amotassic.dabaosword.ui.PileScreenHandler;
-import com.amotassic.dabaosword.util.ModTools;
+import com.amotassic.dabaosword.util.Gamerule;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
 import top.theillusivec4.curios.api.SlotContext;
+import top.theillusivec4.curios.api.type.capability.ICurioItem;
 
 import java.util.List;
 
-public class CardPile extends Equipment {
-    @Override public Type getType() {return null;}
+import static com.amotassic.dabaosword.util.ModTools.getCardPack;
+import static com.amotassic.dabaosword.util.ModTools.isCard;
+
+@SuppressWarnings("all")
+public class CardPile extends Item implements ICurioItem {
+    public CardPile() {super(new Properties().stacksTo(1));}
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
@@ -32,22 +34,30 @@ public class CardPile extends Equipment {
     }
 
     @Override
-    public boolean canUnequip(SlotContext slotContext, ItemStack stack) {return true;}
-
-    @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
-        return InteractionResultHolder.pass(player.getItemInHand(usedHand));
-    }
-
-    @Override
     public void curioTick(SlotContext slotContext, ItemStack stack) {
         LivingEntity entity = slotContext.entity();
         if (entity.level() instanceof ServerLevel world && entity instanceof Player player) {
-            if (player.containerMenu.getClass() != PileScreenHandler.class && world.getGameTime() % 20 == 0) {
-                CardPileInventory cards = new CardPileInventory(player);
+            long time = world.getGameTime();
+            int skill = world.getGameRules().getInt(Gamerule.CHANGE_SKILL_INTERVAL) * 20;
+
+            if (world.getGameRules().getBoolean(Gamerule.CARD_PILE_HUNGERLESS)) player.getFoodData().setFoodLevel(20);
+
+            if (skill >= 0) {
+                if (skill == 0) player.addTag("change_skill");
+                else if (time % skill == 0) { //每5分钟可以切换技能
+                    player.addTag("change_skill");
+                    if (skill >= 600) {
+                        player.displayClientMessage(Component.translatable("dabaosword.change_skill").withStyle(ChatFormatting.BOLD), false);
+                        player.displayClientMessage(Component.translatable("dabaosword.change_skill2"), false);
+                    }
+                }
+            }
+
+            if (player.containerMenu.getClass() != PileScreenHandler.class && time % 20 == 0) {
+                var cards = getCardPack(player);
                 for (int i = 9; i < 36; i++) {
                     ItemStack item = player.getInventory().items.get(i);
-                    if (ModTools.isCard(item) && cards.isNotFull()) {
+                    if (isCard(item) && cards.isNotFull()) {
                         cards.insertStack(item.copy());
                         item.setCount(0);
                     }
@@ -55,7 +65,4 @@ public class CardPile extends Equipment {
             }
         }
     }
-
-    @Override
-    public int onDrawPhase(Player player, ItemStack stack) {return 2;}
 }

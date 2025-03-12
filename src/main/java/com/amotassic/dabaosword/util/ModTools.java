@@ -3,13 +3,14 @@ package com.amotassic.dabaosword.util;
 import com.amotassic.dabaosword.api.Card;
 import com.amotassic.dabaosword.api.CardPileInventory;
 import com.amotassic.dabaosword.api.ISha;
+import com.amotassic.dabaosword.event.PVPGameEvents;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.ui.PlayerInvScreenHandler;
 import com.amotassic.dabaosword.ui.SimpleMenuHandler;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
@@ -18,9 +19,12 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -43,8 +47,12 @@ import net.minecraft.world.entity.projectile.LargeFireball;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import org.jetbrains.annotations.NotNull;
-import top.theillusivec4.curios.api.CuriosApi;
+import top.theillusivec4.curios.api.SlotResult;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -52,24 +60,27 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
+import static top.theillusivec4.curios.api.CuriosApi.getCuriosInventory;
+
 @SuppressWarnings("unused")
 public class ModTools {
     //通过predicate寻找对应物品，免得添加标签
     public static Predicate<ItemStack> p(Item item) {return s -> s.is(item);}
-    public static final Predicate<ItemStack> canSaveDying = p(ModItems.JIU).or(p(ModItems.PEACH));
-    public static final Predicate<ItemStack> isSha = s -> s.getItem() instanceof ISha;
     //判断是否是卡牌
-    public static final Predicate<ItemStack> isCard = ModTools::isCard;
     public static boolean isCard(ItemStack s) {return s.getItem() instanceof Card card && card.getType() != null;}
-    public static final Predicate<ItemStack> isBasic = s -> s.getItem() instanceof Card c && c.getType() == Card.Type.BASIC;
-    public static final Predicate<ItemStack> isArmoury = s -> s.getItem() instanceof Card c && c.getType() == Card.Type.ARMOURY;
-    public static final Predicate<ItemStack> isEquipment = s -> s.getItem() instanceof Card c && c.getType() == Card.Type.EQUIPMENT;
-    public static final Predicate<ItemStack> isDiamondCard = s -> getSuit(s) == Card.Suits.Diamond;
-    public static final Predicate<ItemStack> isHeartCard = s -> getSuit(s) == Card.Suits.Heart;
-    public static final Predicate<ItemStack> isClubCard = s -> getSuit(s) == Card.Suits.Club;
-    public static final Predicate<ItemStack> isSpadeCard = s -> getSuit(s) == Card.Suits.Spade;
-    public static final Predicate<ItemStack> isRedCard = isDiamondCard.or(isHeartCard);
-    public static final Predicate<ItemStack> isBlackCard = isClubCard.or(isSpadeCard);
+    public static final Predicate<ItemStack>
+    canSaveDying = p(ModItems.JIU).or(p(ModItems.PEACH)),
+    isSha = s -> s.getItem() instanceof ISha,
+    isCard = ModTools::isCard,
+    isBasic = s -> s.getItem() instanceof Card c && c.getType() == Card.Type.BASIC,
+    isArmoury = s -> s.getItem() instanceof Card c && c.getType() == Card.Type.ARMOURY,
+    isEquipment = s -> s.getItem() instanceof Card c && c.getType() == Card.Type.EQUIPMENT,
+    isDiamondCard = s -> getSuit(s) == Card.Suits.Diamond,
+    isHeartCard = s -> getSuit(s) == Card.Suits.Heart,
+    isClubCard = s -> getSuit(s) == Card.Suits.Club,
+    isSpadeCard = s -> getSuit(s) == Card.Suits.Spade,
+    isRedCard = isDiamondCard.or(isHeartCard),
+    isBlackCard = isClubCard.or(isSpadeCard);
     public static boolean isWanjian(DamageSource source) {
         return source.getDirectEntity() instanceof Arrow arrow && arrow.getTags().contains("a");
     }
@@ -90,21 +101,16 @@ public class ModTools {
         return !trinketItem(item, entity).isEmpty();
     }
     public static boolean isEquipped(LivingEntity entity, Predicate<ItemStack> p) {
-        var optional = CuriosApi.getCuriosInventory(entity);
-        return optional.map(c -> c.isEquipped(p)).orElse(false);
+        return getCuriosInventory(entity).map(c -> c.isEquipped(p)).orElse(false);
     }
 
     public static ItemStack trinketItem(Item item, LivingEntity entity) {
-        var optional = CuriosApi.getCuriosInventory(entity);
-        if (optional.isPresent()) {
-            var handler = optional.get().findFirstCurio(item);
-            if (handler.isPresent()) return handler.get().stack();
-        } return ItemStack.EMPTY;
+        return getCuriosInventory(entity).map(h -> h.findFirstCurio(item).map(SlotResult::stack).orElse(ItemStack.EMPTY)).orElse(ItemStack.EMPTY);
     }
 
     /**获取该实体的所有饰品，输出为ItemStack列表*/
     public static List<ItemStack> allTrinkets(LivingEntity entity) {
-        var optional = CuriosApi.getCuriosInventory(entity);
+        var optional = getCuriosInventory(entity);
         if (optional.isEmpty()) return Collections.emptyList();
         List<ItemStack> list = new ArrayList<>();
         var handler = optional.get().getEquippedCurios();
@@ -123,20 +129,22 @@ public class ModTools {
         } return true;
     }
 
+    public static CardPileInventory getCardPack(Player player) {
+        return PVPGameEvents.PLAYER_CARD_PACKS.getOrDefault((ServerPlayer) player, new CardPileInventory(player));
+    }
+
     /**判断牌堆和背包中是否有符合条件的卡牌*/
     public static boolean hasCard(LivingEntity entity, Predicate<ItemStack> predicate) {
-        return !getCard(entity, predicate).getB().isEmpty();
+        return !getCard(entity, predicate).isEmpty();
     }
-    /**获取牌堆或背包中的一张符合条件的卡牌*/@SuppressWarnings("all")
-    public static Tuple<CardPileInventory, ItemStack> getCard(LivingEntity entity, Predicate<ItemStack> predicate) {
+    /**获取牌堆或背包中的一张符合条件的卡牌*/
+    public static ItemStack getCard(LivingEntity entity, Predicate<ItemStack> predicate) {
         if (entity instanceof Player player) {
-            CardPileInventory inventory = new CardPileInventory(player);
-            for (int i = inventory.cards.size() - 1; i >= 0; i--) { //倒序检索
-                var card = inventory.getItem(i);
-                if (predicate.test(card)) return new Tuple<>(inventory, card);
+            for (ItemStack card : getCardPack(player).cards) {
+                if (predicate.test(card)) return card;
             }
         }
-        return new Tuple<>(null, getItem(entity, predicate));
+        return getItem(entity, predicate);
     }
 
     /**判断生物是否有某个物品*/
@@ -160,6 +168,9 @@ public class ModTools {
         SoundEvent sound = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(stack.getItem().toString()));
         if (sound != null) voice(entity, sound);
     }
+    public static SoundEvent getSound(String name) {
+        return BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.fromNamespaceAndPath("dabaosword", name));
+    }
 
     /**数玩家所有手牌的数量*/
     public static int countCards(LivingEntity entity) {return countCard(entity, isCard);}
@@ -181,7 +192,7 @@ public class ModTools {
     public static List<ItemStack> getItems(LivingEntity entity, Predicate<ItemStack> p, boolean main, boolean armor, boolean trinket, boolean pile) {
         List<ItemStack> items = new ArrayList<>();
         //如果是玩家则把牌堆中的物品添加到待选物品中
-        if (pile && entity instanceof Player player) for (var stack : new CardPileInventory(player).cards) if (p.test(stack)) items.add(stack);
+        if (pile && entity instanceof Player player) for (var stack : getCardPack(player).cards) if (p.test(stack)) items.add(stack);
         if (main) { //如果是玩家则把背包和副手的物品添加到待选物品中，否则只添加主副手物品
             if (entity instanceof Player player) {
                 for (var stack : player.getInventory().items) if (p.test(stack)) items.add(stack);
@@ -191,25 +202,6 @@ public class ModTools {
         if (armor) for (var stack : entity.getArmorSlots()) if (p.test(stack)) items.add(stack);
         if (trinket) for (var stack : allTrinkets(entity)) if (p.test(stack)) items.add(stack);
         return items;
-    }
-
-    /**自定义战利品表解析*/
-    public static ResourceLocation parseLootTable(ResourceLocation lootTableId) {
-        Gson gson = new Gson();
-        InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(ModTools.class.getResourceAsStream("/data/dabaosword/" + lootTableId.getPath())));
-        JsonObject o = gson.fromJson(reader, JsonObject.class);
-        float totalWeight = 0;
-        for (var element : o.getAsJsonArray("results")) {
-            totalWeight += element.getAsJsonObject().get("weight").getAsFloat();
-        }
-        float randomValue = new Random().nextFloat(totalWeight);
-        float currentWeight = 0;
-        for (JsonElement element : o.getAsJsonArray("results")) {
-            JsonObject result = element.getAsJsonObject();
-            currentWeight += result.get("weight").getAsFloat();
-            if (randomValue < currentWeight) return ResourceLocation.parse(result.get("item").getAsString());
-        }
-        return ResourceLocation.parse("minecraft:air");
     }
 
     public static void draw(LivingEntity entity) {draw(entity, 1);}
@@ -229,19 +221,25 @@ public class ModTools {
         }
     }
 
-
-    public static ItemStack newCardNoSR() {
-        return new ItemStack(BuiltInRegistries.ITEM.get(parseLootTable(ResourceLocation.fromNamespaceAndPath("dabaosword", "loot_tables/draw.json"))));
+    public static ItemStack customLoot(LivingEntity entity, String path) {
+        LootTable lt = Objects.requireNonNull(entity.level().getServer()).reloadableRegistries().getLootTable(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.fromNamespaceAndPath("dabaosword", path)));
+        LootParams set = (new LootParams.Builder((ServerLevel) entity.level())).withParameter(LootContextParams.ORIGIN, entity.position()).withParameter(LootContextParams.THIS_ENTITY, entity).create(LootContextParamSets.GIFT);
+        var list = lt.getRandomItems(set);
+        for (var stack : list) return stack;
+        return ItemStack.EMPTY;
     }
-    public static ItemStack newCard() {return initSuitsAndRanks(newCardNoSR());}
+
+    public static ItemStack newCard() {
+        return allCards().get(new Random().nextInt(allCards().size())).copy();
+    }
+    public static ItemStack newCard(Item item) {return newCard(p(item));}
     public static ItemStack newCard(Predicate<ItemStack> predicate) {
-        ItemStack stack = newCardNoSR();
-        while (!predicate.test(stack)) stack = newCardNoSR();
-        return initSuitsAndRanks(stack);
+        List<ItemStack> list = allCards().stream().filter(predicate).toList();
+        if (list.isEmpty()) return ItemStack.EMPTY;
+        return list.get(new Random().nextInt(list.size())).copy();
     }
 
     public static void give(LivingEntity entity, ItemStack stack) {
-        initSuitsAndRanks(stack);
         if (entity instanceof Player player) {
             ItemEntity item = player.drop(stack, false);
             if (item == null) return;
@@ -254,37 +252,37 @@ public class ModTools {
         else if (entity.getOffhandItem().isEmpty()) entity.setItemInHand(InteractionHand.OFF_HAND, stack);
     }
 
-    public static Tuple<String, String> getDefaultOrRandomSuitAndRank(ItemStack stack) {
-        //在json文件中为了方便读写，花色用了Suits.name()，点数用了Ranks.rank
-        Tuple<String, String> random = new Tuple<>(Card.Suits.get(Component.empty()).name(), Card.Ranks.get("0").rank);
-        String srPath = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath() + ".json";
-        Gson gson = new Gson();
-        InputStream stream = ModTools.class.getResourceAsStream("/data/dabaosword/default_suit_and_rank/" + srPath);
-        if (stream == null) return random;
+    private static final List<ItemStack> ALL_CARDS = new ArrayList<>();
 
-        InputStreamReader reader = new InputStreamReader(stream);
-        JsonObject json = gson.fromJson(reader, JsonObject.class);
-        int size = json.getAsJsonArray("suits_and_ranks").size();
-        //随机获取一组花色和点数
-        JsonObject obj = json.getAsJsonArray("suits_and_ranks").get(new Random().nextInt(size)).getAsJsonObject();
-        if (obj.has("suit") && obj.has("rank")) {
-            return new Tuple<>(obj.get("suit").getAsString(), obj.get("rank").getAsString());
-        } else return random;
-    }
+    public static List<ItemStack> allCards() {
+        if (ALL_CARDS.isEmpty()) {
+            var itemList = BuiltInRegistries.ITEM.stream().filter(item -> item instanceof Card).toList();
+            for (Item item : itemList) {
+                String path = BuiltInRegistries.ITEM.getKey(item).getPath() + ".json";
+                Gson gson = new Gson();
+                InputStream stream = ModTools.class.getResourceAsStream("/data/dabaosword/default_suit_and_rank/" + path);
+                if (stream == null) continue;
 
-    public static ItemStack initSuitsAndRanks(ItemStack stack) {
-        if (isCard(stack)) {
-            CompoundTag nbt = getOrCreateNbt(stack);
-            if (nbt.contains("Card")) return stack;
-            ListTag list = new ListTag();
-            CompoundTag compound = new CompoundTag();
-            var suitAndRank = getDefaultOrRandomSuitAndRank(stack);
-            compound.putString("Suit", suitAndRank.getA());
-            compound.putString("Rank", suitAndRank.getB());
-            list.add(compound);
-            nbt.put("Card", list);
-            setNbt(stack, nbt);
-        } return stack;
+                InputStreamReader reader = new InputStreamReader(stream);
+                JsonObject json = gson.fromJson(reader, JsonObject.class);
+                var srs = json.get("suits_and_ranks").getAsJsonArray();
+                for (int j = 0; j < srs.size(); j++) {
+                    JsonObject sr = srs.get(j).getAsJsonObject();
+                    String suit = sr.get("suit").getAsString();
+                    String rank = sr.get("rank").getAsString();
+
+                    ItemStack stack = new ItemStack(item);
+                    var nbt = new CompoundTag(); var list = new ListTag(); var compound = new CompoundTag();
+                    compound.putString("Suit", suit); compound.putString("Rank", rank);
+                    list.add(compound);
+                    nbt.put("Card", list);
+                    setNbt(stack, nbt);
+                    ALL_CARDS.add(stack);
+                }
+            }
+            System.out.println("Loaded " + ALL_CARDS.size() + " cards");
+        }
+        return ALL_CARDS;
     }
 
     public static Tuple<Card.Suits, Card.Ranks> getSuitAndRank(ItemStack stack) {
@@ -366,7 +364,7 @@ public class ModTools {
         NonNullList<ItemStack> inv = invOwner.getInventory().items;
         List<Integer> cardSlots = IntStream.range(0, inv.size()).filter(i -> isCard(inv.get(i))).boxed().toList();
         if (cards == 2) {
-            var inventory = new CardPileInventory(invOwner).cards;
+            var inventory = getCardPack(invOwner).cards;
             for (var stack : inventory) targetInv.setItem(inventory.indexOf(stack) + 9, stack);
             if (!cardSlots.isEmpty()) { //卡牌背包中的牌显示在中间36格
                 for(Integer i : cardSlots) {
@@ -433,5 +431,29 @@ public class ModTools {
             }
         }
         return null;
+    }
+
+    /**一个用于简便执行多条服务器指令的方法*/
+    public static void excuteServerCommand(Entity entity, String[] commands, boolean fromServer) {
+        if (entity.level() instanceof ServerLevel world) {
+            var server = world.getServer();
+            var dispatcher = server.getCommands().getDispatcher();
+            var commandSource = fromServer ? server.createCommandSourceStack() : entity.createCommandSourceStack();
+            for (String command : commands) {
+                if (command.startsWith("/")) command = command.substring(1);
+                try {
+                    var results = dispatcher.parse(command, commandSource);
+                    dispatcher.execute(results);
+                } catch (CommandSyntaxException e) {throw new RuntimeException(e);}
+            }
+        }
+    }
+
+    public static void title(ServerPlayer player, Component title) {
+        player.connection.send(new ClientboundSetTitleTextPacket(title));
+    }
+
+    public static void subtitle(ServerPlayer player, Component sub) {
+        player.connection.send(new ClientboundSetSubtitleTextPacket(sub));
     }
 }

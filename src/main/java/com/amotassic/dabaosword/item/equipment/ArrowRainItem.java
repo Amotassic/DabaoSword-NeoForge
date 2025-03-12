@@ -21,7 +21,7 @@ public class ArrowRainItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-        tooltip.add(Component.translatable("item.dabaosword.arrowrain.tooltip"));
+        tooltip.add(Component.translatable("item.dabaosword.wanjian.tooltip"));
     }
 
     @Override

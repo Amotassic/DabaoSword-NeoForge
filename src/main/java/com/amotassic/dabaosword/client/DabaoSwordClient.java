@@ -12,7 +12,6 @@ import com.amotassic.dabaosword.ui.PlayerInvHandledScreen;
 import com.amotassic.dabaosword.ui.SimpleMenuScreen;
 import com.amotassic.dabaosword.util.AllRegs;
 import com.amotassic.dabaosword.util.ModTools;
-import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -29,9 +28,9 @@ import static net.minecraft.client.renderer.item.ItemProperties.register;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class DabaoSwordClient {
-    public static final KeyMapping ACTIVE_SKILL = new KeyMapping("key.dabaosword.active_skill", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_J, "category.dabaosword.keybindings");
+    public static final KeyMapping ACTIVE_SKILL = new KeyMapping("key.dabaosword.active_skill", GLFW.GLFW_KEY_J, "category.dabaosword.keybindings");
 
-    public static final KeyMapping SELECT_CARD = new KeyMapping("key.dabaosword.select_card", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, "category.dabaosword.keybindings");
+    public static final KeyMapping SELECT_CARD = new KeyMapping("key.dabaosword.select_card", GLFW.GLFW_KEY_K, "category.dabaosword.keybindings");
 
     @SubscribeEvent
     public static void registerKeyBinds(RegisterKeyMappingsEvent event) {

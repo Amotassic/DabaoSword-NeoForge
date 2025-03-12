@@ -1,6 +1,5 @@
 package com.amotassic.dabaosword.ui;
 
-import com.amotassic.dabaosword.api.CardPileInventory;
 import com.amotassic.dabaosword.api.Skill;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.AllRegs;
@@ -56,7 +55,7 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
 
             if (stack.is(ModItems.WANJIAN)) {
                 ItemStack mainHand = player.getMainHandItem(); var mainCopy = mainHand.copy();
-                CardPileInventory cards = new CardPileInventory(player);
+                var cards = getCardPack(player);
                 ItemStack selected = ItemStack.EMPTY; //对选择的卡牌进行赋值
                 if (slotIndex == 8) selected = player.getOffhandItem();
                 if (8 < slotIndex && slotIndex < 45) selected = cards.getItem(slotIndex - 9);

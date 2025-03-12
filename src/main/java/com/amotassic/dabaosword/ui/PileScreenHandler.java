@@ -1,10 +1,12 @@
 package com.amotassic.dabaosword.ui;
 
 import com.amotassic.dabaosword.api.CardPileInventory;
+import com.amotassic.dabaosword.event.PVPGameEvents;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.AllRegs;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -18,15 +20,16 @@ import static com.amotassic.dabaosword.api.event.CardEvents.cardDiscard;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class PileScreenHandler extends AbstractContainerMenu {
-    private final Container inventory;
+    private final CardPileInventory inventory;
 
     public PileScreenHandler(int syncId, Inventory inv, RegistryFriendlyByteBuf buf) {
-        this(syncId, inv, new CardPileInventory(inv.player));
+        this(syncId, inv);
     }
 
-    public PileScreenHandler(int syncId, Inventory inv, Container inventory) {
+    public PileScreenHandler(int syncId, Inventory inv) {
         super(AllRegs.Other.PILE_SCREEN_HANDLER.get(), syncId);
-        this.inventory = inventory;
+        this.inventory = new CardPileInventory(inv.player);
+        if (inv.player instanceof ServerPlayer sp) PVPGameEvents.PLAYER_CARD_PACKS.put(sp, inventory);
         inventory.startOpen(inv.player);
         int j, k;
         for (j = 0; j < 4; ++j) {

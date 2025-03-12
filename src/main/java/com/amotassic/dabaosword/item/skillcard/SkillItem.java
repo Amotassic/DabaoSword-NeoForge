@@ -1,11 +1,9 @@
 package com.amotassic.dabaosword.item.skillcard;
 
-import com.amotassic.dabaosword.api.*;
+import com.amotassic.dabaosword.api.Skill;
 import com.amotassic.dabaosword.util.Sounds;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -13,7 +11,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
@@ -67,9 +64,8 @@ public class SkillItem extends Item implements ICurioItem, Skill {
     }
 
     public static void changeSkill(Player player) {
-        var selectedId = parseLootTable(ResourceLocation.fromNamespaceAndPath("dabaosword", "loot_tables/draw_skill.json"));
-        ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(selectedId));
-        if (stack.getItem() != Items.AIR) voice(player, Sounds.GIFTBOX,3);
+        ItemStack stack = customLoot(player, "draw_skill");
+        if (!stack.isEmpty()) voice(player, Sounds.GIFTBOX,3);
         give(player, stack);
     }
 
@@ -84,6 +80,9 @@ public class SkillItem extends Item implements ICurioItem, Skill {
                 voice(entity, skill);
             }
         }
+    }
+    public static void viewAs(LivingEntity entity, ItemStack skill, int CD, Predicate<ItemStack> predicate, Item result) {
+        viewAs(entity, skill, CD, predicate, newCard(result));
     }
 
     public static class ActiveSkill extends SkillItem {}

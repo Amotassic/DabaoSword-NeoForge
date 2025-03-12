@@ -35,7 +35,7 @@ public class JuedouItem extends CardItem {
                 juedou(target, player);
                 player.displayClientMessage(Component.translatable("dabaosword.juedou1"), false);
                 //如果目标的杀比使用者的杀多，反击使用者，则目标减少一张杀
-                if (targetSha != 0) cardUsePost(target, getCard(target, isSha).getB(), player);
+                if (targetSha != 0) cardUsePost(target, getCard(target, isSha), player);
             }
         } else juedou(user, entity);
     }

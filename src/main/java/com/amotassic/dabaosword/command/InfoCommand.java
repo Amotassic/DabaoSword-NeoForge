@@ -35,6 +35,7 @@ public class InfoCommand {
     @SubscribeEvent
     public static void registerCommands(RegisterCommandsEvent evt) {
         register(evt.getDispatcher());
+        DabaoSwordCommand.register(evt.getDispatcher(), evt.getBuildContext());
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -76,14 +77,10 @@ public class InfoCommand {
             inventory.setItem(61, new ItemStack(ModItems.BBJI));
             if (target instanceof Player player) {
                 NonNullList<ItemStack> inv = player.getInventory().items;
-                for (var stack : inv) {
-                    inventory.setItem(inv.indexOf(stack), stack);
-                }
+                for (var stack : inv) inventory.setItem(inv.indexOf(stack), stack);
             } else if (target instanceof Villager villager) {
                 NonNullList<ItemStack> inv = villager.getInventory().getItems();
-                for (var stack : inv) {
-                    inventory.setItem(inv.indexOf(stack), stack);
-                }
+                for (var stack : inv) inventory.setItem(inv.indexOf(stack), stack);
             } else inventory.setItem(0, target.getMainHandItem());
         }
 

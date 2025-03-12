@@ -14,6 +14,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Tuple;
@@ -58,9 +59,8 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class BaguaArmor extends Equipment {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.bagua.tooltip").withStyle(ChatFormatting.AQUA));
+        public void addTip(ItemStack stack, List<Component> tooltip) {
+            tooltip.add(getTip().withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -82,9 +82,8 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class BaiyinArmor extends Equipment {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.baiyin.tooltip").withStyle(ChatFormatting.AQUA));
+        public void addTip(ItemStack stack, List<Component> tooltip) {
+            tooltip.add(getTip().withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -99,10 +98,9 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class CixiongWeapon extends Equipment implements ICardEvent {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.cixiong.tooltip1"));
-            tooltip.add(Component.translatable("item.dabaosword.cixiong.tooltip2").withStyle(ChatFormatting.AQUA));
+        public void addTip(ItemStack stack, List<Component> tooltip) {
+            tooltip.add(getTip("1"));
+            tooltip.add(getTip("2").withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -115,10 +113,9 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class FangtianWeapon extends Equipment {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.fangtian.tooltip1"));
-            tooltip.add(Component.translatable("item.dabaosword.fangtian.tooltip2").withStyle(ChatFormatting.AQUA));
+        public void addTip(ItemStack stack, List<Component> tooltip) {
+            tooltip.add(getTip("1"));
+            tooltip.add(getTip("2").withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -141,17 +138,15 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class GuanshiWeapon extends Equipment {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.guanshi.tooltip1"));
-            tooltip.add(Component.translatable("item.dabaosword.guanshi.tooltip2").withStyle(ChatFormatting.AQUA));
+        public void addTip(ItemStack stack, List<Component> tooltip) {
+            tooltip.add(getTip("1"));
+            tooltip.add(getTip("2").withStyle(ChatFormatting.AQUA));
         }
     }
 
     public static class GudingWeapon extends Equipment {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
+        public void addTip(ItemStack stack, List<Component> tooltip) {
             tooltip.add(Component.translatable("item.dabaosword.gudingdao.tooltip").withStyle(ChatFormatting.GREEN));
             tooltip.add(Component.translatable("item.dabaosword.gudingdao.tooltip2").withStyle(ChatFormatting.AQUA));
         }
@@ -172,9 +167,8 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class HanbingWeapon extends Equipment {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.hanbing.tooltip").withStyle(ChatFormatting.AQUA));
+        public void addTip(ItemStack stack, List<Component> tooltip) {
+            tooltip.add(getTip().withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -187,10 +181,9 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class LiannuWeapon extends Equipment {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.liannu.tooltip1"));
-            tooltip.add(Component.translatable("item.dabaosword.liannu.tooltip2").withStyle(ChatFormatting.AQUA));
+        public void addTip(ItemStack stack, List<Component> tooltip) {
+            tooltip.add(getTip("1"));
+            tooltip.add(getTip("2").withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -209,11 +202,10 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class QilinWeapon extends Equipment implements ReachDefend {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.qilin.tooltip1"));
-            tooltip.add(Component.translatable("item.dabaosword.qilin.tooltip2").withStyle(ChatFormatting.AQUA));
-            tooltip.add(Component.translatable("item.dabaosword.qilin.tooltip3").withStyle(ChatFormatting.AQUA));
+        public void addTip(ItemStack stack, List<Component> tooltip) {
+            tooltip.add(getTip("1"));
+            tooltip.add(getTip("2").withStyle(ChatFormatting.AQUA));
+            tooltip.add(getTip("3").withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -239,10 +231,9 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class QinggangWeapon extends Equipment {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.qinggang.tooltip1"));
-            tooltip.add(Component.translatable("item.dabaosword.qinggang.tooltip2").withStyle(ChatFormatting.AQUA));
+        public void addTip(ItemStack stack, List<Component> tooltip) {
+            tooltip.add(getTip("1"));
+            tooltip.add(getTip("2").withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -256,10 +247,9 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class QinglongWeapon extends Equipment {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.qinglong.tooltip1"));
-            tooltip.add(Component.translatable("item.dabaosword.qinglong.tooltip2").withStyle(ChatFormatting.AQUA));
+        public void addTip(ItemStack stack, List<Component> tooltip) {
+            tooltip.add(getTip("1"));
+            tooltip.add(getTip("2").withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -274,10 +264,9 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class RenwangArmor extends Equipment implements ICardEvent {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.renwang.tooltip1"));
-            tooltip.add(Component.translatable("item.dabaosword.renwang.tooltip2").withStyle(ChatFormatting.AQUA));
+        public void addTip(ItemStack stack, List<Component> tooltip) {
+            tooltip.add(getTip("1"));
+            tooltip.add(getTip("2").withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -289,10 +278,7 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class RattanArmor extends Equipment implements ICardEvent {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.rattanarmor.tooltip"));
-        }
+        public void addTip(ItemStack stack, List<Component> tooltip) {tooltip.add(getTip());}
 
         //实现渡江不沉的效果，代码来自https://github.com/focamacho/RingsOfAscension/中的水上行走戒指
         @Override
@@ -367,10 +353,9 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class ZhangbaWeapon extends Equipment {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.zhangba.tooltip1"));
-            tooltip.add(Component.translatable("item.dabaosword.zhangba.tooltip2").withStyle(ChatFormatting.AQUA));
+        public void addTip(ItemStack stack, List<Component> tooltip) {
+            tooltip.add(getTip("1"));
+            tooltip.add(getTip("2").withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -385,7 +370,7 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
                     if (one) {
                         nbt.remove("has_one");
                         setCD(stack, 5);
-                        give(player, new ItemStack(ModItems.SHA));
+                        give(player, newCard(ModItems.SHA));
                         voice(player, Sounds.ZHANGBA);
                     } else {nbt.putBoolean("has_one", true);}
                     setNbt(stack, nbt);
@@ -397,10 +382,9 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class ZhuqueWeapon extends Equipment {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.zhuque.tooltip1"));
-            tooltip.add(Component.translatable("item.dabaosword.zhuque.tooltip2").withStyle(ChatFormatting.AQUA));
+        public void addTip(ItemStack stack, List<Component> tooltip) {
+            tooltip.add(getTip("1"));
+            tooltip.add(getTip("2").withStyle(ChatFormatting.AQUA));
         }
 
         @Override
@@ -412,10 +396,7 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class AttackHorse extends Equipment implements ReachDefend {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.chitu.tooltip"));
-        }
+        public void addTip(ItemStack stack, List<Component> tooltip) {tooltip.add(getTip());}
 
         @Override
         public int getExtraReach(Player player, ItemStack stack) {return 1;}
@@ -423,10 +404,7 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     public static class DefendHorse extends Equipment implements ReachDefend {
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-            super.appendHoverText(stack, context, tooltip, tooltipFlag);
-            tooltip.add(Component.translatable("item.dabaosword.dilu.tooltip"));
-        }
+        public void addTip(ItemStack stack, List<Component> tooltip) {tooltip.add(getTip());}
 
         @Override
         public int getDefend(Player player, ItemStack stack) {return 1;}
@@ -434,12 +412,18 @@ public class Equipment extends Item implements ICurioItem, Skill, Card {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-        addSRTip(stack, tooltip);
+        addSRTip(stack, tooltip); addTip(stack, tooltip);
 
         if(Screen.hasShiftDown()) {
             tooltip.add(Component.translatable("equipment.tip1").withStyle(ChatFormatting.BOLD));
             tooltip.add(Component.translatable("equipment.tip2").withStyle(ChatFormatting.BOLD));
         } else tooltip.add(Component.translatable("dabaosword.shift_tip", Component.keybind("key.sneak")));
+    }
+    public void addTip(ItemStack stack, List<Component> tooltip) {}
+
+    public MutableComponent getTip() {return getTip("");}
+    public MutableComponent getTip(String suffix) {
+        return Component.translatable(getDescriptionId() + ".tooltip" + suffix);
     }
 
     @Override

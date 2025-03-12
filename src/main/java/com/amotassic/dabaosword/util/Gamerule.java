@@ -3,8 +3,6 @@ package com.amotassic.dabaosword.util;
 import net.minecraft.world.level.GameRules;
 
 public class Gamerule {
-    public static final GameRules.Key<GameRules.BooleanValue> FIRE_ATTACK_BREAKS_BLOCK =
-            GameRules.register("fire_attack_breaks_block", GameRules.Category.MISC, GameRules.BooleanValue.create(false));
     public static final GameRules.Key<GameRules.BooleanValue> CARD_PILE_HUNGERLESS =
             GameRules.register("card_pile_hungerless", GameRules.Category.MISC, GameRules.BooleanValue.create(false));
     public static final GameRules.Key<GameRules.BooleanValue> CLEAR_CARDS_AFTER_DEATH =

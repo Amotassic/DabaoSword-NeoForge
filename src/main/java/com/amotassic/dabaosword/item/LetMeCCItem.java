@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import static com.amotassic.dabaosword.command.InfoCommand.openFullInv;
 import static com.amotassic.dabaosword.util.ModTools.voice;
@@ -35,7 +36,7 @@ public class LetMeCCItem extends Item {
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand usedHand) {
         if (!user.level().isClientSide && usedHand == InteractionHand.MAIN_HAND) {
-            voice(user, Sounds.LET_ME_CC);
+            voice(user, Sounds.LET_ME_CC, 1);
             openFullInv(user, entity, true);
             return InteractionResult.SUCCESS;
         }
@@ -46,14 +47,14 @@ public class LetMeCCItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand usedHand) {
         if (!world.isClientSide && usedHand == InteractionHand.MAIN_HAND) {
             if (!user.isShiftKeyDown()) {
-                LivingEntity closest = getClosestEntity(user, 10);
+                LivingEntity closest = getClosestEntity(user, LivingEntity.class, 10, entity -> entity != user);
                 if (closest != null) {
-                    voice(user, Sounds.LET_ME_CC);
+                    voice(user, Sounds.LET_ME_CC, 1);
                     openFullInv(user, closest, true);
                     return InteractionResultHolder.success(user.getItemInHand(usedHand));
                 }
             } else {
-                voice(user, Sounds.LET_ME_CC);
+                voice(user, Sounds.LET_ME_CC, 1);
                 openFullInv(user, user, true);
                 return InteractionResultHolder.success(user.getItemInHand(usedHand));
             }
@@ -61,12 +62,12 @@ public class LetMeCCItem extends Item {
         return super.use(world, user, usedHand);
     }
 
-    public static @Nullable LivingEntity getClosestEntity(Entity entity, double boxLength) {
+    public static @Nullable <T extends Entity> T getClosestEntity(Entity entity, Class<T> clazz, double boxLength, Predicate<T> predicate) {
         if (entity.level() instanceof ServerLevel world) {
             AABB box = new AABB(entity.getOnPos()).inflate(boxLength);
-            List<LivingEntity> entities = world.getEntitiesOfClass(LivingEntity.class, box, entity1 -> entity1 != entity);
+            List<T> entities = world.getEntitiesOfClass(clazz, box, predicate);
             if (!entities.isEmpty()) {
-                Map<Float, LivingEntity> map = new HashMap<>();
+                Map<Float, T> map = new HashMap<>();
                 for (var e : entities) {
                     map.put(e.distanceTo(entity), e);
                 }

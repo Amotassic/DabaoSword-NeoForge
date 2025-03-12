@@ -1,6 +1,5 @@
 package com.amotassic.dabaosword.entity;
 
-import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.Sounds;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
@@ -16,13 +15,10 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Random;
 
 import static com.amotassic.dabaosword.api.event.CardEvents.cardDiscard;
 import static com.amotassic.dabaosword.util.ModTools.*;
@@ -100,15 +96,6 @@ public class XuyouEntity extends Monster implements RangedAttackMob {
 
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {return source.type().effects().sound();}
-
-    @Override
-    protected void createWitherRose(@Nullable LivingEntity entity) {
-        if (entity instanceof Player) {
-            if (new Random().nextFloat() < 0.05) spawnAtLocation(new ItemStack(ModItems.BBJI));
-            if (new Random().nextFloat() < 0.1) spawnAtLocation(new ItemStack(ModItems.GIFT_BOX));
-        }
-        super.createWitherRose(entity);
-    }
 
     @Override
     public void die(DamageSource damageSource) {

@@ -5,15 +5,16 @@ import com.amotassic.dabaosword.api.ReachDefend;
 import com.amotassic.dabaosword.api.Skill;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.Gamerule;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -36,6 +37,8 @@ public class EntityTickEvents {
                 entity.getTags().remove("sha");
                 en.getTags().remove("juedou");
                 entity.getTags().remove("nanman");
+                entity.getTags().remove("benxi");
+                entity.getTags().remove("xingshang");
             }
 
             Player closestPlayer = world.getNearestPlayer(entity, 5);
@@ -59,15 +62,30 @@ public class EntityTickEvents {
         if (player.level() instanceof ServerLevel world) {
             var time = world.getGameTime();
             int giveCard = Math.max(20, world.getGameRules().getInt(Gamerule.GIVE_CARD_INTERVAL) * 20);
-            int skill = world.getGameRules().getInt(Gamerule.CHANGE_SKILL_INTERVAL) * 20;
             boolean limit = world.getGameRules().getBoolean(Gamerule.ENABLE_CARDS_LIMIT);
+
+            if (time % 100 == 0) {
+                //若玩家不在任何一场对战中，且拥有身份标签，则移除。如果意外卡在旁观者模式，变回生存模式并杀死
+                if (!PVPGameEvents.getGameManager().isPlayerInGame(player)) {
+                    var tags = player.getTags();
+                    if (tags.contains("dabaosword.zhong") || tags.contains("dabaosword.fan") || tags.contains("dabaosword.nei")) {
+                        player.getTags().remove("dabaosword.zhong");
+                        player.getTags().remove("dabaosword.fan");
+                        player.getTags().remove("dabaosword.nei");
+                        if (player.isSpectator()) {
+                            ((ServerPlayer) player).setGameMode(GameType.SURVIVAL);
+                            player.kill();
+                        }
+                    }
+                }
+            }
 
             if (time % giveCard == 0) { // 每分钟摸两张牌
                 if (!player.isCreative() && !player.isSpectator() && player.isAlive()) {
                     player.displayClientMessage(Component.translatable("dabaosword.draw"),true);
                     if (player.hasEffect(ModItems.BINGLIANG)) player.removeEffect(ModItems.BINGLIANG);
                     else if (countCards(player) < player.getMaxHealth() || !limit) {
-                        int draw = 0;
+                        int draw = hasTrinket(ModItems.CARD_PILE, player) ? 2 : 0;
                         for (var stack : allTrinkets(player)) {
                             if (stack.getItem() instanceof Skill s && canTrigger(stack, player)) {
                                 int i = s.onDrawPhase(player, stack);
@@ -78,26 +96,6 @@ public class EntityTickEvents {
                         if (draw > 0) draw(player, draw);
                     }
                 }
-            }
-
-            if (skill >= 0) {
-                if (skill == 0) player.addTag("change_skill");
-                else if (time % skill == 0) { //每5分钟可以切换技能
-                    player.addTag("change_skill");
-                    if (skill >= 600 && hasTrinket(ModItems.CARD_PILE, player)) {
-                        player.displayClientMessage(Component.translatable("dabaosword.change_skill").withStyle(ChatFormatting.BOLD), false);
-                        player.displayClientMessage(Component.translatable("dabaosword.change_skill2"), false);
-                    }
-                }
-            }
-
-            if (time % 2 == 0) {
-                player.getTags().remove("benxi");
-                player.getTags().remove("xingshang");
-
-                //牌堆恢复饱食度
-                boolean food = world.getGameRules().getBoolean(Gamerule.CARD_PILE_HUNGERLESS);
-                if (hasTrinket(ModItems.CARD_PILE, player) && food) player.getFoodData().setFoodLevel(20);
             }
 
             AABB box = new AABB(player.getOnPos()).inflate(20); // 检测范围，根据需要修改

@@ -1,7 +1,8 @@
 package com.amotassic.dabaosword.network;
 
 import com.amotassic.dabaosword.DabaoSword;
-import com.amotassic.dabaosword.api.CardPileInventory;
+import com.amotassic.dabaosword.command.InfoCommand;
+import com.amotassic.dabaosword.item.LetMeCCItem;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
@@ -56,12 +57,12 @@ public class ServerNetworking {
             }
         });
 
-        registrar.playToServer(QuickSwapPayload.ID, QuickSwapPayload.CODEC, (p, c) -> {
+        registrar.playToServer(QuickSwapPayload.ID, QuickSwapPayload.CODEC, (pl, c) -> {
             Player player = c.player();
-            int i = p.id();
+            int i = pl.id();
             if (i == 0) openInv(player, player, Component.translatable("key.dabaosword.select_card"), new ItemStack(ModItems.WANJIAN), true, false, false, 2);
             if (i == 1) openInv(player, player, Component.translatable("key.dabaosword.select_card"), new ItemStack(ModItems.SUNSHINE_SMILE), true, false, false, 3);
-            if (i == 2) player.openMenu(new SimpleMenuProvider((id, inv, player1) -> new PileScreenHandler(id, inv, new CardPileInventory(inv.player)), Component.translatable("card_pile.title")), (buf -> buf.writeInt(0)));
+            if (i == 2) player.openMenu(new SimpleMenuProvider((id, inv, player1) -> new PileScreenHandler(id, inv), Component.translatable("card_pile.title")), (buf -> buf.writeInt(0)));
             if (i == 3) {
                 var pair = getDamage(player);
                 if (pair != null) {
@@ -73,6 +74,10 @@ public class ServerNetworking {
                     player.hurt(pair.getA().getA(), pair.getA().getB());
                     give(player, pair.getB());
                 }
+            }
+            if (i == 9) {
+                Player target = LetMeCCItem.getClosestEntity(player, Player.class, 100, p -> p!= player);
+                if (target != null) InfoCommand.openFullInv(player, target, false);
             }
         });
     }
