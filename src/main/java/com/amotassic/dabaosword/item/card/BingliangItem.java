@@ -9,20 +9,21 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import static com.amotassic.dabaosword.api.event.CardEvents.cardUsePre;
-
-public class BingliangItem extends CardItem {
+public class BingliangItem extends CardItem.Armoury {
     @Override
     public @NotNull InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
         if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND) {
-            if (cardUsePre(user, user.getMainHandItem(), entity)) return InteractionResult.SUCCESS;
+            onUse(user, user.getMainHandItem(), entity);
+            return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
     }
 
     //对生物使用后给予其兵粮寸断效果
     @Override
-    public void cardUse(LivingEntity user, ItemStack stack, LivingEntity target) {
-        target.addEffect(new MobEffectInstance(ModItems.BINGLIANG, -1,1));
+    public void effect(LivingEntity user, ItemStack card, LivingEntity target) {
+        target.addEffect(new MobEffectInstance(ModItems.BINGLIANG, -1, 1));
     }
+
+    @Override public boolean askForWuxie() {return true;}
 }

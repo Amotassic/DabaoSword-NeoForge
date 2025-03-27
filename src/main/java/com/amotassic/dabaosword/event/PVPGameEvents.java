@@ -4,6 +4,7 @@ import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.api.CardPileInventory;
 import com.amotassic.dabaosword.api.event.PVPGameTickEvent;
 import com.amotassic.dabaosword.item.ModItems;
+import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.pvpgame.Game;
 import com.amotassic.dabaosword.pvpgame.GameManager;
 import com.amotassic.dabaosword.util.ModTools;
@@ -38,6 +39,7 @@ public class PVPGameEvents {
     @SubscribeEvent
     public static void onWorldLoad(LevelEvent.Load event) {
         ModTools.allCards();
+        SkillCards.addSkillEffect();
         LevelAccessor levelAccessor = event.getLevel();
         //只需要保存在主世界的data目录下即可
         if (levelAccessor instanceof ServerLevel world && world.dimension() == Level.OVERWORLD) gameManager = world.getDataStorage().computeIfAbsent(GameManager.factory(world), "dabaosword_game");
@@ -132,6 +134,7 @@ public class PVPGameEvents {
 
     @SubscribeEvent
     public static void serverTick(ServerTickEvent.Pre event) {
+        DabaoSword.server = event.getServer();
         List<ServerPlayer> playerList = event.getServer().getPlayerList().getPlayers();
         for (var player : playerList) {
             if (!PLAYER_CARD_PACKS.containsKey(player) && hasTrinket(ModItems.CARD_PILE, player)) PLAYER_CARD_PACKS.put(player, new CardPileInventory(player));

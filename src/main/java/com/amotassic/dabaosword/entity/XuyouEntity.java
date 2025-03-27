@@ -1,6 +1,6 @@
 package com.amotassic.dabaosword.entity;
 
-import com.amotassic.dabaosword.util.Sounds;
+import com.amotassic.dabaosword.api.CardEvents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.DifficultyInstance;
@@ -20,7 +20,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static com.amotassic.dabaosword.api.event.CardEvents.cardDiscard;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 @SuppressWarnings("all")
@@ -92,17 +91,20 @@ public class XuyouEntity extends Monster implements RangedAttackMob {
     }
 
     @Override
-    protected SoundEvent getDeathSound() {return Sounds.XUYOU;}
+    protected SoundEvent getDeathSound() {return getSound("dabaosword", "xuyou");}
 
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {return source.type().effects().sound();}
 
     @Override
     public void die(DamageSource damageSource) {
-        for (var stack : allTrinkets(this)) {
-            if(isCard(stack)) cardDiscard(this, stack, stack.getCount(), true);
-        }
         super.die(damageSource);
+        if (level().isClientSide) return;
+        var data = d();
+        for (var stack : allTrinkets(this)) {
+            if(isCard(stack)) data.cards(stack, stack.getCount(), true);
+        }
+        CardEvents.cardDiscard(this, data);
     }
 
     @Override
@@ -110,6 +112,6 @@ public class XuyouEntity extends Monster implements RangedAttackMob {
         bbTimes++;
         target.invulnerableTime = 0;
         target.hurt(getDamageSource(this, DamageTypes.GENERIC), 2);
-        voice(this, Sounds.BBJI);
+        voice(this, "bbji");
     }
 }

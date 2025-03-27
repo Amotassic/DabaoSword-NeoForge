@@ -1,9 +1,10 @@
 package com.amotassic.dabaosword.event;
 
 import com.amotassic.dabaosword.DabaoSword;
-import com.amotassic.dabaosword.api.Skill;
+import com.amotassic.dabaosword.api.skill.Trigger;
 import com.amotassic.dabaosword.effect.ShandianEffect;
 import com.amotassic.dabaosword.item.ModItems;
+import com.amotassic.dabaosword.item.card.CardItem;
 import com.amotassic.dabaosword.util.Tags;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -22,8 +23,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 import java.util.Random;
 
-import static com.amotassic.dabaosword.api.event.CardEvents.cardUsePost;
-import static com.amotassic.dabaosword.api.event.CardEvents.hurtBy;
+import static com.amotassic.dabaosword.api.CardEvents.hurtBy;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
@@ -32,10 +32,11 @@ public class EntityHurtHandler {
     private static void trySave(LivingEntity entity, float amount) {
         for (int i = 0; i < 114; i++) {
             if (entity.isAlive()) return;
-            if (hasCard(entity, canSaveDying)) {
-                ItemStack stack = getCard(entity, canSaveDying);
-                cardUsePost(entity, stack, entity);
-                entity.setHealth(entity.getHealth() - amount + 5); amount -= 5;
+            ItemStack stack = getCard(entity, canSaveDying);
+            if (!stack.isEmpty()) {
+                CardItem.onUse(entity, stack, true);
+                entity.setHealth(entity.getHealth() - amount + 5);
+                amount -= 5;
             }
         }
     }
@@ -68,13 +69,11 @@ public class EntityHurtHandler {
 
             tiesuoTrigger(entity, source, amount);
 
-            for (var stack : allTrinkets(entity)) { //受伤害后触发，优先级高
-                if (stack.getItem() instanceof Skill skill && canTrigger(stack, entity)) skill.onHurt(stack, entity, source, amount);
-            }
+            getSkillOwners(entity).forEach(player ->
+                    getResult(Trigger.ON_HURT, player, entity, d().withDamage(source, amount)));
 
             trySave(entity, amount);
 
-            if (isWanjian(source)) hurtBy(entity, ModItems.WANJIAN);
             if (isHuogong(source)) hurtBy(entity, ModItems.FIRE_ATTACK);
             if (isShandian(source)) hurtBy(entity, ModItems.SHANDIAN_ITEM);
 
@@ -82,7 +81,7 @@ public class EntityHurtHandler {
                 if (living.getTags().contains("px")) entity.invulnerableTime = 0;
 
                 if (living instanceof Player && entity instanceof Player && amount >= 15) {
-                    voice(living, getSound("wushuang"));
+                    voice(living, "wushuang");
                 }
             }
 
@@ -101,17 +100,8 @@ public class EntityHurtHandler {
                 }
             }
 
-            if (source.getDirectEntity() instanceof LivingEntity living) { //在近战攻击造成伤害后触发
-                for (var stack : allTrinkets(living)) {
-                    if (stack.getItem() instanceof Skill skill && canTrigger(stack, living)) skill.postAttack(stack, entity, living, amount);
-                }
-            }
-
-            if (source.getEntity() instanceof LivingEntity living) { //只要攻击造成伤害即可触发，包括远程
-                for (var stack : allTrinkets(living)) {
-                    if (stack.getItem() instanceof Skill skill && canTrigger(stack, living)) skill.postDamage(stack, entity, living, amount);
-                }
-            }
+            if (entity.isDeadOrDying()) getSkillOwners(entity).forEach(player ->
+                    getResult(Trigger.ON_DEATH, player, entity, d().withDamage(source, amount)));
 
         }
     }

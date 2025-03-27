@@ -8,20 +8,22 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import static com.amotassic.dabaosword.api.event.CardEvents.cardUsePre;
-
-public class TooHappyItem extends CardItem {
+public class TooHappyItem extends CardItem.Armoury {
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
         if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND) {
-            if (cardUsePre(user, user.getMainHandItem(), entity)) return InteractionResult.SUCCESS;
+            onUse(user, user.getMainHandItem(), entity);
+            return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
     }
 
+    //对生物使用后给予其乐不思蜀效果
     @Override
-    public void cardUse(LivingEntity user, ItemStack stack, LivingEntity entity) {
+    public void effect(LivingEntity user, ItemStack card, LivingEntity entity) {
         int duration = entity instanceof Player ? 5 : 15;
         entity.addEffect(new MobEffectInstance(ModItems.TOO_HAPPY, 20 * duration));
     }
+
+    @Override public boolean askForWuxie() {return true;}
 }

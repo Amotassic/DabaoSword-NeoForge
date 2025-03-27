@@ -1,11 +1,11 @@
 package com.amotassic.dabaosword.util;
 
-import com.amotassic.dabaosword.api.ISha;
-import com.amotassic.dabaosword.api.Skill;
+import com.amotassic.dabaosword.api.skill.Trigger;
 import com.amotassic.dabaosword.item.ModItems;
+import com.amotassic.dabaosword.item.card.CardItem;
+import com.amotassic.dabaosword.item.card.Sha;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -14,11 +14,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import static com.amotassic.dabaosword.api.event.CardEvents.*;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class ModifyDamage {
@@ -28,79 +26,39 @@ public class ModifyDamage {
         float add = 0; //固定数值加减伤害区
         List<Float> reducing = new ArrayList<>(); //最终减伤乘区，存储负值，每个值使最终伤害为原来的（1+x）倍
 
-        //处理所有饰品带来的增/减伤结算
-        List<Tuple<Tuple<Float, Float>, List<Float>>> pairList = new ArrayList<>();
-        pairList.add(calculateDMG(entity, source, value, entity));
-        if (source.getDirectEntity() instanceof LivingEntity SE) {
-            pairList.add(calculateDMG(entity, source, value, SE));
+        var exData = d().withDamage(source, value);
+        getSkillOwners(entity).forEach(player -> getResult(Trigger.MODIFY_DAMAGE, player, entity, exData));
 
+        for (Float f : exData.adds) add += f;
+        for (Float f : exData.muls) {
+            if (f < 0) reducing.add(f); else multiply += f;
+        }
+
+        if (source.getDirectEntity() instanceof LivingEntity SE && SE.getMainHandItem().is(ModItems.GUDINGDAO)) {
             //插入一个武器版古锭刀的结算
             int i = 0; //i == 4则说明受击者的盔甲栏没有任何物品
             for (var s : entity.getArmorSlots()) {if (s.isEmpty()) i++;}
-            if (i == 4 && SE.getMainHandItem().is(ModItems.GUDINGDAO)) multiply += 1;
-            //这里的这个else很重要！防止两个条件同时满足时会触发双重结算
-        } else if (source.getEntity() instanceof LivingEntity AT) pairList.add(calculateDMG(entity, source, value, AT));
-        for (var p : pairList) {
-            multiply += p.getA().getA();
-            add += p.getA().getB();
-            reducing.addAll(p.getB());
+            if (i == 4) multiply += 1;
         }
 
         //伤害结算
         value = value * (1 + multiply) + add;
         for (var f : reducing) {value *= (1 + f);}
-
         return value;
     }
 
-    private static Tuple<Tuple<Float, Float>, List<Float>> calculateDMG(LivingEntity entity, DamageSource source, float value, LivingEntity trinketOwner) {
-        float m = 0; float a = 0;
-        List<Float> r = new ArrayList<>();
-        for (var stack : allTrinkets(trinketOwner)) {
-            Tuple<Float, Float> fp = null;
-            if (stack.getItem() instanceof Skill skill) fp = skill.modifyDamage(entity, source, value);
-
-            if (fp == null) continue;
-            if (fp.getA() < 0) r.add(fp.getA()); else m += fp.getA();
-            a += fp.getB();
-        }
-        return new Tuple<>(new Tuple<>(m, a), r);
-    }
-
-    private static List<List<ItemStack>> eventStacks(LivingEntity entity, DamageSource source, float value, LivingEntity trinketOwner) {
-        List<List<ItemStack>> stacks = new ArrayList<>(Arrays.asList(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
-
-        for (var stack : allTrinkets(trinketOwner)) {
-            Skill.Priority priority = null;
-            if (stack.getItem() instanceof Skill skill) priority = skill.getPriority(entity, source, value);
-
-            if (priority != null) stacks.get(priority.ordinal()).add(stack);
-        }
-        return stacks;
-    }
-
-    private static boolean execute(LivingEntity entity, DamageSource source, float amount, List<List<ItemStack>> list, int index) {
-        for (var s : list.get(index)) {
-            if (s.getItem() instanceof Skill skill && skill.cancelDamage(entity, source, amount)) return true;
-        }
-        return false;
-    }
-
-    //取消伤害结算：先获取所有输出了结算优先度的ItemStack，将它们按照优先度依次排列（见eventStacks方法），再分别结算（见execute方法）
+    /**取消伤害结算：
+     * @return 0表示不取消伤害，1表示取消伤害以及后续处理，2表示仅取消伤害，但可以执行后续处理*/
     public static int shouldCancel(LivingEntity entity, DamageSource source, float amount) {
+        List<LivingEntity> owners = getSkillOwners(entity);
+        var exData = d().withDamage(source, amount);
+
         Entity so = source.getDirectEntity(); Entity at = source.getEntity();
-        //检查事件优先度，获取输出了优先度的stack
-        List<List<ItemStack>> list = eventStacks(entity, source, amount, entity);
-        List<List<ItemStack>> l1 = null; List<List<ItemStack>> l2 = null;
-        if (so instanceof LivingEntity SE) l1 = eventStacks(entity, source, amount, SE);
-        else if (at instanceof LivingEntity AT) l2 = eventStacks(entity, source, amount, AT);
-        //合并3个list中的所有优先度和stack
-        for (int i = 0; i < 5; i++) {
-            if (l1 != null) list.get(i).addAll(l1.get(i));
-            if (l2 != null) list.get(i).addAll(l2.get(i));
-        }
         //0.最高优先度执行，暂无用途
-        if (execute(entity, source, amount, list, 0)) return 1;
+        for (LivingEntity e : owners) {
+            int i = getResult(Trigger.CANCEL_DAMAGE_HIGHEST, e, entity, exData);
+            if (i > 0) return i;
+        }
         //无敌效果
         if (entity.hasEffect(ModItems.INVULNERABLE) && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return 1;
 
@@ -120,40 +78,33 @@ public class ModifyDamage {
             if (AT.hasEffect(ModItems.TOO_HAPPY)) return 1;
         }
 
-        if (isWanjian(source) && notHurtBy(entity, ModItems.WANJIAN)) return 1;
-        if (isHuogong(source) && notHurtBy(entity, ModItems.FIRE_ATTACK)) return 1;
-        if (isShandian(source) && notHurtBy(entity, ModItems.SHANDIAN_ITEM)) return 1;
         if (so instanceof LivingEntity SE && shouldSha(SE)) { //只要能触发杀，伤害就会被取消
             ItemStack sha = isSha.test(SE.getMainHandItem()) ? SE.getMainHandItem() : getItem(SE, isSha);
             SE.addTag("sha");
-            if (canHurtByCard(entity, sha)) {
-                ISha iSha = (ISha) sha.getItem();
-                if (iSha.sha(SE, entity, amount)) iSha.shaEffect(SE, entity, sha);
-                else { //如果杀被无效化了，就会尝试触发贯石斧的效果
-                    var guanshi = trinketItem(ModItems.GUANSHI, SE);
-                    if (!guanshi.isEmpty() && getCD(guanshi) == 0 && entity.hasEffect(ModItems.INVULNERABLE)) {
-                        setCD(guanshi, 10); voice(SE, guanshi);
-                        entity.removeEffect(ModItems.INVULNERABLE);
-                        if (iSha.sha(SE, entity, amount)) iSha.shaEffect(SE, entity, sha);
-                    }
-                }
-            }
-            cardUsePost(SE, sha, entity);
+            Sha.shaUse(SE, sha, amount, entity);
             return 2;
         }
 
         //1.高优先度执行：装备
-        if (execute(entity, source, amount, list, 1)) return 1;
+        for (LivingEntity e : owners) {
+            int i = getResult(Trigger.CANCEL_DAMAGE_HIGH, e, entity, exData);
+            if (i > 0) return i;
+        }
         //2.一般优先度执行：技能
-        if (execute(entity, source, amount, list, 2)) return 1;
+        for (LivingEntity e : owners) {
+            int i = getResult(Trigger.CANCEL_DAMAGE_NORMAL, e, entity, exData);
+            if (i > 0) return i;
+        }
         //3.低优先度执行：卡牌 闪以及响应南蛮的杀
-        if (execute(entity, source, amount, list, 3)) return 1;
+        for (LivingEntity e : owners) {
+            int i = getResult(Trigger.CANCEL_DAMAGE_LOW, e, entity, exData);
+            if (i > 0) return i;
+        }
         if (at != null && at.getTags().contains("nanman")) {
             var stack = getCard(entity, isSha);
             if (!stack.isEmpty()) {
                 voice(entity, stack);
-                cardUsePost(entity, stack, null);
-                entity.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 2, 0, false, false, false)); //防止被其他南蛮入侵召唤物误伤
+                CardItem.onUse(entity, stack, true);
                 return 1;
             }
         }
@@ -161,13 +112,18 @@ public class ModifyDamage {
             if (!entity.hasEffect(ModItems.COOLDOWN2)) {
                 //此处条件是故意设置得与八卦阵条件不一样的，虽然感觉没啥用
                 if (hasCard(entity, p(ModItems.SHAN)) && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+                    ItemStack shan = new ItemStack(ModItems.SHAN);
+                    CardItem.onUse(entity, shan, true);
                     shan(entity, false, source, amount);
                     return 1;
                 }
             }
         }
         //4.最低优先度执行：绝情
-        if (execute(entity, source, amount, list, 4)) return 1;
+        for (LivingEntity e : owners) {
+            int i = getResult(Trigger.CANCEL_DAMAGE_LOWEST, e, entity, exData);
+            if (i > 0) return i;
+        }
         return 0;
     }
 
@@ -176,15 +132,20 @@ public class ModifyDamage {
     }
 
     public static void shan(LivingEntity entity, boolean bl, DamageSource source, float amount) {
-        ItemStack stack = new ItemStack(ModItems.SHAN);
         int cd = bl ? 60 : 40;
         entity.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 20,0,false,false,false));
         entity.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, cd,0,false,false,false));
-        if (bl) voice(entity, Sounds.BAGUA);
-        cardUsePost(entity, stack, null, !bl); //如果触发八卦阵，就不用移除闪了
         if (entity instanceof Player player) {
             writeDamage(source, amount, !bl, trinketItem(ModItems.CARD_PILE, player));
             if (bl) player.displayClientMessage(Component.translatable("dabaosword.bagua"),true);
         }
     }
+
+    public static ItemStack modifyStack(ItemStack stack) {
+        if (stack.is(ModItems.SUNSHINE_SMILE)) {
+            stack.enchant(ModTools.getEntry(ModItems.CRIT), 1);
+        }
+        return stack;
+    }
+
 }

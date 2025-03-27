@@ -1,5 +1,6 @@
 package com.amotassic.dabaosword.ui;
 
+import com.amotassic.dabaosword.api.CardEvents;
 import com.amotassic.dabaosword.api.CardPileInventory;
 import com.amotassic.dabaosword.event.PVPGameEvents;
 import com.amotassic.dabaosword.item.ModItems;
@@ -16,7 +17,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import static com.amotassic.dabaosword.api.event.CardEvents.cardDiscard;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 public class PileScreenHandler extends AbstractContainerMenu {
@@ -61,7 +61,7 @@ public class PileScreenHandler extends AbstractContainerMenu {
             int dropped = nbt.getInt("DroppedCards");
             ItemStack stack = getSlot(slotId).getItem();
             if (isCard(stack)) { //按下delete键后丢弃卡片，当丢弃3张卡片后，摸一张牌
-                cardDiscard(player, stack, 1, false);
+                CardEvents.cardDiscard(player, d().cards(stack, 1));
                 if (dropped == 2) {
                     nbt.remove("DroppedCards");
                     draw(player);

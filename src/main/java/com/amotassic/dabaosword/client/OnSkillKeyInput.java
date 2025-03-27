@@ -3,16 +3,14 @@ package com.amotassic.dabaosword.client;
 import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.command.DabaoSwordCommand;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
-import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.network.ActiveSkillPayload;
 import com.amotassic.dabaosword.network.QuickSwapPayload;
 import com.amotassic.dabaosword.network.ShensuPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -22,8 +20,7 @@ import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
-import static com.amotassic.dabaosword.util.ModTools.hasTrinket;
-import static com.amotassic.dabaosword.util.ModTools.isEquipped;
+import static com.amotassic.dabaosword.util.ModTools.*;
 
 @EventBusSubscriber(value = Dist.CLIENT, modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class OnSkillKeyInput {
@@ -31,11 +28,10 @@ public class OnSkillKeyInput {
     @SubscribeEvent
     public static void onKeyboardInput(InputEvent.Key event) {
         var client = Minecraft.getInstance();
-        var user = Minecraft.getInstance().player;
+        var user = client.player;
         int key = event.getKey(); int action = event.getAction(); int mod = event.getModifiers();
         onKeyInput(user, key, action, mod);
 
-        var result = Minecraft.getInstance().hitResult;
         var ctrl = client.options.keySprint;
         if (user != null) {
             if (DabaoSwordClient.SELECT_CARD.consumeClick()) {
@@ -47,16 +43,13 @@ public class OnSkillKeyInput {
                 return;
             }
 
-            if (DabaoSwordClient.ACTIVE_SKILL.consumeClick()) {
-                if (isEquipped(user, stack -> stack.getItem() instanceof SkillItem.ActiveSkillWithTarget)) {
-                    if (result != null && result.getType() == HitResult.Type.ENTITY) {
-                        if (((EntityHitResult) result).getEntity() instanceof Player player) {
-                            PacketDistributor.sendToServer(new ActiveSkillPayload(player.getId()));
-                            return;
-                        }
-                    }
-                }
-                if (isEquipped(user, stack -> stack.getItem() instanceof SkillItem.ActiveSkill)) PacketDistributor.sendToServer(new ActiveSkillPayload(user.getId()));
+            var result = client.hitResult; LivingEntity target;
+            if (result instanceof EntityHitResult eResult && eResult.getEntity() instanceof LivingEntity entity) {
+                target = entity;
+            } else target = user;
+
+            if (DabaoSwordClient.ACTIVE_SKILL.consumeClick() && isEquipped(user, s -> s(s).isActiveSkill())) {
+                PacketDistributor.sendToServer(new ActiveSkillPayload(target.getId()));
             }
         }
     }

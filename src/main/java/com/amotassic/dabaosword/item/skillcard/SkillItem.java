@@ -1,9 +1,13 @@
 package com.amotassic.dabaosword.item.skillcard;
 
-import com.amotassic.dabaosword.api.Skill;
-import com.amotassic.dabaosword.util.Sounds;
-import net.minecraft.nbt.CompoundTag;
+import com.amotassic.dabaosword.api.skill.ISkill;
+import com.amotassic.dabaosword.api.skill.Skill;
+import com.amotassic.dabaosword.item.card.CardItem;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -11,17 +15,25 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import top.theillusivec4.curios.api.SlotContext;
-import top.theillusivec4.curios.api.type.capability.ICurioItem;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 @SuppressWarnings("all")
-public class SkillItem extends Item implements ICurioItem, Skill {
+public class SkillItem extends Item implements ISkill {
     public SkillItem() {super(new Properties().stacksTo(1));}
+
+    public void appendHoverText(ItemStack s, TooltipContext c, List<Component> t, TooltipFlag f) {addTip(s(s), t);}
+    public void addTip(Skill skill, List<Component> tooltip) {}
+    public MutableComponent getTip(ChatFormatting... format) {return getTip("", format);}
+    public MutableComponent getTip(String suffix, ChatFormatting... format) {
+        return Component.translatable(getDescriptionId() + ".tooltip" + suffix).withStyle(format);
+    }
 
     @Override
     public void onEquip(SlotContext slotContext, ItemStack prevStack, ItemStack stack) {
@@ -33,13 +45,8 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         }
     }
 
-    public static boolean equipped(ItemStack stack) {return getOrCreateNbt(stack).contains("equipped");}
-
-    public static void setEquipped(ItemStack stack, boolean equipped) {
-        CompoundTag nbt = getOrCreateNbt(stack);
-        if (equipped) nbt.putBoolean("equipped", true);
-        else nbt.remove("equipped");
-        setNbt(stack, nbt);
+    public final void curioTick(SlotContext slotContext, ItemStack stack) {
+        ISkill.super.curioTick(slotContext, stack);
     }
 
     @Override
@@ -55,37 +62,27 @@ public class SkillItem extends Item implements ICurioItem, Skill {
         return super.use(world, user, hand);
     }
 
-    @Override
-    public void curioTick(SlotContext slotContext, ItemStack stack) {
-        if (slotContext.entity().level() instanceof ServerLevel world) {
-            int cd = getCD(stack); //世界时间除以20取余为0时，技能内置CD减一秒
-            if (cd > 0 && world.getGameTime() % 20 == 0) setCD(stack, cd - 1);
-        }
-    }
-
     public static void changeSkill(Player player) {
         ItemStack stack = customLoot(player, "draw_skill");
-        if (!stack.isEmpty()) voice(player, Sounds.GIFTBOX,3);
+        if (!stack.isEmpty()) voice(player, "giftbox",3);
         give(player, stack);
     }
 
     /**转化卡牌技能通用方法*/
-    public static void viewAs(LivingEntity entity, ItemStack skill, int CD, Predicate<ItemStack> predicate, ItemStack result) {
-        if (!entity.level().isClientSide && noTieji(entity) && getCD(skill) == 0) {
-            ItemStack stack = entity.getOffhandItem();
-            if (predicate.test(stack)) {
-                setCD(skill, CD);
-                stack.shrink(1);
-                give(entity, result);
-                voice(entity, skill);
-            }
+    public static void viewAs(LivingEntity entity, Skill skill, int CD, Predicate<ItemStack> p, CardItem result) {
+        if (entity.level().isClientSide) return;
+        if (skill.getCD() > 0) return;
+        ItemStack off = entity.getOffhandItem(); var copy = off.copy();
+        if (off.isEmpty()) return;
+        if (p.test(off)) {
+            skill.setCD(CD);
+            off.shrink(1);
+            give(entity, c(copy, result).toStack());
+            voice(entity, skill.stack);
         }
     }
-    public static void viewAs(LivingEntity entity, ItemStack skill, int CD, Predicate<ItemStack> predicate, Item result) {
-        viewAs(entity, skill, CD, predicate, newCard(result));
+
+    public Component activeSkillText(Player user, Skill skill) {
+        return Component.translatable("active_skill.select_target").withStyle(ChatFormatting.AQUA).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/dabaosword " + user.getName().getString() + " " + BuiltInRegistries.ITEM.getKey(skill.stack.getItem()) + " ")));
     }
-
-    public static class ActiveSkill extends SkillItem {}
-
-    public static class ActiveSkillWithTarget extends SkillItem {}
 }

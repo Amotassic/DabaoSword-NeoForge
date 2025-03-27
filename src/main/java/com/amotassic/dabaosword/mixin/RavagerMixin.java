@@ -1,8 +1,5 @@
 package com.amotassic.dabaosword.mixin;
 
-import com.amotassic.dabaosword.item.ModItems;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,10 +13,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Objects;
-import java.util.function.Predicate;
-
-import static com.amotassic.dabaosword.api.event.CardEvents.hurtBy;
-import static com.amotassic.dabaosword.api.event.CardEvents.notHurtBy;
 
 @Mixin(Ravager.class)
 public abstract class RavagerMixin extends Raider {
@@ -44,17 +37,9 @@ public abstract class RavagerMixin extends Raider {
     private void roar(CallbackInfo ci) {
         if (isAlive() && hasCustomName() && getTags().contains("b")) {
             int id = Integer.parseInt(Objects.requireNonNull(getCustomName()).getString());
-            LivingEntity user = (LivingEntity) level().getEntity(id);
-            if (user == null) return;
-            Predicate<LivingEntity> target = e -> e.isAlive() && id != e.getId();
-            for (LivingEntity entity : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(7.0), target)) {
-                user.addTag("nanman");
-                DamageSource source = damageSources().mobAttack(user);
-                if (notHurtBy(entity, ModItems.NANMAN)) continue;
-                entity.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 2, 0, false, false));
-                if (entity.hurt(source, 6)) hurtBy(entity, ModItems.NANMAN);
-                strongKnockback(entity);
-            }
+            LivingEntity living = (LivingEntity) level().getEntity(id);
+            if (living == null) {ci.cancel(); return;}
+            strongKnockback(living);
             ci.cancel();
         }
     }

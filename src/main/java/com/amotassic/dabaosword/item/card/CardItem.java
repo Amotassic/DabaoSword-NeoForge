@@ -1,62 +1,53 @@
 package com.amotassic.dabaosword.item.card;
 
-import com.amotassic.dabaosword.api.Card;
+import com.amotassic.dabaosword.api.CardEvents;
+import com.amotassic.dabaosword.api.card.Card;
+import com.amotassic.dabaosword.api.card.Rank;
+import com.amotassic.dabaosword.api.card.Suit;
+import com.amotassic.dabaosword.api.skill.Trigger;
 import com.amotassic.dabaosword.item.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
 
 import java.util.List;
 
-import static com.amotassic.dabaosword.api.event.CardEvents.cardUsePre;
 import static com.amotassic.dabaosword.util.ModTools.*;
+import static net.minecraft.ChatFormatting.*;
 
-@SuppressWarnings("all")
-public class CardItem extends Item implements Card {
-    public CardItem() {super(new Properties());}
+public abstract class CardItem extends Item {
+    public CardItem(Properties settings) {super(settings);}
 
-    @Override public Type getType() {return Type.ARMOURY;}
+    public abstract int getType();
 
-    public static class Wuzhong extends CardItem {
-        @Override
-        public InteractionResultHolder<ItemStack> use(Level level, Player user, InteractionHand hand) {
-            if (!level.isClientSide && hand == InteractionHand.MAIN_HAND) {
-                if (cardUsePre(user, user.getMainHandItem(), null)) return InteractionResultHolder.success(user.getMainHandItem());
-            }
-            return super.use(level, user, hand);
-        }
+    public void effect(LivingEntity user, ItemStack card, LivingEntity target) {}
 
-        @Override
-        public void cardUse(LivingEntity user, ItemStack stack, LivingEntity target) {draw(user,2);}
+    @Override @SuppressWarnings("all")
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        addSRTip(c(stack), tooltip); addTip(stack, tooltip);
     }
 
-    @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-        addSRTip(stack, tooltip);
+    public void addTip(ItemStack stack, List<Component> tooltip) {
 
         if (stack.is(ModItems.SHAN)) {
-            tooltip.add(Component.translatable("item.dabaosword.shan.tip").withStyle(ChatFormatting.BOLD));
+            tooltip.add(Component.translatable("item.dabaosword.shan.tip").withStyle(BOLD));
             tooltip.add(getTip());
         }
 
         if (stack.is(ModItems.PEACH)) {
-            tooltip.add(getTip("1").withStyle(ChatFormatting.LIGHT_PURPLE));
-            tooltip.add(getTip("2").withStyle(ChatFormatting.LIGHT_PURPLE));
-            tooltip.add(Component.translatable("item.dabaosword.recover.tip").withStyle(ChatFormatting.BOLD));
+            tooltip.add(getTip("1").withStyle(LIGHT_PURPLE));
+            tooltip.add(getTip("2").withStyle(LIGHT_PURPLE));
+            tooltip.add(Component.translatable("item.dabaosword.recover.tip").withStyle(BOLD));
         }
 
         if (stack.is(ModItems.JIU)) {
             tooltip.add(getTip());
-            tooltip.add(Component.translatable("item.dabaosword.recover.tip").withStyle(ChatFormatting.BOLD));
+            tooltip.add(Component.translatable("item.dabaosword.recover.tip").withStyle(BOLD));
         }
 
         if (stack.is(ModItems.FIRE_ATTACK) || stack.is(ModItems.JIEDAO) || stack.is(ModItems.NANMAN) || stack.is(ModItems.TAOYUAN) || stack.is(ModItems.TIESUO) || stack.is(ModItems.JUEDOU)) tooltip.add(getTip());
@@ -67,7 +58,7 @@ public class CardItem extends Item implements Card {
         }
 
         if (stack.is(ModItems.DISCARD) || stack.is(ModItems.JUEDOU)) {
-            tooltip.add(Component.translatable("item.dabaosword.long_hand").withStyle(ChatFormatting.BOLD));
+            tooltip.add(Component.translatable("item.dabaosword.long_hand").withStyle(BOLD));
         }
 
         if (stack.is(ModItems.BINGLIANG_ITEM)) {
@@ -75,7 +66,7 @@ public class CardItem extends Item implements Card {
                 tooltip.add(getTip("1"));
                 tooltip.add(getTip("2"));
             } else {
-                tooltip.add(getTip().withStyle(ChatFormatting.BLUE));
+                tooltip.add(getTip().withStyle(BLUE));
                 tooltip.add(Component.translatable("dabaosword.shift_tip", Component.keybind("key.sneak")));
             }
         }
@@ -85,7 +76,7 @@ public class CardItem extends Item implements Card {
                 tooltip.add(getTip("1"));
                 tooltip.add(getTip("2"));
             } else {
-                tooltip.add(getTip().withStyle(ChatFormatting.RED));
+                tooltip.add(getTip().withStyle(RED));
                 tooltip.add(Component.translatable("dabaosword.shift_tip", Component.keybind("key.sneak")));
             }
         }
@@ -94,32 +85,85 @@ public class CardItem extends Item implements Card {
             if (Screen.hasShiftDown()) {
                 int i = (int) (System.currentTimeMillis() / 1000) % 7;
                 switch (i) {
-                    case 1 -> tooltip.add(getTip("1").withStyle(ChatFormatting.AQUA));
-                    case 2 -> tooltip.add(getTip("2").withStyle(ChatFormatting.RED));
-                    case 3 -> tooltip.add(getTip("3").withStyle(ChatFormatting.GOLD));
-                    case 4 -> tooltip.add(getTip("4").withStyle(ChatFormatting.GREEN));
-                    case 5 -> tooltip.add(getTip("5").withStyle(ChatFormatting.DARK_PURPLE));
-                    case 6 -> tooltip.add(getTip("6").withStyle(ChatFormatting.YELLOW));
-                    case 0 -> tooltip.add(getTip("7").withStyle(ChatFormatting.BLUE));
+                    case 1 -> tooltip.add(getTip("1").withStyle(AQUA));
+                    case 2 -> tooltip.add(getTip("2").withStyle(RED));
+                    case 3 -> tooltip.add(getTip("3").withStyle(GOLD));
+                    case 4 -> tooltip.add(getTip("4").withStyle(GREEN));
+                    case 5 -> tooltip.add(getTip("5").withStyle(DARK_PURPLE));
+                    case 6 -> tooltip.add(getTip("6").withStyle(YELLOW));
+                    case 0 -> tooltip.add(getTip("7").withStyle(BLUE));
                 }
             } else {
                 tooltip.add(getTip());
-                tooltip.add(Component.translatable("item.dabaosword.wanjian.shift", Component.keybind("key.sneak")).withStyle(ChatFormatting.ITALIC));
+                tooltip.add(Component.translatable("item.dabaosword.wanjian.shift", Component.keybind("key.sneak")).withStyle(ITALIC));
             }
         }
     }
-
-    public MutableComponent getTip() {return getTip("");}
-    public MutableComponent getTip(String suffix) {
-        return Component.translatable(getDescriptionId() + ".tooltip" + suffix);
+    public MutableComponent getTip(ChatFormatting... format) {return getTip("", format);}
+    public MutableComponent getTip(String suffix, ChatFormatting... format) {
+        return Component.translatable(getDescriptionId() + ".tooltip" + suffix).withStyle(format);
     }
 
-    public static void addSRTip(ItemStack stack, List<Component> tooltip) {
-        var sr = getSuitAndRank(stack);
-        if (sr != null) {
-            Card.Suits suit = sr.getA(); Card.Ranks rank = sr.getB();
-            if (isRedCard.test(stack)) tooltip.add(Component.translatable("card.suit_and_rank", suit.suit, rank.rank).withStyle(ChatFormatting.RED));
-            else tooltip.add(Component.translatable("card.suit_and_rank", suit.suit, rank.rank));
+    public final void addSRTip(Card card, List<Component> tooltip) {
+        if (card.suit == Suit.None || card.rank == Rank.None) return;
+        tooltip.add(Component.translatable("card.suit_and_rank", card.suit.suit, card.rank.rank).withStyle(card.suit.color));
+    }
+
+    public static void onUse(LivingEntity user, ItemStack stack, LivingEntity... targets) {
+        onUse(user, stack, false, targets);
+    }
+    public static void onUse(LivingEntity user, ItemStack stack, boolean noTarget, LivingEntity... targets) {
+        onUse(user, stack, noTarget, true, targets);
+    }
+    /**
+     * @param noTarget 表示卡牌完全没有使用目标，类似于三国杀的“打出”。
+     * @param consume 是否消耗卡牌。用于虚拟牌，如八卦阵视为使用的闪。
+     * @param targets 卡牌的目标。对于我的mod中不便于选择目标的卡牌（比如火攻、万箭齐发等），需要将使用者填到目标中，否则卡牌不会执行任何效果。
+     */
+    public static void onUse(LivingEntity user, ItemStack stack, boolean noTarget, boolean consume, LivingEntity... targets) {
+        var card = c(stack); var cardData = d().cards(card, card.count);
+        if (consume) CardEvents.cardUseAndDecrement(user, stack);
+        if (card.type != 2) voice(user, card.item());
+        List<LivingEntity> owners = getSkillOwners(user);
+        //触发卡牌使用事件
+        owners.forEach(player -> getResult(Trigger.LOSE_CARD_USE, player, user, cardData));
+
+        if (noTarget) return;
+        var data = cardData.withTargets(targets);
+        //触发修改卡牌目标的技能
+        owners.forEach(player -> getResult(Trigger.ADD_TARGET, player, user, data));
+        owners.forEach(player -> getResult(Trigger.DROP_TARGET, player, user, data));
+        for (LivingEntity target : data.targets) {
+            //当卡牌指定目标后，触发使用者的技能
+            getResult(Trigger.SELECT_TARGET, user, target, cardData);
+            //当有玩家成为卡牌目标后，触发玩家的技能
+            owners.forEach(player -> getResult(Trigger.BECOME_TARGET, player, target, cardData));
+
+            if (card.askForWuxie() && hasCard(target, p(ModItems.WUXIE))) { //如果目标有无懈可击，则使用无懈可击
+                onUse(target, new ItemStack(ModItems.WUXIE), true);
+                continue;
+            }
+            card.effect(user, card.toStack(), target);
         }
+    }
+
+    public static class Basic extends CardItem {
+        public Basic() {super(new Properties());}
+
+        public final int getType() {return Card.BASIC;}
+    }
+
+    public static class Armoury extends CardItem {
+        public Armoury() {super(new Properties());}
+
+        public final int getType() {return Card.ARMOURY;}
+
+        public boolean askForWuxie() {return false;}
+    }
+
+    public static class Empty extends CardItem {
+        public Empty() {super(new Properties());}
+
+        public int getType() {return 114;}
     }
 }

@@ -9,21 +9,18 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-import static com.amotassic.dabaosword.api.event.CardEvents.cardUsePre;
-
-public class JiuItem extends CardItem {
-    @Override public Type getType() {return Type.BASIC;}
-
+public class JiuItem extends CardItem.Basic {
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         if (!user.hasEffect(MobEffects.DAMAGE_BOOST) && !world.isClientSide && hand == InteractionHand.MAIN_HAND) {
-            if (cardUsePre(user, user.getMainHandItem(), user)) return InteractionResultHolder.success(user.getMainHandItem());
+            onUse(user, user.getMainHandItem(), user);
+            return InteractionResultHolder.success(user.getMainHandItem());
         }
-        return InteractionResultHolder.success(user.getItemInHand(hand));
+        return super.use(world, user, hand);
     }
 
     @Override
-    public void cardUse(LivingEntity user, ItemStack stack, LivingEntity target) {
-        user.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 20 * 10, 0));
+    public void effect(LivingEntity user, ItemStack card, LivingEntity target) {
+        target.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 20 * 10, 0));
     }
 }

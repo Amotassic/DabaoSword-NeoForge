@@ -8,15 +8,12 @@ import com.amotassic.dabaosword.util.Gamerule;
 import com.amotassic.dabaosword.util.MODConfig;
 import com.amotassic.dabaosword.util.Tags;
 import com.mojang.logging.LogUtils;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.bus.api.IEventBus;
@@ -28,13 +25,14 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
+import static com.amotassic.dabaosword.util.AllRegs.Other.ZZRS;
+import static net.minecraft.world.item.CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS;
 
 @Mod(DabaoSword.MODID)
 public class DabaoSword {
     public static final String MODID = "dabaosword";
     private static final Logger LOGGER = LogUtils.getLogger();
+    public static MinecraftServer server;
 
     public DabaoSword(IEventBus modEventBus, ModContainer container) {
         LOGGER.info("Ciallo～(∠·ω< )⌒★");
@@ -46,8 +44,7 @@ public class DabaoSword {
         AllRegs.Effects.EFFECTS.register(modEventBus);
         AllRegs.Other.DATA_COMPONENT.register(modEventBus);
         AllRegs.Other.MENU.register(modEventBus);
-        AllRegs.Items.TABS.register(modEventBus);
-        AllRegs.Sounds.SOUNDS.register(modEventBus);
+        AllRegs.Other.TABS.register(modEventBus);
         Gamerule.registerGamerules();
         Tags.Tag();
 
@@ -58,16 +55,15 @@ public class DabaoSword {
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.COMBAT) {
-            event.insertAfter(Items.NETHERITE_SWORD.getDefaultInstance(), ModItems.GUDINGDAO.getDefaultInstance(), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-            event.insertAfter(Items.EGG.getDefaultInstance(), ModItems.ARROW_RAIN.getDefaultInstance(), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+            event.insertAfter(Items.NETHERITE_SWORD.getDefaultInstance(), ModItems.GUDINGDAO.getDefaultInstance(), PARENT_AND_SEARCH_TABS);
+            event.insertAfter(Items.EGG.getDefaultInstance(), ModItems.ARROW_RAIN.getDefaultInstance(), PARENT_AND_SEARCH_TABS);
         }
 
-        List<Item> items = new ArrayList<>(AllRegs.Items.ITEMS.getEntries().stream().map(Holder::value).toList());
-        for (int i = 0; i < 4; i++) {items.removeLast();}
-        AllRegs.Skills.ITEMS.getEntries().stream().map(Holder::value).toList().forEach(item -> items.add(items.size() - 5, item));
-        var ZZRS = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.parse("dabaosword:dabaosword_tab"));
         if (event.getTabKey() == ZZRS) {
-            for (var item : items) event.accept(item);
+            var lookup = event.getParameters().holders().lookup(Registries.ENCHANTMENT).orElseThrow();
+            ItemStack smile = new ItemStack(ModItems.SUNSHINE_SMILE);
+            smile.enchant(lookup.getOrThrow(ModItems.CRIT), 1);
+            event.insertAfter(ModItems.LET_ME_CC.getDefaultInstance(), smile, PARENT_AND_SEARCH_TABS);
         }
     }
 

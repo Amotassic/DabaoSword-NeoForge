@@ -1,54 +1,66 @@
 package com.amotassic.dabaosword.item;
 
+import com.amotassic.dabaosword.item.card.CardItem;
+import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.util.AllRegs;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.enchantment.Enchantment;
 
 public class ModItems {
-    public static Item GAIN_CARD = AllRegs.Items.GAIN_CARD.get();
-    public static Item CARD_PILE = AllRegs.Items.CARD_PILE.get();
 
-    public static Item GUDINGDAO = AllRegs.Items.GUDINGDAO.get();
-    public static Item GUANSHI = AllRegs.Items.GUANSHI.get();
-    public static Item GUDING_WEAPON = AllRegs.Items.GUDING_WEAPON.get();
-    public static Item FANGTIAN = AllRegs.Items.FANGTIAN.get();
-    public static Item HANBING = AllRegs.Items.HANBING.get();
-    public static Item QINGGANG = AllRegs.Items.QINGGANG.get();
-    public static Item QINGLONG = AllRegs.Items.QINGLONG.get();
-    public static Item BAGUA = AllRegs.Items.BAGUA.get();
-    public static Item BAIYIN = AllRegs.Items.BAIYIN.get();
-    public static Item RENWANG = AllRegs.Items.RENWANG.get();
-    public static Item RATTAN_ARMOR = AllRegs.Items.RATTAN_ARMOR.get();
-    public static Item CHITU = AllRegs.Items.CHITU.get();
-    public static Item DILU = AllRegs.Items.DILU.get();
+    public static CardItem
+    GUANSHI = AllRegs.Items.GUANSHI.get(),
+    GUDING_WEAPON = AllRegs.Items.GUDING_WEAPON.get(),
+    FANGTIAN = AllRegs.Items.FANGTIAN.get(),
+    HANBING = AllRegs.Items.HANBING.get(),
+    QINGGANG = AllRegs.Items.QINGGANG.get(),
+    QINGLONG = AllRegs.Items.QINGLONG.get(),
+    BAGUA = AllRegs.Items.BAGUA.get(),
+    BAIYIN = AllRegs.Items.BAIYIN.get(),
+    RENWANG = AllRegs.Items.RENWANG.get(),
+    RATTAN_ARMOR = AllRegs.Items.RATTAN_ARMOR.get(),
+    CHITU = AllRegs.Items.CHITU.get(),
+    DILU = AllRegs.Items.DILU.get(),
 
-    public static Item SHA = AllRegs.Items.SHA.get();
-    public static Item FIRE_SHA = AllRegs.Items.FIRE_SHA.get();
-    public static Item THUNDER_SHA = AllRegs.Items.THUNDER_SHA.get();
-    public static Item SHAN = AllRegs.Items.SHAN.get();
-    public static Item PEACH = AllRegs.Items.PEACH.get();
-    public static Item JIU = AllRegs.Items.JIU.get();
+    SHA = AllRegs.Items.SHA.get(),
+    FIRE_SHA = AllRegs.Items.FIRE_SHA.get(),
+    THUNDER_SHA = AllRegs.Items.THUNDER_SHA.get(),
+    SHAN = AllRegs.Items.SHAN.get(),
+    PEACH = AllRegs.Items.PEACH.get(),
+    JIU = AllRegs.Items.JIU.get(),
 
-    public static Item BINGLIANG_ITEM = AllRegs.Items.BINGLIANG_ITEM.get();
-    public static Item TOO_HAPPY_ITEM = AllRegs.Items.TOO_HAPPY_ITEM.get();
-    public static Item SHANDIAN_ITEM = AllRegs.Items.SHANDIAN_ITEM.get();
-    public static Item DISCARD = AllRegs.Items.DISCARD.get();
-    public static Item FIRE_ATTACK = AllRegs.Items.FIRE_ATTACK.get();
-    public static Item JUEDOU = AllRegs.Items.JUEDOU.get();
-    public static Item JIEDAO = AllRegs.Items.JIEDAO.get();
-    public static Item NANMAN = AllRegs.Items.NANMAN.get();
-    public static Item STEAL = AllRegs.Items.STEAL.get();
-    public static Item TAOYUAN = AllRegs.Items.TAOYUAN.get();
-    public static Item TIESUO = AllRegs.Items.TIESUO.get();
-    public static Item ARROW_RAIN = AllRegs.Items.ARROW_RAIN.get();
-    public static Item WUGU = AllRegs.Items.WUGU.get();
-    public static Item WANJIAN = AllRegs.Items.WANJIAN.get();
-    public static Item WUXIE = AllRegs.Items.WUXIE.get();
-    public static Item WUZHONG = AllRegs.Items.WUZHONG.get();
-    public static Item GIFT_BOX = AllRegs.Items.GIFT_BOX.get();
-    public static Item BBJI = AllRegs.Items.BBJI.get();
-    public static Item SUNSHINE_SMILE = AllRegs.Items.SUNSHINE_SMILE.get();
+    BINGLIANG_ITEM = AllRegs.Items.BINGLIANG_ITEM.get(),
+    TOO_HAPPY_ITEM = AllRegs.Items.TOO_HAPPY_ITEM.get(),
+    SHANDIAN_ITEM = AllRegs.Items.SHANDIAN_ITEM.get(),
+    DISCARD = AllRegs.Items.DISCARD.get(),
+    FIRE_ATTACK = AllRegs.Items.FIRE_ATTACK.get(),
+    JUEDOU = AllRegs.Items.JUEDOU.get(),
+    JIEDAO = AllRegs.Items.JIEDAO.get(),
+    NANMAN = AllRegs.Items.NANMAN.get(),
+    STEAL = AllRegs.Items.STEAL.get(),
+    TAOYUAN = AllRegs.Items.TAOYUAN.get(),
+    TIESUO = AllRegs.Items.TIESUO.get(),
+    WUGU = AllRegs.Items.WUGU.get(),
+    WANJIAN = AllRegs.Items.WANJIAN.get(),
+    WUXIE = AllRegs.Items.WUXIE.get(),
+    WUZHONG = AllRegs.Items.WUZHONG.get();
+
+    public static Item
+    GAIN_CARD = AllRegs.Items.GAIN_CARD.get(),
+    CARD_PILE = AllRegs.Items.CARD_PILE.get(),
+    GIFT_BOX = AllRegs.Items.GIFT_BOX.get(),
+    BBJI = AllRegs.Items.BBJI.get(),
+    GUDINGDAO = AllRegs.Items.GUDINGDAO.get(),
+    LET_ME_CC = AllRegs.Items.LET_ME_CC.get(),
+    SUNSHINE_SMILE = AllRegs.Items.SUNSHINE_SMILE.get(),
+    ARROW_RAIN = AllRegs.Items.ARROW_RAIN.get();
+    public static CardItem EMPTY_CARD = AllRegs.Items.EMPTY_CARD.get();
+    public static SkillItem EMPTY_SKILL = AllRegs.Items.EMPTY_SKILL.get();
 
     //状态效果
     public static Holder<MobEffect> BINGLIANG = AllRegs.Effects.BINGLIANG;
@@ -68,4 +80,6 @@ public class ModItems {
     //铁骑效果
     public static Holder<MobEffect> TIEJI = AllRegs.Effects.TIEJI;
     public static Holder<MobEffect> SHANDIAN = AllRegs.Effects.SHANDIAN;
+
+    public static final ResourceKey<Enchantment> CRIT = ResourceKey.create(Registries.ENCHANTMENT, ResourceLocation.parse("dabaosword:crit"));
 }

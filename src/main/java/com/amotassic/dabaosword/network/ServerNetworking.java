@@ -2,16 +2,15 @@ package com.amotassic.dabaosword.network;
 
 import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.command.InfoCommand;
-import com.amotassic.dabaosword.item.LetMeCCItem;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
-import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.ui.PileScreenHandler;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -33,17 +32,10 @@ public class ServerNetworking {
                 player.displayClientMessage(Component.translatable("effect.tieji.tip").withStyle(ChatFormatting.RED), true);
                 return;
             }
-            Player target = (Player) player.level().getEntity(payload.id());
-            for (var stack : allTrinkets(player)) {
-                if(stack.getItem() instanceof SkillItem.ActiveSkillWithTarget skill && target != player) {
-                    skill.activeSkill(player, stack, target);
-                    return;
-                }
-                if(stack.getItem() instanceof SkillItem.ActiveSkill skill && target == player) {
-                    skill.activeSkill(player, stack, player);
-                    return;
-                }
-            }
+            LivingEntity entity = (LivingEntity) player.level().getEntity(payload.id());
+
+            for (var skill : getSkillsMayUse(player)) if (player != entity && skill.activeSkill(player, skill, entity)) return;
+            for (var skill : getSkillsMayUse(player)) if (skill.activeSkill(player, skill)) return;
         });
 
         registrar.playToServer(ShensuPayload.ID, ShensuPayload.CODEC, (p, c) -> {
@@ -60,8 +52,10 @@ public class ServerNetworking {
         registrar.playToServer(QuickSwapPayload.ID, QuickSwapPayload.CODEC, (pl, c) -> {
             Player player = c.player();
             int i = pl.id();
-            if (i == 0) openInv(player, player, Component.translatable("key.dabaosword.select_card"), new ItemStack(ModItems.WANJIAN), true, false, false, 2);
-            if (i == 1) openInv(player, player, Component.translatable("key.dabaosword.select_card"), new ItemStack(ModItems.SUNSHINE_SMILE), true, false, false, 3);
+            var cards = new ItemStack(ModItems.WANJIAN); var items = new ItemStack(ModItems.SUNSHINE_SMILE);
+            boolean bl = getCardPack(player).isEmpty(); //如果牌堆没有牌，会直接显示物品栏的牌，所以要判断一下
+            if (i == 0) openInv(player, player, Component.translatable("key.dabaosword.select_card"), bl ? items : cards, true, false, false, 2);
+            if (i == 1) openInv(player, player, Component.translatable("key.dabaosword.select_card"), items, true, false, false, 3);
             if (i == 2) player.openMenu(new SimpleMenuProvider((id, inv, player1) -> new PileScreenHandler(id, inv), Component.translatable("card_pile.title")), (buf -> buf.writeInt(0)));
             if (i == 3) {
                 var pair = getDamage(player);
@@ -76,7 +70,7 @@ public class ServerNetworking {
                 }
             }
             if (i == 9) {
-                Player target = LetMeCCItem.getClosestEntity(player, Player.class, 100, p -> p!= player);
+                Player target = getClosestEntity(player, Player.class, 100, LivingEntity::isAlive);
                 if (target != null) InfoCommand.openFullInv(player, target, false);
             }
         });

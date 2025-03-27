@@ -10,11 +10,19 @@ import net.minecraft.world.item.Item;
 public class Tags {
     public static void Tag() {}
 
-    public static final TagKey<Item> LOCK_SKILL = createTag("lock_skill");
-    public static final TagKey<Item> TRIGGER_WUXIE = createTag("trigger_wuxie");
-
     private static TagKey<Item> createTag(String name) {
         return ItemTags.create(ResourceLocation.fromNamespaceAndPath("dabaosword", name));
+    }
+
+    public static final TagKey<Item>
+            SKILLS = curiosTag("skills"),
+            WEAPON = curiosTag("weapon"),
+            ARMOR = curiosTag("armor"),
+            ATTACK = curiosTag("attack"),
+            DEFEND = curiosTag("defend");
+
+    private static TagKey<Item> curiosTag(String name) {
+        return ItemTags.create(ResourceLocation.fromNamespaceAndPath("curios", name));
     }
 
     public static final TagKey<DamageType> TRIGGER_TIESUO = TagKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath("dabaosword", "trigger_tiesuo"));

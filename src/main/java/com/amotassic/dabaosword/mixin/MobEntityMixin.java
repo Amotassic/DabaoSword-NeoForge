@@ -1,6 +1,7 @@
 package com.amotassic.dabaosword.mixin;
 
 import com.amotassic.dabaosword.item.ModItems;
+import com.amotassic.dabaosword.item.card.CardItem;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -22,7 +23,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Arrays;
 import java.util.Random;
 
-import static com.amotassic.dabaosword.api.event.CardEvents.cardUsePre;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 @Mixin(Mob.class) @SuppressWarnings("all")
@@ -43,7 +43,7 @@ public abstract class MobEntityMixin extends LivingEntity {
 
     @Unique
     private void tryUseCard(ItemStack stack, LivingEntity target) {
-        if (!isBasic.test(stack) && !stack.is(ModItems.WUXIE)) cardUsePre(mob, stack, target);
+        if (!isBasic.test(stack) && !stack.is(ModItems.WUXIE)) CardItem.onUse(mob, stack, target);
     }
 
     @Unique private float getChance() {
@@ -66,7 +66,7 @@ public abstract class MobEntityMixin extends LivingEntity {
 
     @Unique private Item getMainCard() {
         if (new Random().nextFloat() > 0.33) {
-            Item[] items = {ModItems.BINGLIANG_ITEM, ModItems.TOO_HAPPY_ITEM, ModItems.DISCARD, ModItems.FIRE_ATTACK, ModItems.JIEDAO, ModItems.WANJIAN, ModItems.TIESUO};
+            Item[] items = {ModItems.BINGLIANG_ITEM, ModItems.TOO_HAPPY_ITEM, ModItems.DISCARD, ModItems.FIRE_ATTACK, ModItems.JIEDAO, ModItems.WANJIAN, ModItems.TIESUO, ModItems.NANMAN, ModItems.JUEDOU, ModItems.SHANDIAN_ITEM};
             int index = new java.util.Random().nextInt(items.length);
             return Arrays.stream(items).toList().get(index);
         }

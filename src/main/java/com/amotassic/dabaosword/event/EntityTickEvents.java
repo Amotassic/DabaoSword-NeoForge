@@ -1,8 +1,6 @@
 package com.amotassic.dabaosword.event;
 
 import com.amotassic.dabaosword.DabaoSword;
-import com.amotassic.dabaosword.api.ReachDefend;
-import com.amotassic.dabaosword.api.Skill;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.Gamerule;
 import net.minecraft.network.chat.Component;
@@ -35,17 +33,31 @@ public class EntityTickEvents {
         if (en.level() instanceof ServerLevel world && en instanceof LivingEntity entity) {
             if (world.getGameTime() % 2 == 0) {
                 entity.getTags().remove("sha");
-                en.getTags().remove("juedou");
+                entity.getTags().remove("juedou");
                 entity.getTags().remove("nanman");
+                entity.getTags().remove("wanjian");
                 entity.getTags().remove("benxi");
-                entity.getTags().remove("xingshang");
             }
+            if (world.getGameTime() % 200 == 0) {
+                entity.getTags().remove("seen_skill_tip");
+            }
+
+            //处理所有加触及距离和近战防御距离的效果
+            int level1 = 0; int level2 = 0;
+            ItemStack mainHand = entity.getMainHandItem();
+            if (mainHand.is(ModItems.DISCARD) || mainHand.is(ModItems.JUEDOU)) level1 += 114;
+            for (var skill : getSkillsMayUse(entity)) {
+                level1 += skill.item.getExtraReach(entity, skill);
+                level2 += skill.item.getDefend(entity, skill);
+            }
+            if (level1 > 0) entity.addEffect(new MobEffectInstance(ModItems.REACH, 2,level1 - 1,false,false,false));
+            if (level2 > 0) entity.addEffect(new MobEffectInstance(ModItems.DEFEND, 2,level2 - 1,false,false,false));
 
             Player closestPlayer = world.getNearestPlayer(entity, 5);
             if (closestPlayer != null && hasTrinket(ModItems.FANGTIAN, closestPlayer) && entity.isAlive()) {
                 ItemStack stack = trinketItem(ModItems.FANGTIAN, closestPlayer);
                 int time = 0;
-                if (stack != null) time = getCD(stack);
+                if (!stack.isEmpty()) time = s(stack).getCD();
                 if (time > 15 && closestPlayer.swingTime == 1) {
                     //给玩家本人一个极短的无敌效果，以防止被误伤
                     closestPlayer.addEffect(new MobEffectInstance(ModItems.INVULNERABLE,2,0,false,false,false));
@@ -86,53 +98,35 @@ public class EntityTickEvents {
                     if (player.hasEffect(ModItems.BINGLIANG)) player.removeEffect(ModItems.BINGLIANG);
                     else if (countCards(player) < player.getMaxHealth() || !limit) {
                         int draw = hasTrinket(ModItems.CARD_PILE, player) ? 2 : 0;
-                        for (var stack : allTrinkets(player)) {
-                            if (stack.getItem() instanceof Skill s && canTrigger(stack, player)) {
-                                int i = s.onDrawPhase(player, stack);
-                                if (i <= -114) {draw = 0; break;}
-                                draw += i;
-                            }
+                        for (var skill : getSkillsMayUse(player)) {
+                            int i = skill.item.onDrawPhase(player, skill);
+                            if (i <= -114) {draw = 0; break;}
+                            draw += i;
                         }
                         if (draw > 0) draw(player, draw);
                     }
                 }
             }
 
-            AABB box = new AABB(player.getOnPos()).inflate(20); // 检测范围，根据需要修改
-            for (LivingEntity nearbyPlayer : world.getEntitiesOfClass(Player.class, box, playerEntity -> playerEntity.hasEffect(ModItems.DEFEND))) {
-                //实现沈佳宜的效果：若玩家看到的玩家有近战防御效果，则给当前玩家攻击范围缩短效果
-                int amplifier = Objects.requireNonNull(nearbyPlayer.getEffect(ModItems.DEFEND)).getAmplifier();
-                int attack = (int) (player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE) + 3);
-                int defended = Math.min(amplifier, attack);
-                if (player != nearbyPlayer && isLooking(player, nearbyPlayer)) {
-                    player.addEffect(new MobEffectInstance(ModItems.DEFENDED, 1, defended,false,false,true));
-                }
-            }
-
-            //处理所有加触及距离和近战防御距离的效果
-            int level1 = 0; int level2 = 0;
-            ItemStack mainHand = player.getMainHandItem();
-            if (mainHand.is(ModItems.DISCARD) || mainHand.is(ModItems.JUEDOU)) level1 += 114;
-            for (var stack : allTrinkets(player)) {
-                if (stack.getItem() instanceof ReachDefend rd && canTrigger(stack, player)) {
-                    level1 += rd.getExtraReach(player, stack);
-                    level2 += rd.getDefend(player, stack);
-                }
-            }
-            if (level1 > 0) player.addEffect(new MobEffectInstance(ModItems.REACH, 2,level1 - 1,false,false,false));
-            if (level2 > 0) player.addEffect(new MobEffectInstance(ModItems.DEFEND, 2,level2 - 1,false,false,false));
+            if (time % 2 == 0) decreaseAttackRange(player);
 
         }
     }
 
-    static boolean isLooking(Player player, Entity entity) {
-        Vec3 vec3d = player.getViewVector(1.0f).normalize();
-        Vec3 vec3d2 = new Vec3(entity.getX() - player.getX(), entity.getEyeY() - player.getEyeY(), entity.getZ() - player.getZ());
-        double d = vec3d2.length();
-        double e = vec3d.dot(vec3d2.normalize());
-        if (e > 1.0 - 0.25 / d) {
-            return player.hasLineOfSight(entity);
+    private static void decreaseAttackRange(LivingEntity entity) {
+        AABB box = new AABB(entity.getOnPos()).inflate(20);
+        for (LivingEntity target : entity.level().getEntitiesOfClass(LivingEntity.class, box, living -> living != entity && living.hasEffect(ModItems.DEFEND) && isLooking(entity, living))) {
+            //实现沈佳宜的效果：若玩家看到的玩家有近战防御效果，则给当前玩家攻击范围缩短效果
+            int amplifier = Objects.requireNonNull(target.getEffect(ModItems.DEFEND)).getAmplifier();
+            entity.addEffect(new MobEffectInstance(ModItems.DEFENDED, 2, amplifier,false,false,true));
         }
-        return false;
+    }
+
+    public static boolean isLooking(LivingEntity entity, Entity target) {
+        Vec3 playerPos = entity.getEyePosition();
+        Vec3 lookVec = entity.getViewVector(1.0F);
+        AABB targetBox = target.getBoundingBox();
+        // 进行射线与碰撞箱的相交检测
+        return targetBox.clip(playerPos, playerPos.add(lookVec.scale(100.0))).isPresent();
     }
 }

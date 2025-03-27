@@ -2,27 +2,28 @@ package com.amotassic.dabaosword.util;
 
 import com.amotassic.dabaosword.effect.*;
 import com.amotassic.dabaosword.entity.ModEntity;
-import com.amotassic.dabaosword.item.BBjiItem;
 import com.amotassic.dabaosword.item.GiftBoxItem;
-import com.amotassic.dabaosword.item.LetMeCCItem;
 import com.amotassic.dabaosword.item.card.*;
-import com.amotassic.dabaosword.item.equipment.*;
+import com.amotassic.dabaosword.item.card.equipment.Armor;
+import com.amotassic.dabaosword.item.card.equipment.Mount;
+import com.amotassic.dabaosword.item.card.equipment.Weapon;
+import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.item.skillcard.skills.Qun;
 import com.amotassic.dabaosword.item.skillcard.skills.Shu;
 import com.amotassic.dabaosword.item.skillcard.skills.Wei;
 import com.amotassic.dabaosword.item.skillcard.skills.Wu;
+import com.amotassic.dabaosword.item.tool.*;
 import com.amotassic.dabaosword.ui.FullInvScreenHandler;
 import com.amotassic.dabaosword.ui.PileScreenHandler;
 import com.amotassic.dabaosword.ui.PlayerInvScreenHandler;
-import com.amotassic.dabaosword.ui.SimpleMenuHandler;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -36,6 +37,8 @@ import net.minecraft.world.item.SpawnEggItem;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 @SuppressWarnings({"unused", "deprecation"})
@@ -44,7 +47,7 @@ public class AllRegs {
     public static class Items {
         public static final DeferredRegister<Item> ITEMS = DeferredRegister.createItems("dabaosword");
 
-        public static final Supplier<Item>
+        public static final Supplier<CardItem>
         SHA = ITEMS.register("sha", Sha::new),
         FIRE_SHA = ITEMS.register("fire_sha", Sha.Fire::new),
         THUNDER_SHA = ITEMS.register("thunder_sha", Sha.Thunder::new),
@@ -65,27 +68,28 @@ public class AllRegs {
         TIESUO = ITEMS.register("tiesuo", TiesuoItem::new),
         WANJIAN = ITEMS.register("wanjian", WanjianItem::new),
         WUGU = ITEMS.register("wugu", WuguItem::new),
-        WUXIE = ITEMS.register("wuxie", CardItem::new),
-        WUZHONG = ITEMS.register("wuzhong", CardItem.Wuzhong::new),
+        WUXIE = ITEMS.register("wuxie", CardItem.Armoury::new),
+        WUZHONG = ITEMS.register("wuzhong", WuzhongItem::new),
 
-        CIXIONG = ITEMS.register("cixiong", Equipment.CixiongWeapon::new),
-        FANGTIAN = ITEMS.register("fangtian", Equipment.FangtianWeapon::new),
-        GUANSHI = ITEMS.register("guanshi", Equipment.GuanshiWeapon::new),
-        GUDING_WEAPON = ITEMS.register("guding_dao", Equipment.GudingWeapon::new),
-        HANBING = ITEMS.register("hanbing", Equipment.HanbingWeapon::new),
-        QILIN = ITEMS.register("qilin", Equipment.QilinWeapon::new),
-        QINGGANG = ITEMS.register("qinggang", Equipment.QinggangWeapon::new),
-        QINGLONG = ITEMS.register("qinglong", Equipment.QinglongWeapon::new),
-        ZHANGBA = ITEMS.register("zhangba", Equipment.ZhangbaWeapon::new),
-        LIANNU = ITEMS.register("liannu", Equipment.LiannuWeapon::new),
-        ZHUQUE = ITEMS.register("zhuque", Equipment.ZhuqueWeapon::new),
-        BAGUA = ITEMS.register("bagua", Equipment.BaguaArmor::new),
-        BAIYIN = ITEMS.register("baiyin", Equipment.BaiyinArmor::new),
-        RENWANG = ITEMS.register("renwang", Equipment.RenwangArmor::new),
-        RATTAN_ARMOR = ITEMS.register("rattan_armor", Equipment.RattanArmor::new),
-        CHITU = ITEMS.register("chitu", Equipment.AttackHorse::new),
-        DILU = ITEMS.register("dilu", Equipment.DefendHorse::new),
+        CIXIONG = ITEMS.register("cixiong", Weapon.Cixiong::new),
+        FANGTIAN = ITEMS.register("fangtian", Weapon.Fangtian::new),
+        GUANSHI = ITEMS.register("guanshi", Weapon.Guanshi::new),
+        GUDING_WEAPON = ITEMS.register("guding_dao", Weapon.Guding::new),
+        HANBING = ITEMS.register("hanbing", Weapon.Hanbing::new),
+        QILIN = ITEMS.register("qilin", Weapon.Qilin::new),
+        QINGGANG = ITEMS.register("qinggang", Weapon.Qinggang::new),
+        QINGLONG = ITEMS.register("qinglong", Weapon.Qinglong::new),
+        ZHANGBA = ITEMS.register("zhangba", Weapon.Zhangba::new),
+        LIANNU = ITEMS.register("liannu", Weapon.Liannu::new),
+        ZHUQUE = ITEMS.register("zhuque", Weapon.Zhuque::new),
+        BAGUA = ITEMS.register("bagua", Armor.Bagua::new),
+        BAIYIN = ITEMS.register("baiyin", Armor.Baiyin::new),
+        RENWANG = ITEMS.register("renwang", Armor.Renwang::new),
+        RATTAN_ARMOR = ITEMS.register("rattan_armor", Armor.Rattan::new),
+        CHITU = ITEMS.register("chitu", Mount.Attack::new),
+        DILU = ITEMS.register("dilu", Mount.Defend::new);
 
+        public static final Supplier<Item>
         GAIN_CARD = ITEMS.register("gain_card", GainCardItem::new),
         CARD_PILE = ITEMS.register("card_pile", (ResourceLocation properties) -> new CardPile()),
         GIFT_BOX = ITEMS.register("gift_box", ()-> new GiftBoxItem(new Item.Properties().rarity(Rarity.UNCOMMON))),
@@ -97,18 +101,15 @@ public class AllRegs {
         ARROW_RAIN = ITEMS.register("arrow_rain", ArrowRainItem::new),
         INCOMPLETE_GUDINGDAO = ITEMS.register("incomplete_gdd", ()-> new Item(new Item.Properties().stacksTo(1))),
         GUDING = ITEMS.register("guding", ()-> new Item(new Item.Properties()));
+        public static final Supplier<CardItem> EMPTY_CARD = ITEMS.register("empty_card", CardItem.Empty::new);
+        public static final Supplier<SkillItem> EMPTY_SKILL = ITEMS.register("empty_skill", SkillItem::new);
 
-        public static DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, "dabaosword");
-        static {
-            TABS.register("dabaosword_tab", () -> CreativeModeTab.builder().icon(SUNSHINE_SMILE.get()::getDefaultInstance)
-                    .title(Component.translatable("itemGroup.dabaosword_tab")).build());
-        }
     }
 
     public static class Skills {
         public static final DeferredRegister<Item> ITEMS = DeferredRegister.createItems("dabaosword");
         //魏
-        public static final Supplier<Item>
+        public static final Supplier<SkillItem>
         DUANLIANG = ITEMS.register("duanliang", Wei.Duanliang::new),
         FANGZHU = ITEMS.register("fangzhu", Wei.Fangzhu::new),
         XINGSHANG = ITEMS.register("xingshang", Wei.Xingshang::new),
@@ -137,6 +138,7 @@ public class AllRegs {
         WUSHENG = ITEMS.register("wusheng", Shu.Wusheng::new),
         //吴
         BUQU = ITEMS.register("buqu", Wu.Buqu::new),
+        FANJIAN = ITEMS.register("fanjian", Wu.Fanjian::new),
         FENYIN = ITEMS.register("fenyin", Wu.Fenyin::new),
         GONGXIN = ITEMS.register("gongxin", Wu.Gongxin::new),
         GUOSE = ITEMS.register("guose", Wu.Guose::new),
@@ -186,121 +188,31 @@ public class AllRegs {
     }
 
     public static class Other {
+
+        public static DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, "dabaosword");
+        public static final ResourceKey<CreativeModeTab> ZZRS = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.parse("dabaosword:zzrs"));
+        static {
+            TABS.register("zzrs", () -> CreativeModeTab.builder().icon(Items.SUNSHINE_SMILE.get()::getDefaultInstance)
+                    .title(Component.translatable("itemGroup.dabaosword.zzrs"))
+                    .displayItems(Other::addToGroup).build());
+        }
+
+        private static void addToGroup(CreativeModeTab.ItemDisplayParameters parameters, CreativeModeTab.Output entries) {
+            List<Item> items = new ArrayList<>(AllRegs.Items.ITEMS.getEntries().stream().map(Holder::value).toList());
+            for (int i = 0; i < 6; i++) {items.removeLast();} //移除末尾6个注册项
+            AllRegs.Skills.ITEMS.getEntries().stream().map(Holder::value).toList().forEach(item -> items.add(items.size() - 5, item));
+            items.remove(Items.SUNSHINE_SMILE.get());
+            for (var item : items) entries.accept(item);
+        }
+
         //物品组件注册
         public static final DeferredRegister.DataComponents DATA_COMPONENT = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, "dabaosword");
         public static final Supplier<DataComponentType<Integer>> TAGS = DATA_COMPONENT.registerComponentType("tags", builder -> builder.persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(ByteBufCodecs.VAR_INT));
         public static final Supplier<DataComponentType<Integer>> CD = DATA_COMPONENT.registerComponentType("cd", builder -> builder.persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(ByteBufCodecs.VAR_INT));
 
         public static final DeferredRegister<MenuType<?>> MENU = DeferredRegister.create(BuiltInRegistries.MENU, "dabaosword");
-        public static final Supplier<MenuType<SimpleMenuHandler>> SIMPLE_MENU_HANDLER = MENU.register("simple_menu", () -> IMenuTypeExtension.create(SimpleMenuHandler::new));
         public static final Supplier<MenuType<PlayerInvScreenHandler>> PLAYER_INV_SCREEN_HANDLER = MENU.register("player_inv", () -> IMenuTypeExtension.create(PlayerInvScreenHandler::new));
         public static final Supplier<MenuType<FullInvScreenHandler>> FULL_INV_SCREEN_HANDLER = MENU.register("full_inv", () -> IMenuTypeExtension.create(FullInvScreenHandler::new));
         public static final Supplier<MenuType<PileScreenHandler>> PILE_SCREEN_HANDLER = MENU.register("card_pile", () -> IMenuTypeExtension.create(PileScreenHandler::new));
-    }
-
-    public static class Sounds {
-        public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(BuiltInRegistries.SOUND_EVENT, "dabaosword");
-        public static final Supplier<SoundEvent>
-        FENYIN = register("fenyin"),
-        JIJIU = register("jijiu"),
-        JIUCHI = register("jiuchi"),
-        JIANXIONG = register("jianxiong"),
-        JIZHAN = register("jizhan"),
-        YINGZI = register("yingzi"),
-        WUSHENG = register("wusheng"),
-        WEIMU = register("weimu"),
-        SHENSU = register("shensu"),
-        LIANYING = register("lianying"),
-        XIAOJI = register("xiaoji"),
-        LET_ME_CC = register("letmecc"),
-        LONGDAN = register("longdan"),
-        GONGXIN = register("gongxin"),
-        ZHIJIAN = register("zhijian"),
-        SHANZHUAN = register("shanzhuan"),
-        RENDE = register("rende"),
-        ZHIHENG = register("zhiheng"),
-        BUQU = register("buqu"),
-        TIEJI = register("tieji"),
-        GANGLIE = register("ganglie"),
-        FANGZHU = register("fangzhu"),
-        XINGSHANG = register("xingshang"),
-        BBJI = register("bbji"),
-        XUYOU = register("xuyou"),
-        DUANLIANG = register("duanliang"),
-        LUOSHEN = register("luoshen"),
-        QIXI = register("qixi"),
-        QINGGUO = register("qingguo"),
-        LIEGONG = register("liegong"),
-        GONGAO = register("gongao"),
-        WEIZHONG = register("weizhong"),
-        BENXI = register("benxi"),
-        LEIJI = register("leiji"),
-        GIFTBOX = register("giftbox"),
-        KANPO = register("kanpo"),
-        GUOSE = register("guose"),
-        LIULI = register("liuli"),
-        JUEQING = register("jueqing"),
-        LUANJI = register("luanji"),
-        KUROU = register("kurou"),
-        JIZHI = register("jizhi"),
-        QICE = register("qice"),
-        LUOYI = register("luoyi"),
-        HUOJI = register("huoji"),
-        QUANJI = register("quanji"),
-        ZILI = register("zili"),
-        PAIYI = register("paiyi"),
-        YIJI = register("yiji"),
-        TAOLUAN = register("taoluan"),
-        POJUN = register("pojun"),
-        KUANGGU = register("kuanggu"),
-
-        BAGUA = register("bagua"),
-        BAIYIN = register("baiyin"),
-        CIXIONG = register("cixiong"),
-        FANGTIAN = register("fangtian"),
-        GUANSHI = register("guanshi"),
-        GUDING = register("guding"),
-        HANBING = register("hanbing"),
-        LIANNU = register("liannu"),
-        QILIN = register("qilin"),
-        QINGGANG = register("qinggang"),
-        QINGLONG = register("qinglong"),
-        RENWANG = register("renwang"),
-        TENGJIA1 = register("tengjia1"),
-        TENGJIA2 = register("tengjia2"),
-        ZHANGBA = register("zhangba"),
-        ZHUQUE = register("zhuque"),
-
-        BINGLIANG = register("bingliang"),
-        GUOHE = register("discard"),
-        HUOGONG = register("huogong"),
-        JIEDAO = register("jiedao"),
-        JIU = register("jiu"),
-        JUEDOU = register("juedou"),
-        LEBU = register("too_happy"),
-        RECOVER = register("peach"),
-        SHAN = register("shan"),
-        SHANDIAN = register("shandian"),
-        SHUNSHOU = register("steal"),
-        TAOYUAN = register("taoyuan"),
-        TIESUO = register("tiesuo"),
-        WANJIAN = register("wanjian"),
-        WUGU = register("wugu"),
-        WUXIE = register("wuxie"),
-        WUZHONG = register("wuzhong"),
-        NANMAN = register("nanman"),
-        SHA = register("sha"),
-        SHA_FIRE = register("fire_sha"),
-        SHA_THUNDER = register("thunder_sha");
-
-        static {
-            register("diankuang"); register("wushuang"); register("win"); register("kill1"); register("kill2"); register("kill3"); register("kill4"); register("kill5"); register("kill6"); register("kill7");
-        }
-
-
-        public static Supplier<SoundEvent> register(String name){
-            ResourceLocation location = ResourceLocation.fromNamespaceAndPath("dabaosword", name);
-            return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(location));
-        }
     }
 }

@@ -1,17 +1,17 @@
 package com.amotassic.dabaosword.client;
 
 import com.amotassic.dabaosword.DabaoSword;
-import com.amotassic.dabaosword.api.Card;
+import com.amotassic.dabaosword.api.card.Rank;
+import com.amotassic.dabaosword.api.card.Suit;
 import com.amotassic.dabaosword.entity.ModEntity;
 import com.amotassic.dabaosword.entity.client.ModModelLayers;
 import com.amotassic.dabaosword.entity.client.XuyouModel;
 import com.amotassic.dabaosword.entity.client.XuyouRenderer;
+import com.amotassic.dabaosword.item.card.CardItem;
 import com.amotassic.dabaosword.ui.FullInvHandledScreen;
 import com.amotassic.dabaosword.ui.PileHandledScreen;
 import com.amotassic.dabaosword.ui.PlayerInvHandledScreen;
-import com.amotassic.dabaosword.ui.SimpleMenuScreen;
 import com.amotassic.dabaosword.util.AllRegs;
-import com.amotassic.dabaosword.util.ModTools;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -24,6 +24,7 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.lwjgl.glfw.GLFW;
 
+import static com.amotassic.dabaosword.util.ModTools.c;
 import static net.minecraft.client.renderer.item.ItemProperties.register;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
@@ -41,7 +42,6 @@ public class DabaoSwordClient {
 
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
-        event.register(AllRegs.Other.SIMPLE_MENU_HANDLER.get(), SimpleMenuScreen::new);
         event.register(AllRegs.Other.PLAYER_INV_SCREEN_HANDLER.get(), PlayerInvHandledScreen::new);
         event.register(AllRegs.Other.FULL_INV_SCREEN_HANDLER.get(), FullInvHandledScreen::new);
         event.register(AllRegs.Other.PILE_SCREEN_HANDLER.get(), PileHandledScreen::new);
@@ -59,17 +59,20 @@ public class DabaoSwordClient {
 
     private static void registerPredicates() {
         //用于添加卡牌的花色和点数
-        var itemList = BuiltInRegistries.ITEM.stream().filter(item -> item instanceof Card).toList();
+        var itemList = BuiltInRegistries.ITEM.stream().filter(item -> item instanceof CardItem).toList();
         for (var item : itemList) {registerCustomModelPredicate(item);}
     }
 
     private static void registerCustomModelPredicate(Item item) {
         register(item, ResourceLocation.parse(item.toString() + "_sr"), (stack, clientWorld, livingEntity, seed) -> {
-            var sr = ModTools.getSuitAndRank(stack);
-            if (sr == null) return 0.0F;
-            int suit = sr.getA().ordinal();
-            int rank = sr.getB().ordinal() + 1;
-            return (float) (0.13 * suit + 0.01 * rank);
+            var card = c(stack);
+            var s = card.suit; var r = card.rank;
+            if (s != Suit.None && r != Rank.None) {
+                int suit = s.ordinal();
+                int rank = r.ordinal() + 1;
+                return (float) (0.13 * suit + 0.01 * rank);
+            }
+            return 0.0F;
         });
     }
 }

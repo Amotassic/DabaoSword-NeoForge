@@ -9,19 +9,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-import static com.amotassic.dabaosword.api.event.CardEvents.cardUsePre;
-
-public class FireAttackItem extends CardItem {
+public class FireAttackItem extends CardItem.Armoury {
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         if (!world.isClientSide && hand == InteractionHand.MAIN_HAND) {
-            if (cardUsePre(user, user.getMainHandItem(), null)) return InteractionResultHolder.success(user.getMainHandItem());
+            onUse(user, user.getMainHandItem(), user);
+            return InteractionResultHolder.success(user.getMainHandItem());
         }
         return super.use(world, user, hand);
     }
 
     @Override
-    public void cardUse(LivingEntity user, ItemStack stack, LivingEntity target) {
+    public void effect(LivingEntity user, ItemStack card, LivingEntity target) {
         Level world = user.level();
         Vec3 momentum = user.getForward().scale(3);
         LargeFireball fireballEntity = new LargeFireball(world, user, momentum, 3);
