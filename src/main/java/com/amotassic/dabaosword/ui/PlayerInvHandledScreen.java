@@ -13,30 +13,52 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.amotassic.dabaosword.util.ModTools.getOrCreateNbt;
 import static com.amotassic.dabaosword.util.ModTools.s;
 
 public class PlayerInvHandledScreen extends AbstractContainerScreen<PlayerInvScreenHandler> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("dabaosword", "textures/gui/generic_54.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/gui/container/generic_54.png");
+    private final int rows;
 
     public PlayerInvHandledScreen(PlayerInvScreenHandler handler, Inventory inventory, Component title) {
         super(handler, inventory, title);
-        this.imageHeight = 130;
+        this.rows = handler.rows;
+        this.imageHeight = 24 + rows * 18;
     }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        List<Component> screenTips = new ArrayList<>();
+        var skill = s(eventStack());
+        skill.item.addScreenTip(skill, screenTips);
+        if (!screenTips.isEmpty()) for (var text : screenTips) {
+            int y = 2 + 10 * screenTips.indexOf(text);
+            int textWidth = font.width(text);
+            // 绘制文本背景
+            guiGraphics.fill(1, y - 1, 1 + textWidth + 2, y + font.lineHeight, 0xFF202020);
+            // 绘制文本
+            guiGraphics.drawString(font, text, 2, y, 0xE0E0E0, false);
+        }
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         this.renderTooltip(guiGraphics, mouseX, mouseY);
     }
 
+    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        renderBg(guiGraphics, partialTick, mouseX, mouseY);
+    }
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float v, int i, int i1) {
+    protected void renderBg(GuiGraphics guiGraphics, float v, int i0, int i1) {
         int x = this.leftPos; int y = this.topPos;
-        guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
+        guiGraphics.blit(TEXTURE, x, y,0,0, imageWidth, 17);
+        for (int i = 0; i < rows; i++) {
+            guiGraphics.blit(TEXTURE, x, y + 17 + i * 18,0,17, imageWidth, 18);
+        }
+        guiGraphics.blit(TEXTURE, x, y + rows * 18 + 17,0,215, imageWidth, 7);
     }
 
     @Override
@@ -82,10 +104,10 @@ public class PlayerInvHandledScreen extends AbstractContainerScreen<PlayerInvScr
         return super.mouseScrolled(mouseX, mouseY, scrollX, amount);
     }
 
-    private ItemStack eventStack() {return menu.getSlot(55).getItem();}
+    private ItemStack eventStack() {return menu.getSlot(81).getItem();}
 
     private Map<Integer, Integer> getClicks() {
-        String str = getOrCreateNbt(menu.getSlot(57).getItem()).getString("Clicks");
+        String str = getOrCreateNbt(menu.getSlot(82).getItem()).getString("Clicks");
         Map<Integer, Integer> clicks = new HashMap<>();
         if (str.isEmpty()) return clicks;
         str = str.substring(1, str.length() - 1); //去掉{}如果还是空，则返回空map

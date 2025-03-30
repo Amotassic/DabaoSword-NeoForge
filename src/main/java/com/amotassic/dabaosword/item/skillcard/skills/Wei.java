@@ -10,10 +10,8 @@ import com.google.common.collect.Multimap;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -281,11 +279,9 @@ public class Wei {
                 if (countCards(user) > 0) {
 
                     Item[] items = {ModItems.BINGLIANG_ITEM, ModItems.TOO_HAPPY_ITEM, ModItems.DISCARD, ModItems.FIRE_ATTACK, ModItems.JIEDAO, ModItems.JUEDOU, ModItems.NANMAN, ModItems.STEAL, ModItems.TAOYUAN, ModItems.TIESUO, ModItems.WANJIAN, ModItems.WUXIE, ModItems.WUGU, ModItems.WUZHONG};
-                    Container inventory = new SimpleContainer(60);
-                    for (var item : items) inventory.setItem(Arrays.stream(items).toList().indexOf(item) + 18, new ItemStack(item));
-                    inventory.setItem(55, skill.stack);
+                    var stacks = Arrays.stream(items).map(ItemStack::new).toList();
 
-                    openMenu(user, user, inventory, Component.translatable("item.dabaosword.qice.screen"));
+                    openMenu(user, user, skill.stack, stacks, Component.translatable("item.dabaosword.qice.screen"));
                     return true;
                 } else user.displayClientMessage(Component.translatable("item.dabaosword.qice.tip").withStyle(RED), true);
             } else user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(RED), true);
@@ -368,7 +364,7 @@ public class Wei {
         public int onHit(LivingEntity user, LivingEntity entity, Skill skill, ExData data) {
             if (user instanceof Player player && !user.hasEffect(ModItems.COOLDOWN)) {
                 if (entity instanceof Player target) {
-                    if (countAllCards(target) > 0) openInv(player, target, Component.translatable("dabaosword.discard.title", skill.toHoverableText()), skill.stack, false, true, false, 1);
+                    if (countAllCards(target) > 0) openInv(player, target, target, Component.translatable("dabaosword.discard.title", skill.toHoverableText()), skill.stack, true, false, 1);
                 } else {
                     voice(user, this);
                     if (new Random().nextFloat() < 0.5) {
@@ -448,6 +444,12 @@ public class Wei {
 
         @Override public boolean isActiveSkill() {return true;}
 
+        @Override
+        public void addScreenTip(Skill skill, List<Component> tips) {
+            addPresetTips(skill, tips, 0, 1, 2, 4, 5);
+            super.addScreenTip(skill, tips);
+        }
+
         @SkillInfo(trigger = Trigger.ON_HURT, relation = Relation.SELF)
         public int onHurt(LivingEntity user, LivingEntity target, Skill skill, ExData data) {
             if (!user.hasEffect(ModItems.COOLDOWN) && user.getHealth() <= 15) {
@@ -465,7 +467,7 @@ public class Wei {
                 int i = skill.getTag();
                 if (i <= 0) return false;
                 skill.setMaxSelect(i);
-                openInv(user, target, Component.translatable("give_card.title", skill.toHoverableText()), skill.stack, true, false, false, 2);
+                openInv(user, user, target, Component.translatable("give_card.title", skill.toHoverableText()), skill.stack, false, false, 2);
                 return true;
             }
             return false;

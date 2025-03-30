@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
@@ -31,14 +32,16 @@ public class EntityTickEvents {
     public static void endLivingTick(EntityTickEvent.Post event) {
         Entity en = event.getEntity();
         if (en.level() instanceof ServerLevel world && en instanceof LivingEntity entity) {
-            if (world.getGameTime() % 2 == 0) {
-                entity.getTags().remove("sha");
-                entity.getTags().remove("juedou");
-                entity.getTags().remove("nanman");
-                entity.getTags().remove("wanjian");
-                entity.getTags().remove("benxi");
+            long time = world.getGameTime();
+            if (time % 2 == 0) {
+                String[] tags = {"sha", "juedou", "nanman", "wanjian", "benxi"};
+                for (var tag : tags) entity.getTags().remove(tag);
             }
-            if (world.getGameTime() % 200 == 0) {
+            if (time % 20 == 0) {
+                //阳光开朗的笑容的效果：让与其对视的实体冻伤（阴风阵阵）
+                if (entity.getItemBySlot(EquipmentSlot.HEAD).is(ModItems.SUNSHINE_SMILE)) for (var e : world.getEntitiesOfClass(LivingEntity.class, new AABB(entity.getOnPos()).inflate(20), e -> e != entity && isEyeContact(e, entity, 25))) e.setTicksFrozen(240);
+            }
+            if (time % 200 == 0) {
                 entity.getTags().remove("seen_skill_tip");
             }
 
@@ -53,16 +56,14 @@ public class EntityTickEvents {
             if (level1 > 0) entity.addEffect(new MobEffectInstance(ModItems.REACH, 2,level1 - 1,false,false,false));
             if (level2 > 0) entity.addEffect(new MobEffectInstance(ModItems.DEFEND, 2,level2 - 1,false,false,false));
 
-            Player closestPlayer = world.getNearestPlayer(entity, 5);
-            if (closestPlayer != null && hasTrinket(ModItems.FANGTIAN, closestPlayer) && entity.isAlive()) {
-                ItemStack stack = trinketItem(ModItems.FANGTIAN, closestPlayer);
-                int time = 0;
-                if (!stack.isEmpty()) time = s(stack).getCD();
-                if (time > 15 && closestPlayer.swingTime == 1) {
+            Player closest = world.getNearestPlayer(entity, 5);
+            ItemStack stack;
+            if (closest != null && !(stack = trinketItem(ModItems.FANGTIAN, closest)).isEmpty() && entity.isAlive()) {
+                if (s(stack).getCD() > 15 && closest.swingTime == 1) {
                     //给玩家本人一个极短的无敌效果，以防止被误伤
-                    closestPlayer.addEffect(new MobEffectInstance(ModItems.INVULNERABLE,2,0,false,false,false));
-                    float i = (float) closestPlayer.getAttributeValue(Attributes.ATTACK_DAMAGE);
-                    entity.hurt(closestPlayer.damageSources().playerAttack(closestPlayer), i);
+                    closest.addEffect(new MobEffectInstance(ModItems.INVULNERABLE,2,0,false,false,false));
+                    float i = (float) closest.getAttributeValue(Attributes.ATTACK_DAMAGE);
+                    entity.hurt(closest.damageSources().playerAttack(closest), i);
                 }
             }
         }
@@ -128,5 +129,19 @@ public class EntityTickEvents {
         AABB targetBox = target.getBoundingBox();
         // 进行射线与碰撞箱的相交检测
         return targetBox.clip(playerPos, playerPos.add(lookVec.scale(100.0))).isPresent();
+    }
+
+    public static boolean isEyeContact(Entity entity1, Entity entity2, float angle) {
+        double MAX_ANGLE = Math.toRadians(angle);
+        Vec3 pos1 = entity1.position(); Vec3 pos2 = entity2.position();
+        // 计算从生物 1 到生物 2 的向量
+        Vec3 d = pos2.subtract(pos1);
+        // 获取生物的视线方向
+        Vec3 v1 = entity1.getViewVector(1.0F); Vec3 v2 = entity2.getViewVector(1.0F);
+        // 计算夹角
+        double theta1 = Math.acos(v1.dot(d.normalize()));
+        double theta2 = Math.acos(v2.dot(d.normalize().reverse()));
+        // 判断夹角是否在允许范围内
+        return theta1 <= MAX_ANGLE && theta2 <= MAX_ANGLE;
     }
 }

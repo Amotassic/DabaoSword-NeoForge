@@ -13,17 +13,19 @@ import com.amotassic.dabaosword.event.PVPGameEvents;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.card.CardItem;
 import com.amotassic.dabaosword.item.card.Sha;
+import com.amotassic.dabaosword.ui.FullInvScreenHandler;
 import com.amotassic.dabaosword.ui.PlayerInvScreenHandler;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.netty.buffer.Unpooled;
 import net.minecraft.core.Holder;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
@@ -35,9 +37,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Tuple;
-import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
@@ -119,19 +119,12 @@ public class ModTools {
 
     /**获取该实体的所有饰品，输出为ItemStack列表*/
     public static List<ItemStack> allTrinkets(LivingEntity entity) {
-        var optional = getCuriosInventory(entity);
-        if (optional.isEmpty()) return Collections.emptyList();
-        List<ItemStack> list = new ArrayList<>();
-        var handler = optional.get().getEquippedCurios();
-        for (int i = 0; i < handler.getSlots(); i++) {
-            ItemStack stack = handler.getStackInSlot(i);
-            list.add(stack);
-        }
-        return list;
+        return getCuriosInventory(entity).map(h -> h.findCurios(s -> true).stream().map(SlotResult::stack).toList()).orElse(Collections.emptyList());
     }
 
     public static CardPileInventory getCardPack(Player player) {
-        return PVPGameEvents.PLAYER_CARD_PACKS.getOrDefault((ServerPlayer) player, new CardPileInventory(player));
+        if (player instanceof ServerPlayer sp) return PVPGameEvents.PLAYER_CARD_PACKS.getOrDefault(sp, new CardPileInventory(player));
+        return new CardPileInventory(player);
     }
 
     /**判断牌堆和背包中是否有符合条件的卡牌*/
@@ -320,68 +313,28 @@ public class ModTools {
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
     }
 
-    public static void openInv(Player player, Player target, Component title, ItemStack stack, boolean openSelfInv, boolean equip, boolean armor, int cards) {
-        if (!player.level().isClientSide) {
-            Player invOwner = openSelfInv ? player : target;
-            player.openMenu(new SimpleMenuProvider((i, inv, player1) -> new PlayerInvScreenHandler(i, targetInv(invOwner, equip, armor, cards, stack, openSelfInv), target), title), (buf -> buf.writeInt(target.getId())));
-        }
-    }
-
-    /**
-     @param equip: 是否显示装备牌
-     @param armor: 是否显示玩家的盔甲
-     @param showCard: 是否显示手牌。0：完全不显示；1：仅展示牌背；2：显示所有手牌；3：显示所有物品
-     */
-    public static Container targetInv(Player invOwner, Boolean equip, Boolean armor, int showCard, ItemStack eventStack, boolean openSelfInv) {
-        Container targetInv = new SimpleContainer(60);
-
-        if (equip) for (var stack : allTrinkets(invOwner)) {
-            if (stack.is(Tags.WEAPON)) targetInv.setItem(0, stack);
-            if (stack.is(Tags.ARMOR)) targetInv.setItem(1, stack);
-            if (stack.is(Tags.DEFEND)) targetInv.setItem(2, stack);
-            if (stack.is(Tags.ATTACK)) targetInv.setItem(3, stack);
-        } //四件装备占1~4格
-
-        var armors = invOwner.getInventory().armor;
-        if (armor) for (ItemStack stack : armors) {
-            targetInv.setItem(7 - armors.indexOf(stack), stack);
-        } //4件盔甲占5~8格
-
-        ItemStack off = invOwner.getOffhandItem();
-        NonNullList<ItemStack> inv = invOwner.getInventory().items;
-        boolean bl = showCard == 1;
-        if (showCard == 2 || bl) { //仅显示手牌或牌背的情况下，所有物品堆都要验证是否为卡牌
-            var pack = getCardPack(invOwner); var cards = pack.cards;
-            boolean bl2 = pack.isEmpty(); var container = bl2 ? inv : cards;
-            for (var stack : container) { //如果没有装备牌堆，就显示玩家物品栏的牌
-                if (!isCard(stack)) continue;
-                targetInv.setItem(container.indexOf(stack) + 9, bl ? paibei(stack.getCount()) : stack);
-            }
-            if (!bl2) { //如果有装备牌堆，就再添加玩家快捷栏的牌
-                for (int i = 0; i < 9; i++) {
-                    var stack = inv.get(i);
-                    if (isCard(stack)) targetInv.setItem(i + 45, bl ? paibei(stack.getCount()) : stack);
-                }
-            }
-            if (isCard(off)) targetInv.setItem(8, bl ? paibei(off.getCount()) : off);
-        }
-        if (showCard == 3) {
-            for (ItemStack stack : inv) targetInv.setItem(inv.indexOf(stack) + 9, stack);
-            targetInv.setItem(8, off);
-        }
-        targetInv.setItem(54, paibei(showCard));
-        targetInv.setItem(55, eventStack);//用于传递stack信息
-        if (openSelfInv) targetInv.setItem(56, paibei());
-        return targetInv;
-    }
-    public static ItemStack paibei(int... n) {
-        return new ItemStack(ModItems.GAIN_CARD, n.length > 0 ? n[0] : 1);
-    }
-
-    public static void openMenu(Player player, Player target, Container inventory, Component title) {
+    public static void openFullInv(Player player, LivingEntity target, boolean editable) {
         if (player.level().isClientSide) return;
-        player.openMenu(new SimpleMenuProvider(((i, inv, player1) -> new PlayerInvScreenHandler(i, inventory, target)), title), (buf -> buf.writeInt(target.getId())));
+        FriendlyByteBuf b = new FriendlyByteBuf(Unpooled.buffer());
+        b.writeInt(target.getId()); b.writeBoolean(editable);
+        player.openMenu(new SimpleMenuProvider(((i, inv, player1) -> new FullInvScreenHandler(i, inv, b)), target.getName()), (buf -> {buf.writeInt(target.getId()); buf.writeBoolean(editable);}));
     }
+
+    public static void openInv(Player player, Player owner, Player target, Component title, ItemStack stack, boolean equip, boolean armor, int cards) {
+        if (player.level().isClientSide) return;
+        var tempInv = new TempInventory(player, owner, stack, cards, equip, armor);
+        var rows = tempInv.rowsToShow;
+        player.openMenu(new SimpleMenuProvider((i, inv, player1) -> new PlayerInvScreenHandler(i, tempInv, target, rows), title), (buf -> {buf.writeInt(target.getId()); buf.writeUtf(rows.toString());}));
+    }
+
+    public static void openMenu(Player player, Player target, ItemStack stack, List<ItemStack> stacks, Component title) {
+        if (player.level().isClientSide) return;
+        var tempInv = new TempInventory(player, stack, stacks);
+        var rows = tempInv.rowsToShow;
+        player.openMenu(new SimpleMenuProvider(((i, inv, player1) -> new PlayerInvScreenHandler(i, tempInv, target, rows)), title), (buf -> {buf.writeInt(target.getId()); buf.writeUtf(rows.toString());}));
+    }
+
+    public static ItemStack paibei(int... n) {return new ItemStack(ModItems.GAIN_CARD, n.length > 0 ? n[0] : 1);}
 
     public static void closeGUI(Player player) {
         player.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 1,2,false,false,false));

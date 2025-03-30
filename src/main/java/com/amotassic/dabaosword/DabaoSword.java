@@ -1,5 +1,6 @@
 package com.amotassic.dabaosword;
 
+import com.amotassic.dabaosword.command.InfoCommand;
 import com.amotassic.dabaosword.entity.ModEntity;
 import com.amotassic.dabaosword.entity.XuyouEntity;
 import com.amotassic.dabaosword.item.ModItems;
@@ -20,7 +21,9 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import org.slf4j.Logger;
@@ -48,6 +51,7 @@ public class DabaoSword {
         Gamerule.registerGamerules();
         Tags.Tag();
 
+        NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, InfoCommand::registerCommands);
         modEventBus.addListener(this::addCreative);
         modEventBus.addListener(this::registerMobAttributes);
         modEventBus.addListener(this::spawnRestriction);

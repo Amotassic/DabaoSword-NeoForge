@@ -6,12 +6,19 @@ import com.amotassic.dabaosword.api.skill.*;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.ui.PlayerInvScreenHandler;
+import com.google.common.collect.Multimap;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import top.theillusivec4.curios.api.SlotContext;
 
 import java.util.List;
 import java.util.Random;
@@ -173,6 +180,23 @@ public class Shu {
         }
     }
 
+    public static class Paoxiao extends SkillItem {
+        @Override public boolean lockOn() {return true;}
+
+        @Override
+        public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(SlotContext slotContext, ResourceLocation id, ItemStack stack) {
+            var modifiers = super.getAttributeModifiers(slotContext, id, stack);
+            modifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(id, 1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+            return modifiers;
+        }
+
+        @SkillInfo(trigger = Trigger.SELECT_TARGET, relation = Relation.NOT_SELF)
+        public int yuyin(LivingEntity user, LivingEntity target, Skill skill, ExData data) {
+            if (isSha.test(data.getCard().toStack())) voice(user, this);
+            return 0;
+        }
+    }
+
     public static class Rende extends SkillItem {
         @Override
         public void addTip(Skill skill, List<Component> tooltip) {
@@ -185,9 +209,15 @@ public class Shu {
         @Override public boolean isActiveSkill() {return true;}
 
         @Override
+        public void addScreenTip(Skill skill, List<Component> tips) {
+            addPresetTips(skill, tips, 0, 1, 2, 3, 4);
+            super.addScreenTip(skill, tips);
+        }
+
+        @Override
         public boolean activeSkill(Player user, Skill skill, LivingEntity entity) {
             if (entity instanceof Player target && countCards(user) > 0) {
-                openInv(user, target, Component.translatable("give_card.title", skill.toHoverableText()), skill.stack, true, false, false, 2);
+                openInv(user, user, target, Component.translatable("give_card.title", skill.toHoverableText()), skill.stack, false, false, 2);
                 return true;
             } return false;
         }

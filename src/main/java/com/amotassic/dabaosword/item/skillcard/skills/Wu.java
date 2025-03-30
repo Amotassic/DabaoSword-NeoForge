@@ -10,6 +10,7 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
@@ -189,7 +190,7 @@ public class Wu {
                 if (cd > 0) user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(RED), true);
                 else {
                     voice(user, this);
-                    openInv(user, target, Component.translatable("gongxin.title"), skill.stack, false, false, false, 2);
+                    openInv(user, target, target, Component.translatable("gongxin.title"), skill.stack, false, false, 2);
                     skill.setCD(30);
                     return true;
                 }
@@ -331,6 +332,22 @@ public class Wu {
         }
     }
 
+    public static class Shixin extends SkillItem {
+        @Override
+        public void addTip(Skill skill, List<Component> tooltip) {tooltip.add(getTip(GREEN));}
+
+        @Override public boolean lockOn() {return true;}
+
+        @SkillInfo(trigger = Trigger.CANCEL_DAMAGE_HIGH, relation = Relation.SELF)
+        public int fanghuo(LivingEntity user, LivingEntity target, Skill skill, ExData data) {
+            if (data.source.is(DamageTypeTags.IS_FIRE)) {
+                if (skill.getCD() == 0) {voice(user, this); skill.setCD(10);}
+                return 1;
+            }
+            return 0;
+        }
+    }
+
     public static class Xiaoji extends SkillItem {
         @Override
         public void addTip(Skill skill, List<Component> tooltip) {tooltip.add(getTip(GREEN));}
@@ -368,12 +385,18 @@ public class Wu {
         @Override public boolean isActiveSkill() {return true;}
 
         @Override
+        public void addScreenTip(Skill skill, List<Component> tips) {
+            addPresetTips(skill, tips, 0, 1, 2, 3, 4);
+            super.addScreenTip(skill, tips);
+        }
+
+        @Override
         public boolean activeSkill(Player user, Skill skill) {
             if (countAllCards(user) == 0) return false;
             int cd = skill.getCD();
             if (cd > 0) user.displayClientMessage(Component.translatable("dabaosword.cooldown").withStyle(RED), true);
             else {
-                openInv(user, user, Component.translatable("zhiheng.title"), skill.stack, true, true, false, 2);
+                openInv(user, user, user, Component.translatable("zhiheng.title"), skill.stack, true, false, 2);
                 return true;
             }
             return false;

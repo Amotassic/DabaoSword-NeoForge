@@ -5,13 +5,13 @@ import com.amotassic.dabaosword.api.skill.ExData;
 import com.amotassic.dabaosword.api.skill.Skill;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.AllRegs;
-import net.minecraft.ChatFormatting;
+import com.amotassic.dabaosword.util.TempInventory;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.Container;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -19,134 +19,125 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static com.amotassic.dabaosword.api.CardEvents.cardDiscard;
 import static com.amotassic.dabaosword.util.ModTools.*;
+import static net.minecraft.world.inventory.InventoryMenu.*;
 
 public class PlayerInvScreenHandler extends AbstractContainerMenu {
     private final Player target;
+    private final TempInventory inv;
     private final ItemStack stack;
-    private final int cards;
-    private final boolean isPlayerInv;
     private final Skill skill;
     private final List<Integer> clicks = new ArrayList<>();
-    @Nullable private Player invOwner;
+    public final int rows;
 
     public PlayerInvScreenHandler(int syncId, Inventory inv, RegistryFriendlyByteBuf buf) {
-        this(syncId, new SimpleContainer(60), (Player) inv.player.level().getEntity(buf.readInt()));
+        this(syncId, new TempInventory(inv.player, paibei(), List.of()), (Player) inv.player.level().getEntity(buf.readInt()), stringToSet(buf.readUtf()));
+    }
+    private static Set<Integer> stringToSet(String str) {
+        String trimmed = str.substring(1, str.length() - 1);
+        String[] parts = trimmed.split(", ");
+        Set<Integer> set = new HashSet<>();
+        for (String part : parts) if (!part.isEmpty()) set.add(Integer.parseInt(part));
+        return set;
     }
 
-    public PlayerInvScreenHandler(int syncId, Container inventory, Player target) {
+    public PlayerInvScreenHandler(int syncId, TempInventory inventory, Player target, Set<Integer> rowsToShow) {
         super(AllRegs.Other.PLAYER_INV_SCREEN_HANDLER.get(), syncId);
         this.target = target;
-        this.cards = inventory.getItem(54).getCount();
-        this.stack = inventory.getItem(55);
-        this.isPlayerInv = !inventory.getItem(56).isEmpty();
+        this.inv = inventory;
+        this.stack = inv.getItem(81);
         this.skill = s(stack);
-        for (int i = 0; i < 6; ++i) {
-            for (int j = 0; j < 9; ++j) {
-                addSlot(new Slot(inventory, j + i * 9, 8 + j * 18, 16 + i * 18));
+        this.rows = rowsToShow.size();
+        int line = 0;
+        for (int j = 0; j < 9; j++) {
+            if (rowsToShow.contains(j)) {
+                if (j == 0) {
+                    for (int i = 0; i < 4; ++i) addSlot(new Slot(inv, i, 8 + i * 18, 18));
+                    addSlot(new Slot(inv, 4, 8 + 4 * 18, 18) {
+                        public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
+                            return Pair.of(BLOCK_ATLAS, EMPTY_ARMOR_SLOT_HELMET);
+                        }
+                    });
+                    addSlot(new Slot(inv, 5, 8 + 5 * 18, 18) {
+                        public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
+                            return Pair.of(BLOCK_ATLAS, EMPTY_ARMOR_SLOT_CHESTPLATE);
+                        }
+                    });
+                    addSlot(new Slot(inv, 6, 8 + 6 * 18, 18) {
+                        public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
+                            return Pair.of(BLOCK_ATLAS, EMPTY_ARMOR_SLOT_LEGGINGS);
+                        }
+                    });
+                    addSlot(new Slot(inv, 7, 8 + 7 * 18, 18) {
+                        public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
+                            return Pair.of(BLOCK_ATLAS, EMPTY_ARMOR_SLOT_BOOTS);
+                        }
+                    });
+                    addSlot(new Slot(inv, 8, 8 + 8 * 18, 18) {
+                        public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
+                            return Pair.of(BLOCK_ATLAS, EMPTY_ARMOR_SLOT_SHIELD);
+                        }
+                    });
+                }
+                else {
+                    for (int i = 0; i < 9; ++i) addSlot(new Slot(inv, i + j * 9, 8 + i * 18, 18 + line * 18));
+                }
+                line++;
+            } else {
+                for (int i = 0; i < 9; ++i) addSlot(new Slot(inv, i + j * 9, 114514, 114514));
             }
         }
-        inventory.setItem(57, paibei());
-        for (int i = 0; i < 4; i++) addSlot(new Slot(inventory, 54 + i, 114514, 114514));
+        inv.setItem(82, paibei());
+        for (int i = 0; i < 2; i++) addSlot(new Slot(inv, 81 + i, 114514, 114514));
     }
 
     @Override
     public void clicked(int index, int button, @NotNull ClickType action, @NotNull Player player) {
-        if (index >= 0 && index < 54 && target != null) {
-            if (invOwner == null) invOwner = isPlayerInv ? player : target;
+        if (index >= 0 && index < 81 && target != null) {
             //System.out.println(index + " button: " + button + " action: " + action);
-            var selectedStack = getStack(index);
+            var selected = getStack(index);
             if (button == 65 && maxSelect() >= 100) forEachNonEmptySlot(s -> addClick(s.getContainerSlot(), 99)); //全选
             if (button == 90) forEachNonEmptySlot(s -> setClick(s.getContainerSlot(), 0)); //清空
-            if (!selectedStack.isEmpty()) skill.item.onSlotClick(this, player, skill, target, index, button, action);
+            if (!selected.isEmpty()) skill.item.onSlotClick(this, player, skill, target, index, button, action);
             writeClicks();
 
-            if (stack.is(ModItems.WANJIAN)) {
+            if (stack.isEmpty()) {
                 ItemStack mainHand = player.getMainHandItem(); var mainCopy = mainHand.copy();
-                var cards = getCardPack(player);
-                ItemStack selected = ItemStack.EMPTY; //对选择的卡牌进行赋值
-                if (index == 8) selected = player.getOffhandItem();
-                if (8 < index && index < 45) selected = cards.getItem(index - 9);
-                if (index >= 45) selected = selectedStack;
-                var copy = selected.copy(); //复制一份已选物品方便代码操作
+                var copy = selected.copy();
 
-                if (!selected.isEmpty()) {
-                    if (isCard(mainHand)) { //如果主手物品是卡牌，就把主手物品设置为选择的牌，然后主手物品进入牌堆背包
-                        player.setItemInHand(InteractionHand.MAIN_HAND, copy);
-                        selected.setCount(0);
-                        cards.insertStack(mainCopy);
-                    } else {
-                        if (index == 8 || index >= 45) { //如果选的不是牌堆中的牌，交换两者位置
-                            player.setItemInHand(InteractionHand.MAIN_HAND, copy);
-                            selected.setCount(0);
-                            if (index == 8) player.setItemInHand(InteractionHand.OFF_HAND, mainCopy); //处理副手
-                            if (index >= 45) player.getInventory().setItem(index - 45, mainCopy);
-                        } else {
-                            int emptySlot = player.getInventory().getFreeSlot();
-                            if (emptySlot == -1) player.displayClientMessage(Component.translatable("card_pile.player_inv.full").withStyle(ChatFormatting.RED), true);
-                            else { //如果选择牌堆中的牌且背包未满，则将主手物品设为选择的牌，主手物品移动到其它空槽位（显然不包括副手）
-                                player.setItemInHand(InteractionHand.MAIN_HAND, copy);
-                                cards.removeItemNoUpdate(index - 9);
-                                //如果主手原本是空的，就不需要交换这一步，这点很重要
-                                if (!mainCopy.isEmpty()) player.getInventory().setItem(emptySlot, mainCopy);
-                            }
-                        }
-                    }
-                }
-                closeGUI(player);
+                if (!selected.isEmpty() && !ItemStack.matches(mainHand, selected)) {
+                    mainHand.setCount(0); selected.setCount(0);
+                    if (index >= 45) getCardPack(player).removeItemNoUpdate(index - 45);
+                    player.setItemInHand(InteractionHand.MAIN_HAND, copy);
+                    give(player, mainCopy);
+                } closeGUI(player);
             }
 
-            if (stack.is(ModItems.SUNSHINE_SMILE)) {
-                ItemStack mainHand = player.getMainHandItem();
-                if (selectedStack.isEmpty()) { //如果玩家点了一个空的格子————
-                    int emptySlot = player.getInventory().getFreeSlot();
-                    if (emptySlot != -1) { //如果主手不为空，就把主手的物品移动到其他空格子，主手设为空
-                        player.getInventory().setItem(emptySlot, mainHand.copy());
-                        mainHand.setCount(0);
-                    }
-                } else { //如果玩家选了一个非空的格子，就交换主手和该格子的物品
-                    ItemStack mainCopy = mainHand.copy(); ItemStack swapCopy = selectedStack.copy();
-                    if (player.getOffhandItem().equals(selectedStack)) {
-                        player.setItemInHand(InteractionHand.MAIN_HAND, swapCopy);
-                        player.setItemInHand(InteractionHand.OFF_HAND, mainCopy);
-                    } else {
-                        int swapSlot = player.getInventory().findSlotMatchingItem(selectedStack);
-                        player.setItemInHand(InteractionHand.MAIN_HAND, swapCopy);
-                        player.getInventory().setItem(swapSlot, mainCopy);
-                    }
-                }
-                closeGUI(player);
-            }
-
-            if (selectedStack != ItemStack.EMPTY) {
+            if (selected != ItemStack.EMPTY) {
                 if (stack.is(ModItems.STEAL)) {
-                    Component message = Component.translatable("dabaosword.steal", player.getDisplayName(), target.getDisplayName(), selectedStack.getDisplayName());
+                    Component message = Component.translatable("dabaosword.steal", player.getDisplayName(), target.getDisplayName(), selected.getDisplayName());
                     player.displayClientMessage(message, false);
                     target.displayClientMessage(message, false);
-                    if (isCard(selectedStack)) { //如果选择的物品是卡牌才触发事件
-                        var exData = d().cards(selectedStack, 1, index < 4);
+                    if (isCard(selected)) { //如果选择的物品是卡牌才触发事件
+                        var exData = d().cards(selected, 1, index < 4);
                         CardEvents.cardMove(target, exData, player);
                     } else {
-                        give(player, selectedStack.copyWithCount(1)); /*顺手：复制一个物品*/
-                        selectedStack.shrink(1);
+                        give(player, selected.copyWithCount(1)); /*顺手：复制一个物品*/
+                        selected.shrink(1);
                     }
                     closeGUI(player);
                 }
 
                 if (stack.is(ModItems.DISCARD)) {
-                    Component message = Component.translatable("dabaosword.discard", player.getDisplayName(), target.getDisplayName(), selectedStack.getDisplayName());
+                    Component message = Component.translatable("dabaosword.discard", player.getDisplayName(), target.getDisplayName(), selected.getDisplayName());
                     player.displayClientMessage(message, false);
                     target.displayClientMessage(message, false);
-                    var exData = d().cards(selectedStack, 1, index < 4);
+                    var exData = d().cards(selected, 1, index < 4);
                     cardDiscard(target, exData);
                     closeGUI(player);
                 }
@@ -155,24 +146,12 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
     }
 
     @Override
-    public void removed(@NotNull Player player) {
-        skill.item.onGuiClose(this, player, skill, target);
-    }
+    public void removed(@NotNull Player player) {skill.item.onGuiClose(this, player, skill, target);}
 
     /**获取该容器内对应slot上的物品，即使卡牌以牌背形态显示，也返回目标对应的卡牌*/
     public ItemStack getStack(int slotIndex) {
-        if (slotIndex < 0 || slotIndex > 53) return ItemStack.EMPTY;
-        var item = getSlot(slotIndex).getItem();
-        if (cards != 1) return item;
-        if (invOwner != null && item.is(ModItems.GAIN_CARD)) {
-            var pack = getCardPack(invOwner); var main = invOwner.getInventory().items;
-            if (pack.isEmpty()) return main.get(slotIndex - 9);
-            else {
-                if (slotIndex < 45) return pack.getItem(slotIndex - 9);
-                else return main.get(slotIndex - 45);
-            }
-        }
-        return item;
+        if (slotIndex < 0 || slotIndex > 80) return ItemStack.EMPTY;
+        return inv.getItem(slotIndex);
     }
 
     @Override
@@ -185,14 +164,14 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
     }
 
     public void forEachNonEmptySlot(Consumer<Slot> action) {
-        for (int i = 0; i < 54; i++) {
+        for (int i = 0; i < 81; i++) {
             Slot slot = getSlot(i);
             if (slot.hasItem()) action.accept(slot);
         }
     }
 
     private void writeClicks() {
-        ItemStack cinfo = getSlot(57).getItem();
+        ItemStack cinfo = getSlot(82).getItem();
         CompoundTag nbt = new CompoundTag();
         nbt.putString("Clicks", getClickMap().toString());
         setNbt(cinfo, nbt);

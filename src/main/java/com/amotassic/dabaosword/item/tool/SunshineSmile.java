@@ -3,27 +3,22 @@ package com.amotassic.dabaosword.item.tool;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.ModTools;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.Equipable;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.component.Unbreakable;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 
-import java.util.List;
-
 public class SunshineSmile extends Item implements Equipable {
     public SunshineSmile() {super(new Properties().durability(999).rarity(Rarity.UNCOMMON).component(DataComponents.UNBREAKABLE, new Unbreakable(true)));}
-
-    @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
-        tooltip.add(Component.translatable("item.dabaosword.sunshine_smile.tooltip"));
-    }
 
     @Override
     public EquipmentSlot getEquipmentSlot() {return EquipmentSlot.HEAD;}

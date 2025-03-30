@@ -28,9 +28,8 @@ public class CardPile extends Item implements ICurioItem {
         tooltip.add(Component.empty());
         tooltip.add(Component.translatable("item.dabaosword.card_pile.tip1").withStyle(ChatFormatting.BOLD));
         tooltip.add(Component.translatable("item.dabaosword.card_pile.tip2", Component.keybind("key.dabaosword.select_card")).withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.translatable("item.dabaosword.card_pile.tip3", Component.keybind("key.sneak"), Component.keybind("key.dabaosword.select_card")).withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.translatable("item.dabaosword.card_pile.tip4", Component.keybind("key.sprint"), Component.keybind("key.dabaosword.select_card")).withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.translatable("item.dabaosword.card_pile.tip5", Component.keybind("key.sprint"), Component.keybind("key.sneak"), Component.keybind("key.dabaosword.select_card")).withStyle(ChatFormatting.BOLD));
+        tooltip.add(Component.translatable("item.dabaosword.card_pile.tip3", Component.keybind("key.sprint"), Component.keybind("key.dabaosword.select_card")).withStyle(ChatFormatting.BOLD));
+        tooltip.add(Component.translatable("item.dabaosword.card_pile.tip4", Component.keybind("key.sprint"), Component.keybind("key.sneak"), Component.keybind("key.dabaosword.select_card")).withStyle(ChatFormatting.BOLD));
     }
 
     @Override

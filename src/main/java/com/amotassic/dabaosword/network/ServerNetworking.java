@@ -1,7 +1,6 @@
 package com.amotassic.dabaosword.network;
 
 import com.amotassic.dabaosword.DabaoSword;
-import com.amotassic.dabaosword.command.InfoCommand;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.ui.PileScreenHandler;
@@ -52,10 +51,7 @@ public class ServerNetworking {
         registrar.playToServer(QuickSwapPayload.ID, QuickSwapPayload.CODEC, (pl, c) -> {
             Player player = c.player();
             int i = pl.id();
-            var cards = new ItemStack(ModItems.WANJIAN); var items = new ItemStack(ModItems.SUNSHINE_SMILE);
-            boolean bl = getCardPack(player).isEmpty(); //如果牌堆没有牌，会直接显示物品栏的牌，所以要判断一下
-            if (i == 0) openInv(player, player, Component.translatable("key.dabaosword.select_card"), bl ? items : cards, true, false, false, 2);
-            if (i == 1) openInv(player, player, Component.translatable("key.dabaosword.select_card"), items, true, false, false, 3);
+            if (i == 0) openInv(player, player, player, Component.translatable("key.dabaosword.select_card"), ItemStack.EMPTY, false, false, 3);
             if (i == 2) player.openMenu(new SimpleMenuProvider((id, inv, player1) -> new PileScreenHandler(id, inv), Component.translatable("card_pile.title")), (buf -> buf.writeInt(0)));
             if (i == 3) {
                 var pair = getDamage(player);
@@ -71,7 +67,7 @@ public class ServerNetworking {
             }
             if (i == 9) {
                 Player target = getClosestEntity(player, Player.class, 100, LivingEntity::isAlive);
-                if (target != null) InfoCommand.openFullInv(player, target, false);
+                if (target != null) openFullInv(player, target, false);
             }
         });
     }

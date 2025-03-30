@@ -37,7 +37,6 @@ public class OnSkillKeyInput {
             if (DabaoSwordClient.SELECT_CARD.consumeClick()) {
                 int i = 0;
                 if (user.isShiftKeyDown() && ctrl.consumeClick()) i = 3;
-                else if (user.isShiftKeyDown()) i = 1;
                 else if (ctrl.consumeClick()) i = 2;
                 PacketDistributor.sendToServer(new QuickSwapPayload(i));
                 return;

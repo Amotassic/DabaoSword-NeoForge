@@ -11,8 +11,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
@@ -171,14 +169,9 @@ public class Qun {
             }
             if (user.getHealth() + 5 * countCard(user, canSaveDying) > 4.99) {
 
-                Container inventory = new SimpleContainer(60);
-                for (var item : items) {
-                    if (Arrays.stream(used).toList().contains(BuiltInRegistries.ITEM.getKey(item).getPath())) continue;
-                    inventory.setItem(items.indexOf(item) + 18, new ItemStack(item));
-                }
-                inventory.setItem(55, skill.stack);
+                List<ItemStack> stacks = items.stream().filter(i -> !Arrays.stream(used).toList().contains(BuiltInRegistries.ITEM.getKey(i).getPath())).map(ItemStack::new).toList();
 
-                openMenu(user, user, inventory, Component.translatable("item.dabaosword.taoluan.screen"));
+                openMenu(user, user, skill.stack, stacks, Component.translatable("item.dabaosword.taoluan.screen"));
                 return true;
             } else user.displayClientMessage(Component.translatable("item.dabaosword.taoluan.tip").withStyle(ChatFormatting.RED), true);
             return false;
