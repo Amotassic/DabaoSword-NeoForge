@@ -123,7 +123,7 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
-    implementation "top.theillusivec4.curios:curios-neoforge:9.0.5+1.21"
+    implementation "top.theillusivec4.curios:curios-neoforge:9.0.15+1.21.1"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

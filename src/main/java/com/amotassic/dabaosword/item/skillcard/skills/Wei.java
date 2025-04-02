@@ -1,6 +1,8 @@
 package com.amotassic.dabaosword.item.skillcard.skills;
 
+import com.amotassic.dabaosword.api.card.Suit;
 import com.amotassic.dabaosword.api.skill.*;
+import com.amotassic.dabaosword.command.DabaoSwordCommand;
 import com.amotassic.dabaosword.event.PlayerEvents;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
@@ -8,10 +10,14 @@ import com.amotassic.dabaosword.ui.PlayerInvScreenHandler;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.core.Holder;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -26,17 +32,125 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import top.theillusivec4.curios.api.SlotContext;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 import static com.amotassic.dabaosword.api.CardEvents.*;
 import static com.amotassic.dabaosword.util.ModTools.*;
-import static net.minecraft.ChatFormatting.BLUE;
-import static net.minecraft.ChatFormatting.RED;
+import static net.minecraft.ChatFormatting.*;
 
 public class Wei {
+
+    public static class Chengxiang extends SkillItem {
+        @Override
+        public void addTip(Skill skill, List<Component> tooltip) {
+            tooltip.add(getTip("1", BLUE));
+            tooltip.add(getTip("2", BLUE));
+        }
+
+        @Override
+        public void addScreenTip(Skill skill, List<Component> tips) {
+            addPresetTips(skill, tips, 0, 1, 2, 4);
+            tips.add(Component.translatable("chengxiang.screen.tip").withStyle(LIGHT_PURPLE));
+            super.addScreenTip(skill, tips);
+        }
+
+        @SkillInfo(trigger = Trigger.ON_HURT, relation = Relation.SELF)
+        public int onHurt(LivingEntity user, LivingEntity target, Skill skill, ExData data) {
+            if (!(user instanceof Player pl)) return 0;
+            DamageSource source = data.source; Float amount = data.amount;
+            if (source.is(DamageTypes.GENERIC_KILL)) return 0;
+            var nbt = skill.getNbt();
+            float hurt = nbt.getFloat("hurt"); hurt += amount;
+            if (hurt >= 7 && pl.isAlive()) {
+                voice(pl, this);
+                List<ItemStack> stacks = new ArrayList<>();
+                for (int i = 0; i < 13; i++) {
+                    if (i < 9) stacks.add(ItemStack.EMPTY);
+                    else stacks.add(newCard());
+                }
+                pl.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 200));
+                openMenu(pl, pl, skill.stack, stacks, skill.toHoverableText());
+            }
+            while (hurt >= 7) hurt -= 7;
+            nbt.putFloat("hurt", hurt); skill.setNbt(nbt);
+            return 0;
+        }
+
+        @Override
+        public void onSlotClick(PlayerInvScreenHandler handler, Player player, Skill skill, Player target, int slot, int button, ClickType action) {
+            int points = 0;
+            for (var stack : handler.getSelected()) points += (c(stack).rank.ordinal() + 1);
+            points += (c(handler.getStack(slot)).rank.ordinal() + 1);
+            if (action == ClickType.PICKUP) {
+                if (points <= 13 && button == 0) handler.addClick(slot);
+                if (button == 1) handler.dropClick(slot);
+            }
+        }
+
+        @Override
+        public void onGuiClose(PlayerInvScreenHandler handler, Player player, Skill skill, Player target) {
+            if (handler.getSelectedCount() > 0) handler.toExData().forEachCard(3, (c, i) -> {
+                give(player, c.toStack().copyWithCount(i));});
+            else give(player, handler.getStack(9));
+            player.removeEffect(ModItems.INVULNERABLE);
+        }
+    }
+
+    public static class Daoshu extends SkillItem implements DabaoSwordCommand.CSkill {
+        @Override
+        public void addTip(Skill skill, List<Component> tooltip) {
+            int cd = skill.getCD();
+            tooltip.add(Component.literal(cd == 0 ? "CD: 60s" : "CD: 60s   left: "+ cd +"s"));
+            tooltip.add(getTip("1", BLUE));
+            tooltip.add(getTip("2", BLUE));
+        }
+
+        @Override public boolean isActiveSkill() {return true;}
+
+        @Override
+        public boolean activeSkill(Player user, Skill skill) {
+            if (skill.getCD() == 0 && !user.getTags().contains("seen_skill_tip")) {
+                user.displayClientMessage(Component.translatable("active_skill.use.tip", skill.toHoverableText(), activeSkillText(user, skill)).withStyle(GOLD), false);
+                user.addTag("seen_skill_tip");
+            } //主动技能使用提示
+            return false;
+        }
+
+        @Override
+        public boolean activeSkill(Player user, Skill skill, LivingEntity target) {
+            user.addTag("seen_skill_tip");
+            triggerSkill(user, skill, target, 0); return false;
+        }
+
+        @Override @SuppressWarnings("DuplicatedCode")
+        public void triggerSkill(LivingEntity entity, Skill skill, LivingEntity target, int value) {
+            if (skill.getCD() > 0 || entity == target) return;
+            if (!(entity instanceof Player user) || !(target instanceof Player tar)) return;
+            if (countCards(tar) < 1) {
+                user.displayClientMessage(Component.translatable("daoshu.target.no_card").withStyle(RED), true);
+                return;
+            }
+            if (value == 0) {
+                user.displayClientMessage(Component.translatable("select_a_suit", daoshuText(user, tar, Suit.Heart), daoshuText(user, tar, Suit.Diamond), daoshuText(user, tar, Suit.Spade), daoshuText(user, tar, Suit.Club)), false);
+                return;
+            }
+            voice(user, this);
+            List<ItemStack> items = getItems(tar, isCard, true, false, false, true);
+            var card = items.get(new Random().nextInt(items.size())); var c = c(card);
+            Component message = Component.translatable("dabaosword.steal", user.getDisplayName(), tar.getDisplayName(), card.getDisplayName());
+            user.displayClientMessage(message, false); tar.displayClientMessage(message, false);
+            cardMove(tar, d().cards(card, 1), user);
+            if (c.suit.ordinal() + 1 == value) {
+                // 防止触发杀和闪
+                user.addTag("sha"); tar.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 1));
+                tar.hurt(user.damageSources().mobAttack(user), 6);
+            } else skill.setCD(60);
+        }
+
+        private MutableComponent daoshuText(Player user, Player target, Suit suit) { //四种花色的提示
+            return suit.suit.withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dabaosword " + user.getName().getString() + " dabaosword:daoshu " + target.getName().getString() + " " + (suit.ordinal() + 1)))).withStyle(suit.color);
+        }
+    }
 
     public static class Duanliang extends SkillItem {
         @Override
@@ -188,7 +302,7 @@ public class Wei {
             if (skill.getCD() == 0) {
                 voice(user, this);
                 skill.setCD(15);
-                give(user, data.getCard().toStack().copyWithCount(1));
+                give(user, data.getFirst().toStack().copyWithCount(1));
             }
             return 0;
         }
@@ -421,7 +535,7 @@ public class Wei {
             Multimap<Holder<Attribute>, AttributeModifier> multimap = LinkedHashMultimap.create();
             LivingEntity entity = slotContext.entity();
             double d = 0;
-            if (entity instanceof Player player && !player.hasEffect(ModItems.TIEJI)) d = Math.min(getEmptySlots(player), 20d) / 40; //当空余20格时，获得最大加成0.5
+            if (entity instanceof Player player && !player.getTags().contains("duanchang") && !player.hasEffect(ModItems.TIEJI)) d = Math.min(getEmptySlots(player), 20d) / 40; //当空余20格时，获得最大加成0.5
             AttributeModifier modifier = new AttributeModifier(id, d, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
             multimap.put(Attributes.MOVEMENT_SPEED, modifier);
             return multimap;
@@ -452,6 +566,7 @@ public class Wei {
 
         @SkillInfo(trigger = Trigger.ON_HURT, relation = Relation.SELF)
         public int onHurt(LivingEntity user, LivingEntity target, Skill skill, ExData data) {
+            if (data.source.is(DamageTypes.GENERIC_KILL)) return 0;
             if (!user.hasEffect(ModItems.COOLDOWN) && user.getHealth() <= 15) {
                 draw(user, 2);
                 user.addEffect(new MobEffectInstance(ModItems.COOLDOWN, 20 * 20, 0, false, false, true));

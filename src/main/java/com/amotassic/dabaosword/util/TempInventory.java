@@ -1,6 +1,5 @@
 package com.amotassic.dabaosword.util;
 
-import com.amotassic.dabaosword.item.ModItems;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -15,7 +14,7 @@ import static com.amotassic.dabaosword.util.ModTools.*;
 public class TempInventory extends SimpleContainer {
     public final Player user;
     public final LivingEntity owner;
-    private final int type;
+    public final int type;
     public final Set<Integer> rowsToShow = new HashSet<>();
 
     public TempInventory(Player user, ItemStack eventStack, List<ItemStack> stacks) {
@@ -78,16 +77,6 @@ public class TempInventory extends SimpleContainer {
                 if (!getItem(index).isEmpty()) {rowsToShow.add(i); break;}
             }
         }
-    }
-
-    @Override
-    public ItemStack getItem(int slot) {
-        var item = super.getItem(slot);
-        if (type == 1 && item.is(ModItems.GAIN_CARD) && owner instanceof Player pl) {
-            if (slot < 45) return pl.getInventory().items.get(slot - 9);
-            else if (slot < 81) return getCardPack(pl).cards.get(slot - 45);
-        }
-        return item;
     }
 
     boolean shouldAdd(int type, ItemStack stack) {

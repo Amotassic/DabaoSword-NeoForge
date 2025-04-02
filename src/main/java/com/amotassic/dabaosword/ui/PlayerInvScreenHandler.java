@@ -149,9 +149,14 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
     public void removed(@NotNull Player player) {skill.item.onGuiClose(this, player, skill, target);}
 
     /**获取该容器内对应slot上的物品，即使卡牌以牌背形态显示，也返回目标对应的卡牌*/
-    public ItemStack getStack(int slotIndex) {
-        if (slotIndex < 0 || slotIndex > 80) return ItemStack.EMPTY;
-        return inv.getItem(slotIndex);
+    public ItemStack getStack(int slot) {
+        if (slot < 0 || slot > 80) return ItemStack.EMPTY;
+        var item = inv.getItem(slot);
+        if (inv.type == 1 && item.is(ModItems.GAIN_CARD) && inv.owner instanceof Player pl) {
+            if (slot < 45) return pl.getInventory().items.get(slot - 9);
+            else return getCardPack(pl).cards.get(slot - 45);
+        }
+        return item;
     }
 
     @Override

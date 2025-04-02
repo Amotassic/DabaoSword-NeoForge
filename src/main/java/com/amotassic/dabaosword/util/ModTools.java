@@ -13,6 +13,7 @@ import com.amotassic.dabaosword.event.PVPGameEvents;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.card.CardItem;
 import com.amotassic.dabaosword.item.card.Sha;
+import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.ui.FullInvScreenHandler;
 import com.amotassic.dabaosword.ui.PlayerInvScreenHandler;
 import com.google.gson.Gson;
@@ -106,9 +107,7 @@ public class ModTools {
     public static <T> List<T> toList(T... t) {return new ArrayList<>(Arrays.asList(t));}
 
     /**判断是否有某个饰品*/
-    public static boolean hasTrinket(Item item, LivingEntity entity) {
-        return isEquipped(entity, p(item));
-    }
+    public static boolean hasTrinket(Item item, LivingEntity entity) {return isEquipped(entity, p(item));}
     public static boolean isEquipped(LivingEntity entity, Predicate<ItemStack> p) {
         return getCuriosInventory(entity).map(c -> c.isEquipped(p)).orElse(false);
     }
@@ -233,7 +232,7 @@ public class ModTools {
         if (CARD_PILE.isEmpty()) {
             for (ItemStack stack : allCards()) CARD_PILE.add(stack.copy());
             Collections.shuffle(CARD_PILE);
-            System.out.println("Shuffled card pile");
+            DabaoSword.LOGGER.info("Shuffled card pile");
         }
         return CARD_PILE.removeFirst();
     }
@@ -280,7 +279,7 @@ public class ModTools {
                     ALL_CARDS.add(card.toStack());
                 }
             }
-            System.out.println("Loaded " + ALL_CARDS.size() + " cards");
+            DabaoSword.LOGGER.info("Loaded {} cards", ALL_CARDS.size());
         }
         return ALL_CARDS;
     }
@@ -415,6 +414,7 @@ public class ModTools {
     public static List<Skill> getSkillsMayUse(LivingEntity entity) {
         Predicate<ItemStack> p = s -> {
             if (!(s.getItem() instanceof ISkill)) return false;
+            if (s.getItem() instanceof SkillItem && entity.getTags().contains("duanchang")) return false;
             return s(s).lockOn() || !entity.hasEffect(ModItems.TIEJI);
         };
         return getCuriosInventory(entity).map(c -> c.findCurios(p).stream().map(SlotResult::stack).map(Skill::new).toList()).orElse(Collections.emptyList());

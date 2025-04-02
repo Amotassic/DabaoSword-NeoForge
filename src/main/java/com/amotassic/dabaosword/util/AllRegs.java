@@ -110,6 +110,8 @@ public class AllRegs {
         public static final DeferredRegister<Item> ITEMS = DeferredRegister.createItems("dabaosword");
         //魏
         public static final Supplier<SkillItem>
+        CHENGXIANG = ITEMS.register("chengxiang", Wei.Chengxiang::new),
+        DAOSHU = ITEMS.register("daoshu", Wei.Daoshu::new),
         DUANLIANG = ITEMS.register("duanliang", Wei.Duanliang::new),
         FANGZHU = ITEMS.register("fangzhu", Wei.Fangzhu::new),
         XINGSHANG = ITEMS.register("xingshang", Wei.Xingshang::new),
@@ -127,6 +129,7 @@ public class AllRegs {
         YIJI = ITEMS.register("yiji", Wei.Yiji::new),
         //蜀
         BENXI = ITEMS.register("benxi", Shu.Benxi::new),
+        HUILEI = ITEMS.register("huilei", Shu.Huilei::new),
         HUOJI = ITEMS.register("huoji", Shu.Huoji::new),
         KANPO = ITEMS.register("kanpo", Shu.Kanpo::new),
         JIZHI = ITEMS.register("jizhi", Shu.Jizhi::new),
@@ -154,6 +157,7 @@ public class AllRegs {
         ZHIHENG = ITEMS.register("zhiheng", Wu.Zhiheng::new),
         ZHIJIAN = ITEMS.register("zhijian", Wu.Zhijian::new),
         //群
+        DUANCHANG = ITEMS.register("duanchang", Qun.Duanchang::new),
         JIJIU = ITEMS.register("jijiu", Qun.Jijiu::new),
         JIUCHI = ITEMS.register("jiuchi", Qun.Jiuchi::new),
         JIZHAN = ITEMS.register("jizhan", Qun.Jizhan::new),

@@ -1,5 +1,6 @@
 package com.amotassic.dabaosword.item.skillcard;
 
+import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.api.skill.ISkill;
 import com.amotassic.dabaosword.api.skill.Relation;
 import com.amotassic.dabaosword.api.skill.SkillExecutor;
@@ -24,6 +25,7 @@ public class SkillCards {
     public static Item FEIYING = AllRegs.Skills.FEIYING.get();
 
     public static void addSkillEffect() {
+        long start = System.currentTimeMillis();
         var itemList = BuiltInRegistries.ITEM.stream().filter(item -> item instanceof ISkill).toList();
         for (Item skill : itemList) {
             List<SkillExecutor> effectDatas = new ArrayList<>();
@@ -44,5 +46,6 @@ public class SkillCards {
             }
             SKILL_MAP.put(skill, effectDatas);
         }
+        DabaoSword.LOGGER.info("Loaded all skills in {}ms", System.currentTimeMillis() - start);
     }
 }

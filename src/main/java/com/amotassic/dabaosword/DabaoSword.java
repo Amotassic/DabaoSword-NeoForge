@@ -34,7 +34,7 @@ import static net.minecraft.world.item.CreativeModeTab.TabVisibility.PARENT_AND_
 @Mod(DabaoSword.MODID)
 public class DabaoSword {
     public static final String MODID = "dabaosword";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
     public static MinecraftServer server;
 
     public DabaoSword(IEventBus modEventBus, ModContainer container) {

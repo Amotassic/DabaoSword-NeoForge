@@ -1,18 +1,19 @@
 package com.amotassic.dabaosword.item.skillcard.skills;
 
-import com.amotassic.dabaosword.api.card.Suit;
+import com.amotassic.dabaosword.api.card.Card;
+import com.amotassic.dabaosword.api.card.Rank;
 import com.amotassic.dabaosword.api.skill.*;
 import com.amotassic.dabaosword.command.DabaoSwordCommand;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.card.CardItem;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.ui.PlayerInvScreenHandler;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
@@ -21,10 +22,32 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static com.amotassic.dabaosword.util.ModTools.*;
+import static net.minecraft.ChatFormatting.*;
 
 public class Qun {
+
+    public static class Duanchang extends SkillItem {
+        @Override
+        public void addTip(Skill skill, List<Component> tooltip) {tooltip.add(getTip());}
+
+        @Override public boolean lockOn() {return true;}
+
+        @SkillInfo(trigger = Trigger.ON_DEATH, relation = Relation.SELF)
+        public int chicai(LivingEntity user, LivingEntity target, Skill skill, ExData data) {
+            Entity killer = null; Entity attacker = data.source.getEntity();
+            if (attacker instanceof Player player) killer = player;
+            else if (user.getKillCredit() != null) killer = user.getKillCredit();
+            if (killer instanceof Player pl) {
+                voice(user, this);
+                killer.addTag("duanchang");
+                pl.displayClientMessage(Component.translatable("duanchang.tip").withStyle(RED, BOLD), false);
+            }
+            return 0;
+        }
+    }
 
     public static class Jijiu extends SkillItem {
         @Override
@@ -59,8 +82,8 @@ public class Qun {
         }
 
         private final Component JIZHAN_TEXT = Component.translatable("jizhan.text",
-                Component.translatable("rank.higher").withStyle(ChatFormatting.AQUA).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dabaosword @s dabaosword:jizhan @s 1"))),
-                Component.translatable("rank.lower").withStyle(ChatFormatting.AQUA).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dabaosword @s dabaosword:jizhan @s -1"))));
+                Component.translatable("rank.higher").withStyle(AQUA).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dabaosword @s dabaosword:jizhan @s 1"))),
+                Component.translatable("rank.lower").withStyle(AQUA).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dabaosword @s dabaosword:jizhan @s -1"))));
 
         @Override
         public int onDrawPhase(Player player, Skill skill) {
@@ -99,7 +122,7 @@ public class Qun {
 
         @SkillInfo(trigger = Trigger.LOSE_CARD_USE, relation = Relation.SELF)
         public int useShan(LivingEntity user, LivingEntity target, Skill skill, ExData data) {
-            var card = data.getCard();
+            var card = data.getFirst();
             if (card.isOf(ModItems.SHAN)) {
                 voice(user, this);
                 user.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 10,3,false,false,false));
@@ -123,33 +146,46 @@ public class Qun {
             tooltip.add(getTip());
         }
 
+        @Override public boolean isActiveSkill() {return true;}
+
         @Override
-        public void tickSkill(Skill skill, LivingEntity entity) {
-            if (!entity.level().isClientSide && entity instanceof Player player && skill.getCD() == 0) {
-                ItemStack off = player.getOffhandItem();
-                var nbt = skill.getNbt();
-                Suit firstSuit = null;
-                if (nbt.contains("Suit")) firstSuit = Suit.fromNbt(nbt);
-                if (entity.level().getGameTime() % 100 == 0 && firstSuit != null) {
-                    player.displayClientMessage(Component.translatable("item.dabaosword.luanji.suit", skill.toHoverableText(), firstSuit.suit), true);
-                }
-                Suit suit = c(off).suit;
-                if (isCard(off) && suit != null) {
-                    if (firstSuit == suit) { //如果记录花色和当前牌花色相同，就移除一张牌，获得万箭齐发，技能进入CD
-                        nbt.remove("Suit");
-                        skill.setNbt(nbt);
-                        skill.setCD(15);
-                        off.shrink(1);
-                        give(player, newCard(ModItems.WANJIAN));
-                        voice(player, this);
-                        return;
-                    }
-                    if (firstSuit == null) { //如果没有记录花色，就移除一张牌，记录该花色
-                        nbt.putString("Suit", suit.name());
-                        skill.setNbt(nbt);
-                        off.shrink(1);
-                    }
-                }
+        public void addScreenTip(Skill skill, List<Component> tips) {
+            addPresetTips(skill, tips, 0, 1, 2, 4, 5);
+            super.addScreenTip(skill, tips);
+        }
+
+        @Override
+        public boolean activeSkill(Player user, Skill skill) {
+            if (skill.getCD() > 0) return false;
+            if (ofSuit(user, isDiamondCard) || ofSuit(user, isHeartCard) || ofSuit(user, isClubCard) || ofSuit(user, isSpadeCard)) {
+                skill.setMaxSelect(2);
+                openInv(user, user, user, Component.translatable("item.dabaosword.luanji.suit"), skill.stack, false, false, 2);
+                return true;
+            }
+            return false;
+        }
+
+        boolean ofSuit(Player user, Predicate<ItemStack> p) {return countCard(user, p) > 1;}
+
+        @Override
+        public void onSlotClick(PlayerInvScreenHandler handler, Player player, Skill skill, Player target, int slot, int button, ClickType action) {
+            int count = handler.getSelectedCount();
+            List<ItemStack> selects = handler.getSelected(); ItemStack choose = handler.getStack(slot);
+            boolean bl = count == 0 || c(selects.getFirst()).suit == c(choose).suit;
+            if (bl && action == ClickType.PICKUP) { //左键点击+1，右键点击-1
+                if (button == 0) handler.addClick(slot);
+                if (button == 1) handler.dropClick(slot);
+            }
+        }
+
+        @Override
+        public void onGuiClose(PlayerInvScreenHandler handler, Player player, Skill skill, Player target) {
+            if (handler.getSelectedCount() == 2) {
+                voice(player, this);
+                skill.setCD(15);
+                Card card = new Card(ModItems.WANJIAN, c(handler.getSelected().getFirst()).suit, Rank.Ace);
+                handler.toExData().clearCards(player);
+                give(player, card.toStack());
             }
         }
     }
@@ -164,7 +200,7 @@ public class Qun {
             List<Item> items = BuiltInRegistries.ITEM.stream().filter(item -> item instanceof CardItem card && card.getType() < 2).toList();
             String[] used = skill.getNbt().getString("used").split(";");
             if (used.length == items.size()) {
-                user.displayClientMessage(Component.translatable("item.dabaosword.taoluan.fail").withStyle(ChatFormatting.RED), true);
+                user.displayClientMessage(Component.translatable("item.dabaosword.taoluan.fail").withStyle(RED), true);
                 return false;
             }
             if (user.getHealth() + 5 * countCard(user, canSaveDying) > 4.99) {
@@ -173,7 +209,7 @@ public class Qun {
 
                 openMenu(user, user, skill.stack, stacks, Component.translatable("item.dabaosword.taoluan.screen"));
                 return true;
-            } else user.displayClientMessage(Component.translatable("item.dabaosword.taoluan.tip").withStyle(ChatFormatting.RED), true);
+            } else user.displayClientMessage(Component.translatable("item.dabaosword.taoluan.tip").withStyle(RED), true);
             return false;
         }
 
@@ -209,7 +245,7 @@ public class Qun {
         @SkillInfo(trigger = Trigger.DROP_TARGET, relation = Relation.ANY)
         public int weimu(LivingEntity user, LivingEntity target, Skill skill, ExData data) {
             //这里的user才是卡牌的目标，即技能的发动者
-            var card = data.getCard();
+            var card = data.getFirst();
             if (data.targets.contains(user) && isBlackCard.and(isArmoury).test(card.toStack())) {
                 data.removeTarget(user);
                 voice(user, this);

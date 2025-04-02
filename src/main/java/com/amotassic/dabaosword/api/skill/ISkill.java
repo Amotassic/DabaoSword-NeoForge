@@ -66,6 +66,7 @@ public interface ISkill extends ICurioItem {
     @Override
     default void curioTick(SlotContext slotContext, ItemStack stack) {
         var entity = slotContext.entity();
+        if (stack.getItem() instanceof SkillItem && entity.getTags().contains("duanchang")) return;
         Skill skill = s(stack);
         if (skill.lockOn() || !entity.hasEffect(ModItems.TIEJI)) tickSkill(skill, entity);
         if (entity.level() instanceof ServerLevel world) {

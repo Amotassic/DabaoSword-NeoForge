@@ -3,6 +3,7 @@ package com.amotassic.dabaosword.item.skillcard.skills;
 import com.amotassic.dabaosword.api.CardEvents;
 import com.amotassic.dabaosword.api.card.Card;
 import com.amotassic.dabaosword.api.skill.*;
+import com.amotassic.dabaosword.event.PlayerEvents;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillItem;
 import com.amotassic.dabaosword.ui.PlayerInvScreenHandler;
@@ -12,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -63,6 +65,35 @@ public class Shu {
         }
     }
 
+    public static class Huilei extends SkillItem {
+        @Override
+        public void addTip(Skill skill, List<Component> tooltip) {tooltip.add(getTip(RED));}
+
+        @Override public boolean lockOn() {return true;}
+
+        @SkillInfo(trigger = Trigger.ON_DEATH, relation = Relation.SELF)
+        public int wu555(LivingEntity user, LivingEntity target, Skill skill, ExData data) {
+            Entity killer = null; Entity attacker = data.source.getEntity();
+            if (attacker instanceof LivingEntity entity) killer = entity;
+            else if (user.getKillCredit() != null) killer = user.getKillCredit();
+            if (killer instanceof Player pl) {
+                voice(user, this);
+                CardEvents.cardDiscard(pl, PlayerEvents.cardsToDrop(pl));
+                for (var stack : pl.getInventory().items) {
+                    if (stack.isEmpty()) continue;
+                    var item = pl.drop(stack.copy(), true);
+                    if (item != null) {
+                        item.setInvulnerable(true);
+                        item.setTarget(pl.getUUID());
+                        item.setPickUpDelay(400);
+                    }
+                    stack.setCount(0);
+                }
+            }
+            return 0;
+        }
+    }
+
     public static class Huoji extends SkillItem {
         @Override
         public void addTip(Skill skill, List<Component> tooltip) {
@@ -82,7 +113,7 @@ public class Shu {
 
         @SkillInfo(trigger = Trigger.LOSE_CARD_USE, relation = Relation.SELF)
         public int useCard(LivingEntity user, LivingEntity target, Skill skill, ExData data) {
-            var card = data.getCard().toStack();
+            var card = data.getFirst().toStack();
             if (isArmoury.test(card)) {draw(user); voice(user, this);}
             return 0;
         }
@@ -186,13 +217,15 @@ public class Shu {
         @Override
         public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(SlotContext slotContext, ResourceLocation id, ItemStack stack) {
             var modifiers = super.getAttributeModifiers(slotContext, id, stack);
+            LivingEntity entity = slotContext.entity();
+            if (entity != null && entity.getTags().contains("duanchang")) return modifiers;
             modifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(id, 1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
             return modifiers;
         }
 
         @SkillInfo(trigger = Trigger.SELECT_TARGET, relation = Relation.NOT_SELF)
         public int yuyin(LivingEntity user, LivingEntity target, Skill skill, ExData data) {
-            if (isSha.test(data.getCard().toStack())) voice(user, this);
+            if (isSha.test(data.getFirst().toStack())) voice(user, this);
             return 0;
         }
     }
