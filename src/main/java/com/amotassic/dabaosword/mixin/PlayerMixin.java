@@ -29,7 +29,7 @@ public abstract class PlayerMixin extends LivingEntity {
 
     @ModifyVariable(method = "attack", at = @At(value = "STORE"), ordinal = 2)
     public boolean attack(boolean bl) {
-        var entry = ModTools.getEntry(ModItems.CRIT);
+        var entry = ModTools.getEntry(ModItems.CRIT, (Player) (Object) this);
         boolean crit = EnchantmentHelper.getTagEnchantmentLevel(entry, getItemBySlot(EquipmentSlot.HEAD)) > 0;
         return bl || crit;
     }

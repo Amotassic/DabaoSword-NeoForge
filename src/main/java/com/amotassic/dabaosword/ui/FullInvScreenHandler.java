@@ -56,7 +56,7 @@ public class FullInvScreenHandler extends AbstractContainerMenu {
             for (j = 0; j < 9; j++) {
                 int index = j + i * 9; boolean enabled = slotsEnabled.contains(index);
                 int x = enabled ? 8 + j * 18 : 114514; int y = enabled ? 18 + i * 18 : 114514;
-                addSlot(new Slot(inventory, index, x, y));
+                addSlot(new Slot(inventory, index, x, y) {public boolean mayPlace(ItemStack stack) {return enabled;}});
             }
         }
         addSlot(new Slot(inventory, 36, 8 + 4 * 18, 18 * armor) {
@@ -88,7 +88,7 @@ public class FullInvScreenHandler extends AbstractContainerMenu {
             for (j = 0; j < 9; j++) {
                 int index = 41 + j + i * 9; boolean enabled = slotsEnabled.contains(index);
                 int x = enabled ? 8 + j * 18 : 114514; int y = enabled ? (armor + 1 + i) * 18 : 114514;
-                addSlot(new Slot(inventory, index, x, y));
+                addSlot(new Slot(inventory, index, x, y) {public boolean mayPlace(ItemStack stack) {return enabled;}});
             }
         }
         if (notSelf) addPlayerInventorySlots(inv, rows);

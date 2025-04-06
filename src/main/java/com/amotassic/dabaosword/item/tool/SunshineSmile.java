@@ -34,7 +34,7 @@ public class SunshineSmile extends Item implements Equipable {
     @Override
     public void inventoryTick(ItemStack stack, Level world, Entity entity, int slotId, boolean isSelected) {
         if (world instanceof ServerLevel sw && sw.getGameTime() % 1200 == 0) {
-            var entry = ModTools.getEntry(ModItems.CRIT);
+            var entry = ModTools.getEntry(ModItems.CRIT, entity);
             if (EnchantmentHelper.getTagEnchantmentLevel(entry, stack) == 0) {
                 stack.enchant(entry, 1);
             }

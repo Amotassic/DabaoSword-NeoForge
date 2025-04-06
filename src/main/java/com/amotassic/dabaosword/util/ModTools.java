@@ -339,8 +339,10 @@ public class ModTools {
         player.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 1,2,false,false,false));
     }
 
-    public static Holder<Enchantment> getEntry(ResourceKey<Enchantment> key) {
-        return DabaoSword.server.registryAccess().registryOrThrow(Registries.ENCHANTMENT).getHolderOrThrow(key);
+    public static Holder<Enchantment> getEntry(ResourceKey<Enchantment> key, Entity... entity) {
+        Entity e = entity.length > 0 ? entity[0] : null;
+        if (e == null) return DabaoSword.server.registryAccess().registryOrThrow(Registries.ENCHANTMENT).getHolderOrThrow(key);
+        return e.registryAccess().registryOrThrow(Registries.ENCHANTMENT).getHolderOrThrow(key);
     }
 
     public static DamageSource getDamageSource(Entity source, ResourceKey<DamageType> type) {
