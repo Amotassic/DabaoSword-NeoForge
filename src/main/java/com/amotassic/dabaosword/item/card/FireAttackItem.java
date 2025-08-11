@@ -12,9 +12,9 @@ import net.minecraft.world.phys.Vec3;
 public class FireAttackItem extends CardItem.Armoury {
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
-        if (!world.isClientSide && hand == InteractionHand.MAIN_HAND) {
-            onUse(user, user.getMainHandItem(), user);
-            return InteractionResultHolder.success(user.getMainHandItem());
+        if (!world.isClientSide) {
+            onUse(user, user.getItemInHand(hand), hand, user);
+            return InteractionResultHolder.success(user.getItemInHand(hand));
         }
         return super.use(world, user, hand);
     }
@@ -23,7 +23,7 @@ public class FireAttackItem extends CardItem.Armoury {
     public void effect(LivingEntity user, ItemStack card, LivingEntity target) {
         Level world = user.level();
         Vec3 momentum = user.getForward().scale(3);
-        LargeFireball fireballEntity = new LargeFireball(world, user, momentum, 3);
+        LargeFireball fireballEntity = new LargeFireball(world, user, momentum, 2);
         fireballEntity.addTag("a");
         fireballEntity.setPos(user.getX(), user.getY(0.5) + 0.5, user.getZ());
         world.addFreshEntity(fireballEntity);

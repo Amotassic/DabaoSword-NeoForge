@@ -15,9 +15,9 @@ public class ShanItem extends CardItem.Basic {
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         //判断是否有独立冷却buff，若冷却中则无法生效
-        if (!world.isClientSide && !user.hasEffect(ModItems.COOLDOWN2) && hand == InteractionHand.MAIN_HAND) {
-            onUse(user, user.getMainHandItem(), user);
-            return InteractionResultHolder.success(user.getMainHandItem());
+        if (!world.isClientSide && !user.hasEffect(ModItems.COOLDOWN2)) {
+            onUse(user, user.getItemInHand(hand), hand, user);
+            return InteractionResultHolder.success(user.getItemInHand(hand));
         }
         return super.use(world, user, hand);
     }
@@ -25,7 +25,7 @@ public class ShanItem extends CardItem.Basic {
     @Override
     public void effect(LivingEntity user, ItemStack card, LivingEntity target) {
         Vec3 momentum = user.getForward().scale(3);
-        user.hurtMarked = true; user.setDeltaMovement(momentum.x,0 ,momentum.z);
+        user.hurtMarked = true; user.setDeltaMovement(momentum.x, 0, momentum.z);
         user.addEffect(new MobEffectInstance(ModItems.INVULNERABLE, 20,0,false,false,false));
         user.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 20,0,false,false,false));
     }

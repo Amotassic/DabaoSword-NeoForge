@@ -10,6 +10,7 @@
     "CrafterScreen",
     "CraftingMixin",
     "EntityMixin",
+    "ExplosionMixin",
     "ItemEntityMixin",
     "LargeFireballMixin",
     "LivingEntityMixin",
@@ -17,13 +18,16 @@
     "MobEntityMixin",
     "PlayerMixin",
     "RavagerMixin",
+    "RegistriesMixin",
     "TridentMixin"
   ],
   "client": [
     "client.DrawContextMixin",
     "client.GameRendererMixin",
+    "client.KeyboardMixin",
     "client.LivingEntityRendererMixin",
-    "client.ModelLoaderMixin"
+    "client.ModelLoaderMixin",
+    "client.MouseMixin"
   ],
   "injectors": {
     "defaultRequire": 1

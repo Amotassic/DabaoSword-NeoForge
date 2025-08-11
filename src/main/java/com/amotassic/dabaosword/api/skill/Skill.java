@@ -2,7 +2,6 @@ package com.amotassic.dabaosword.api.skill;
 
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
-import com.amotassic.dabaosword.util.AllRegs;
 import com.amotassic.dabaosword.util.ModTools;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -40,11 +39,11 @@ public final class Skill {
     public boolean activeSkill(Player user, Skill skill) {return item.activeSkill(user, skill);}
     public boolean activeSkill(Player user, Skill skill, LivingEntity target) {return item.activeSkill(user, skill, target);}
 
-    public int getCD() {Integer i = stack.get(AllRegs.Other.CD); return i == null ? 0 : i;}
-    public void setCD(int seconds) {stack.set(AllRegs.Other.CD, seconds);}
+    public int getCD() {Integer i = stack.get(ModItems.CD); return i == null ? 0 : i;}
+    public void setCD(int seconds) {stack.set(ModItems.CD, seconds);}
 
-    public int getTag() {Integer i = stack.get(AllRegs.Other.TAGS); return i == null ? 0 : i;}
-    public void setTag(int value) {stack.set(AllRegs.Other.TAGS, value);}
+    public int getTag() {Integer i = stack.get(ModItems.TAGS); return i == null ? 0 : i;}
+    public void setTag(int value) {stack.set(ModItems.TAGS, value);}
 
     public int getMinSelect() {
         var nbt = getNbt();

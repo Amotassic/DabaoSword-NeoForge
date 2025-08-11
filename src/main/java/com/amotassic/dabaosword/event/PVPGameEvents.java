@@ -4,10 +4,8 @@ import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.api.CardPileInventory;
 import com.amotassic.dabaosword.api.event.PVPGameTickEvent;
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.pvpgame.Game;
 import com.amotassic.dabaosword.pvpgame.GameManager;
-import com.amotassic.dabaosword.util.ModTools;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -38,8 +36,6 @@ public class PVPGameEvents {
 
     @SubscribeEvent
     public static void onWorldLoad(LevelEvent.Load event) {
-        ModTools.allCards();
-        SkillCards.addSkillEffect();
         LevelAccessor levelAccessor = event.getLevel();
         //只需要保存在主世界的data目录下即可
         if (levelAccessor instanceof ServerLevel world && world.dimension() == Level.OVERWORLD) gameManager = world.getDataStorage().computeIfAbsent(GameManager.factory(world), "dabaosword_game");

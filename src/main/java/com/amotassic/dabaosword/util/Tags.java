@@ -26,4 +26,6 @@ public class Tags {
     }
 
     public static final TagKey<DamageType> TRIGGER_TIESUO = TagKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath("dabaosword", "trigger_tiesuo"));
+
+    public static final TagKey<DamageType> FROM_CARD = TagKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath("dabaosword", "from_card"));
 }

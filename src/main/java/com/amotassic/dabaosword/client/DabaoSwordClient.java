@@ -7,11 +7,11 @@ import com.amotassic.dabaosword.entity.ModEntity;
 import com.amotassic.dabaosword.entity.client.ModModelLayers;
 import com.amotassic.dabaosword.entity.client.XuyouModel;
 import com.amotassic.dabaosword.entity.client.XuyouRenderer;
+import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.card.CardItem;
 import com.amotassic.dabaosword.ui.FullInvHandledScreen;
 import com.amotassic.dabaosword.ui.PileHandledScreen;
 import com.amotassic.dabaosword.ui.PlayerInvHandledScreen;
-import com.amotassic.dabaosword.util.AllRegs;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -42,9 +42,9 @@ public class DabaoSwordClient {
 
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
-        event.register(AllRegs.Other.PLAYER_INV_SCREEN_HANDLER.get(), PlayerInvHandledScreen::new);
-        event.register(AllRegs.Other.FULL_INV_SCREEN_HANDLER.get(), FullInvHandledScreen::new);
-        event.register(AllRegs.Other.PILE_SCREEN_HANDLER.get(), PileHandledScreen::new);
+        event.register(ModItems.PLAYER_INV_SCREEN_HANDLER, PlayerInvHandledScreen::new);
+        event.register(ModItems.FULL_INV_SCREEN_HANDLER, FullInvHandledScreen::new);
+        event.register(ModItems.PILE_SCREEN_HANDLER, PileHandledScreen::new);
     }
 
     @SubscribeEvent
@@ -54,7 +54,7 @@ public class DabaoSwordClient {
 
     @SubscribeEvent
     public static void registerRenderer(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(ModEntity.XUYOU.get(), XuyouRenderer::new);
+        event.registerEntityRenderer(ModEntity.XUYOU, XuyouRenderer::new);
     }
 
     private static void registerPredicates() {

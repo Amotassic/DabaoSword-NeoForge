@@ -1,5 +1,6 @@
 package com.amotassic.dabaosword.item.tool;
 
+import com.amotassic.dabaosword.damage_type.ModDT;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -30,7 +31,7 @@ public class BBjiItem extends Item {
             AABB box = new AABB(user.getOnPos()).inflate(13);
             for (LivingEntity nearbyEntity : world.getEntitiesOfClass(LivingEntity.class, box, LivingEntity -> LivingEntity != user)) {
                 nearbyEntity.invulnerableTime = 0;
-                nearbyEntity.hurt(user.damageSources().sonicBoom(user),2);
+                nearbyEntity.hurt(ModDT.bbll(user),2);
             }
             voice(user, this);
             ItemStack stack = user.getItemInHand(hand);

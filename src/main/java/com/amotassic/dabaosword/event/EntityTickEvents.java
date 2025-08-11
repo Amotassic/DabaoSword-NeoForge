@@ -1,6 +1,8 @@
 package com.amotassic.dabaosword.event;
 
 import com.amotassic.dabaosword.DabaoSword;
+import com.amotassic.dabaosword.api.skill.ISkill;
+import com.amotassic.dabaosword.api.skill.Skill;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.Gamerule;
 import net.minecraft.network.chat.Component;
@@ -20,10 +22,13 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import top.theillusivec4.curios.api.SlotResult;
 
+import java.util.Collections;
 import java.util.Objects;
 
 import static com.amotassic.dabaosword.util.ModTools.*;
+import static top.theillusivec4.curios.api.CuriosApi.getCuriosInventory;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class EntityTickEvents {
@@ -34,7 +39,7 @@ public class EntityTickEvents {
         if (en.level() instanceof ServerLevel world && en instanceof LivingEntity entity) {
             long time = world.getGameTime();
             if (time % 2 == 0) {
-                String[] tags = {"sha", "juedou", "nanman", "wanjian", "benxi"};
+                String[] tags = {"sha", "juedou", "nanman", "wanjian"};
                 for (var tag : tags) entity.getTags().remove(tag);
             }
             if (time % 20 == 0) {
@@ -47,8 +52,7 @@ public class EntityTickEvents {
 
             //处理所有加触及距离和近战防御距离的效果
             int level1 = 0; int level2 = 0;
-            ItemStack mainHand = entity.getMainHandItem();
-            if (mainHand.is(ModItems.DISCARD) || mainHand.is(ModItems.JUEDOU)) level1 += 114;
+            if (shouldReachLong(entity)) level1 += 114;
             for (var skill : getSkillsMayUse(entity)) {
                 level1 += skill.item.getExtraReach(entity, skill);
                 level2 += skill.item.getDefend(entity, skill);
@@ -110,6 +114,13 @@ public class EntityTickEvents {
             }
 
             if (time % 2 == 0) decreaseAttackRange(player);
+
+            if (player.containerMenu != player.inventoryMenu && time % 3 == 0) {
+                for (var skill : getCuriosInventory(player).map(c -> c.findCurios(s -> s.getItem() instanceof ISkill).stream().map(SlotResult::stack).map(Skill::new).toList()).orElse(Collections.emptyList())) {
+                    var s = skill.item;
+                    if (s.shouldTickUpdate()) s.tickUpdateNbt(skill, player);
+                }
+            }
 
         }
     }

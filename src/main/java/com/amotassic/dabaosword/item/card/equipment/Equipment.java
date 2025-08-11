@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -33,6 +34,11 @@ public class Equipment extends CardItem implements ISkill {
     public final int getType() {return Card.EQUIPMENT;}
 
     public final boolean lockOn() {return true;}
+
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, Entity entity, int slotId, boolean isSelected) {
+        if (slotId != -1 && !level.isClientSide && equipped(stack)) setEquipped(stack, false);
+    }
 
     @Override
     public final void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
@@ -61,8 +67,8 @@ public class Equipment extends CardItem implements ISkill {
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         ItemStack stack = user.getItemInHand(hand);
-        if (!world.isClientSide && hand == InteractionHand.MAIN_HAND) {
-            onUse(user, stack, user);
+        if (!world.isClientSide) {
+            onUse(user, stack, hand, user);
             return InteractionResultHolder.success(stack);
         }
         return InteractionResultHolder.pass(stack);

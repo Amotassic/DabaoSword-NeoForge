@@ -2,12 +2,13 @@ package com.amotassic.dabaosword.item.card;
 
 import com.amotassic.dabaosword.api.CardEvents;
 import com.amotassic.dabaosword.api.skill.Trigger;
+import com.amotassic.dabaosword.damage_type.ModDT;
 import com.amotassic.dabaosword.effect.ShandianEffect;
 import com.amotassic.dabaosword.item.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -27,12 +28,12 @@ public class Sha extends CardItem.Basic {
         if (stack.is(ModItems.THUNDER_SHA)) tooltip.add(getTip().withStyle(ChatFormatting.BLUE));
     }
 
-    public static void shaUse(LivingEntity user, ItemStack stack, float amount, LivingEntity... targets) {
-        shaUse(user, stack, amount, true, targets);
+    public static void shaUse(LivingEntity user, ItemStack stack, InteractionHand hand, float amount, LivingEntity... targets) {
+        shaUse(user, stack, hand, amount, true, targets);
     }
-    public static void shaUse(LivingEntity user, ItemStack stack, float amount, boolean consume, LivingEntity... targets) {
+    public static void shaUse(LivingEntity user, ItemStack stack, InteractionHand hand, float amount, boolean consume, LivingEntity... targets) {
         var card = c(stack); var cardData = d().cards(card, card.count);
-        if (consume) CardEvents.cardUseAndDecrement(user, stack);
+        if (consume) CardEvents.cardUseAndDecrement(user, stack, hand);
         voice(user, card.item());
         List<LivingEntity> owners = getSkillOwners(user);
         //触发卡牌使用事件
@@ -64,37 +65,30 @@ public class Sha extends CardItem.Basic {
     /**原本的伤害处理被取消，改为由杀造成伤害，因此一定要用{@link LivingEntity#hurt(DamageSource, float)}来造成伤害
      * @param amount 原本的伤害值*/
     public boolean sha(LivingEntity user, LivingEntity target, float amount) {
-        return target.hurt(user.damageSources().mobAttack(user), amount + 5);
-    }
-
-    @Override
-    public void effect(LivingEntity user, ItemStack card, LivingEntity target) {
-        CardEvents.hurtByCard(target, card);
+        return target.hurt(ModDT.sha(user), amount + 5);
     }
 
     public static class Fire extends Sha {
         @Override
         public boolean sha(LivingEntity user, LivingEntity target, float amount) {
-            return target.hurt(getDamageSource(user, DamageTypes.ON_FIRE), amount);
+            return target.hurt(ModDT.shaFire(user), amount);
         }
 
         @Override
         public void effect(LivingEntity user, ItemStack sha, LivingEntity target) {
             target.setRemainingFireTicks(120);
-            CardEvents.hurtByCard(target, sha);
         }
     }
 
     public static class Thunder extends Sha {
         @Override
         public boolean sha(LivingEntity user, LivingEntity target, float amount) {
-            return target.hurt(getDamageSource(user, DamageTypes.LIGHTNING_BOLT), amount + 5);
+            return target.hurt(ModDT.shaThunder(user), amount + 5);
         }
 
         @Override
         public void effect(LivingEntity user, ItemStack sha, LivingEntity target) {
             ShandianEffect.summonLightning(target, true, false);
-            CardEvents.hurtByCard(target, sha);
         }
     }
 }

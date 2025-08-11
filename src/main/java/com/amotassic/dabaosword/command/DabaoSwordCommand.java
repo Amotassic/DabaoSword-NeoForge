@@ -3,12 +3,14 @@ package com.amotassic.dabaosword.command;
 import com.amotassic.dabaosword.api.skill.Skill;
 import com.amotassic.dabaosword.pvpgame.Game;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.commands.arguments.item.ItemInput;
@@ -17,17 +19,22 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 import static com.amotassic.dabaosword.event.PVPGameEvents.getGameManager;
-import static com.amotassic.dabaosword.util.ModTools.s;
-import static com.amotassic.dabaosword.util.ModTools.trinketItem;
+import static com.amotassic.dabaosword.util.ModTools.*;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
 public class DabaoSwordCommand {
+    public static void registerCommands(RegisterCommandsEvent evt) {
+        register(evt.getDispatcher(), evt.getBuildContext());
+    }
+
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext access) {
         dispatcher.register(literal("dabaosword")
                 .requires(source -> source.getEntity() != null)
@@ -63,7 +70,27 @@ public class DabaoSwordCommand {
                                 .executes(c -> viewIdentity(c.getSource(), EntityArgument.getPlayer(c, "target")))
                         )
                 )
+                .then(literal("info")
+                        .then(Commands.argument("target", EntityArgument.entity())
+                                .executes(c -> info(c, EntityArgument.getEntity(c, "target"), false))
+                                .then(Commands.argument("editable", BoolArgumentType.bool())
+                                        .requires(source -> source.hasPermission(2))
+                                        .executes(c -> info(c, EntityArgument.getEntity(c, "target"), BoolArgumentType.getBool(c, "editable")))
+                                )
+                        )
+                )
         );
+    }
+
+    private static int info(CommandContext<CommandSourceStack> context, Entity entity, boolean editable) throws CommandSyntaxException {
+        var player = context.getSource().getPlayerOrException();
+        if (entity instanceof LivingEntity target) {
+            openFullInv(player, target, editable);
+            return 1;
+        } else {
+            player.displayClientMessage(Component.translatable("info.fail").withStyle(ChatFormatting.RED), false);
+            return 0;
+        }
     }
 
     private static int skill(Player user, ItemInput stack, LivingEntity target, int... value) {
@@ -161,7 +188,7 @@ public class DabaoSwordCommand {
         return 1;
     }
 
-    private static final MutableComponent info = Component.translatable("dabaosword.help.info").withStyle(ChatFormatting.AQUA).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/info ")).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("dabaosword.help.info_hover")))),
+    private static final MutableComponent info = Component.translatable("dabaosword.help.info").withStyle(ChatFormatting.AQUA).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/dabaosword info ")).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("dabaosword.help.info_hover")))),
     newGame = Component.translatable("dabaosword.newgame").withStyle(ChatFormatting.AQUA).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dabaosword 2")).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("dabaosword.newgame_hover")))),
     viewId = Component.translatable("dabaosword.viewid").withStyle(ChatFormatting.AQUA).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/dabaosword viewidentity @s")).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("dabaosword.viewid_hover")))),
     disGame = Component.translatable("dabaosword.disgame").withStyle(ChatFormatting.LIGHT_PURPLE).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/dabaosword discardgame ")).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("dabaosword.disgame_hover"))));

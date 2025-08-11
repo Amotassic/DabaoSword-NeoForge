@@ -12,9 +12,9 @@ import net.minecraft.world.level.Level;
 public class JiuItem extends CardItem.Basic {
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
-        if (!user.hasEffect(MobEffects.DAMAGE_BOOST) && !world.isClientSide && hand == InteractionHand.MAIN_HAND) {
-            onUse(user, user.getMainHandItem(), user);
-            return InteractionResultHolder.success(user.getMainHandItem());
+        if (!user.hasEffect(MobEffects.DAMAGE_BOOST) && !world.isClientSide) {
+            onUse(user, user.getItemInHand(hand), hand, user);
+            return InteractionResultHolder.success(user.getItemInHand(hand));
         }
         return super.use(world, user, hand);
     }

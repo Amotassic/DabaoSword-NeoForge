@@ -1,11 +1,11 @@
 package com.amotassic.dabaosword.item.card;
 
+import com.amotassic.dabaosword.damage_type.ModDT;
 import com.amotassic.dabaosword.item.ModItems;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,12 +20,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import static com.amotassic.dabaosword.api.CardEvents.hurtByCard;
-
 public class NanmanItem extends CardItem.Armoury {
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
-        if (world instanceof ServerLevel sw && hand == InteractionHand.MAIN_HAND) {
+        if (world instanceof ServerLevel sw) {
 
             Set<LivingEntity> targets = new HashSet<>(sw.players());
             AABB box = new AABB(user.getOnPos()).inflate(10);
@@ -34,18 +32,17 @@ public class NanmanItem extends CardItem.Armoury {
             targets.remove(user);
 
             user.addTag("nanman"); //防止触发杀
-            onUse(user, user.getMainHandItem(), targets.toArray(new LivingEntity[0]));
-            return InteractionResultHolder.success(user.getMainHandItem());
+            onUse(user, user.getItemInHand(hand), hand, targets.toArray(new LivingEntity[0]));
+            return InteractionResultHolder.success(user.getItemInHand(hand));
         }
         return super.use(world, user, hand);
     }
 
     @Override
     public void effect(LivingEntity user, ItemStack card, LivingEntity entity) {
-        DamageSource source = user.damageSources().mobAttack(user);
         //防止触发闪
         entity.addEffect(new MobEffectInstance(ModItems.COOLDOWN2, 2, 0, false, false));
-        if (entity.hurt(source, 6)) hurtByCard(entity, card);
+        entity.hurt(ModDT.nanman(user), 6);
         summonRavager(entity);
     }
 

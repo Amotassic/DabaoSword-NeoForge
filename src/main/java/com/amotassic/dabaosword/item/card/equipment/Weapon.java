@@ -4,7 +4,6 @@ import com.amotassic.dabaosword.api.card.Card;
 import com.amotassic.dabaosword.api.skill.*;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -189,24 +188,18 @@ public class Weapon extends Equipment {
             tooltip.add(getTip("2", AQUA));
         }
 
-        @Override
-        public void tickSkill(Skill skill, LivingEntity entity) {
-            if (entity.level().isClientSide) return;
-            if (entity instanceof Player player && skill.getCD() == 0) {
-                ItemStack off = player.getOffhandItem();
-                CompoundTag nbt = skill.getNbt();
-                boolean one = nbt.contains("has_one");
-                if (isCard(off)) {
-                    if (one) {
-                        nbt.remove("has_one");
-                        skill.setCD(5);
-                        give(player, newCard(ModItems.SHA));
-                        voice(player, this);
-                    } else {nbt.putBoolean("has_one", true);}
-                    skill.setNbt(nbt);
-                    off.shrink(1);
-                }
+        @SkillInfo(trigger = Trigger.LOSE_CARD_USE, relation = Relation.SELF)
+        public int useCardGetSha(LivingEntity user, LivingEntity target, Skill skill, ExData data) {
+            if (skill.getCD() > 0) return 0;
+            ItemStack stack = data.getFirst().toStack();
+            if (isSha.test(stack)) return 0;
+            skill.setTag(skill.getTag() + 1);
+            if (skill.getTag() >= 2) {
+                skill.setTag(0);
+                skill.setCD(1);
+                give(user, new Card(ModItems.SHA).toStack());
             }
+            return 0;
         }
     }
 

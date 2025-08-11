@@ -12,8 +12,8 @@ import org.jetbrains.annotations.NotNull;
 public class BingliangItem extends CardItem.Armoury {
     @Override
     public @NotNull InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
-        if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND) {
-            onUse(user, user.getMainHandItem(), entity);
+        if (!user.level().isClientSide) {
+            onUse(user, user.getItemInHand(hand), hand, entity);
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;

@@ -1,7 +1,10 @@
 package com.amotassic.dabaosword.mixin;
 
+import com.amotassic.dabaosword.damage_type.ModDT;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.ModTools;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -15,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Player.class)
 public abstract class PlayerMixin extends LivingEntity {
@@ -29,8 +33,14 @@ public abstract class PlayerMixin extends LivingEntity {
 
     @ModifyVariable(method = "attack", at = @At(value = "STORE"), ordinal = 2)
     public boolean attack(boolean bl) {
+        boolean crit = false;
         var entry = ModTools.getEntry(ModItems.CRIT, (Player) (Object) this);
-        boolean crit = EnchantmentHelper.getTagEnchantmentLevel(entry, getItemBySlot(EquipmentSlot.HEAD)) > 0;
+        if (entry != null) crit = EnchantmentHelper.getTagEnchantmentLevel(entry, getItemBySlot(EquipmentSlot.HEAD)) > 0;
         return bl || crit;
+    }
+
+    @Inject(method = "getHurtSound", at = @At("RETURN"), cancellable = true)
+    protected void getHurtSound(DamageSource source, CallbackInfoReturnable<SoundEvent> cir) {
+        if (source.is(ModDT.LOSEHP)) cir.setReturnValue(ModTools.getSound("dabaosword", "losehp"));
     }
 }

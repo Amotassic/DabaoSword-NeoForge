@@ -16,10 +16,10 @@ import static com.amotassic.dabaosword.util.ModTools.voice;
 public class WuguItem extends CardItem.Armoury {
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
-        if (world instanceof ServerLevel sw && hand == InteractionHand.MAIN_HAND) {
+        if (world instanceof ServerLevel sw) {
             Set<LivingEntity> targets = new HashSet<>(sw.players());
-            onUse(user, user.getMainHandItem(), targets.toArray(new LivingEntity[0]));
-            return InteractionResultHolder.success(user.getMainHandItem());
+            onUse(user, user.getItemInHand(hand), hand, targets.toArray(new LivingEntity[0]));
+            return InteractionResultHolder.success(user.getItemInHand(hand));
         }
         return super.use(world, user, hand);
     }

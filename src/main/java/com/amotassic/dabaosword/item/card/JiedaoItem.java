@@ -14,8 +14,8 @@ import static com.amotassic.dabaosword.util.ModTools.*;
 public class JiedaoItem extends CardItem.Armoury {
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
-        if (!user.level().isClientSide && hand == InteractionHand.MAIN_HAND && !entity.getMainHandItem().isEmpty()) {
-            onUse(user, user.getMainHandItem(), entity);
+        if (!user.level().isClientSide && !entity.getMainHandItem().isEmpty()) {
+            onUse(user, user.getItemInHand(hand), hand, entity);
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
@@ -26,7 +26,7 @@ public class JiedaoItem extends CardItem.Armoury {
         ItemStack main = entity.getMainHandItem();
         if (user instanceof Player player) {
             if (isCard(main)) {
-                var exData = d().cards(main, 1);
+                var exData = d().cards(main, main.getCount());
                 CardEvents.cardMove(entity, exData, player);
             } else {
                 give(player, main.copy());

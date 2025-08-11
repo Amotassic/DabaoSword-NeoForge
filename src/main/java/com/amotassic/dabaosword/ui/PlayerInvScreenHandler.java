@@ -4,7 +4,6 @@ import com.amotassic.dabaosword.api.CardEvents;
 import com.amotassic.dabaosword.api.skill.ExData;
 import com.amotassic.dabaosword.api.skill.Skill;
 import com.amotassic.dabaosword.item.ModItems;
-import com.amotassic.dabaosword.util.AllRegs;
 import com.amotassic.dabaosword.util.TempInventory;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.nbt.CompoundTag;
@@ -47,7 +46,7 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
     }
 
     public PlayerInvScreenHandler(int syncId, TempInventory inventory, Player target, Set<Integer> rowsToShow) {
-        super(AllRegs.Other.PLAYER_INV_SCREEN_HANDLER.get(), syncId);
+        super(ModItems.PLAYER_INV_SCREEN_HANDLER, syncId);
         this.target = target;
         this.inv = inventory;
         this.stack = inv.getItem(81);
@@ -107,13 +106,14 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
             writeClicks();
 
             if (stack.isEmpty()) {
-                ItemStack mainHand = player.getMainHandItem(); var mainCopy = mainHand.copy();
-                var copy = selected.copy();
+                boolean right = action == ClickType.PICKUP && button == 1;
+                ItemStack toReplace = right ? player.getMainHandItem() : player.getOffhandItem();
+                var mainCopy = toReplace.copy(); var copy = selected.copy();
 
-                if (!selected.isEmpty() && !ItemStack.matches(mainHand, selected)) {
-                    mainHand.setCount(0); selected.setCount(0);
+                if (!selected.isEmpty() && !ItemStack.matches(toReplace, selected)) {
+                    toReplace.setCount(0); selected.setCount(0);
                     if (index >= 45) getCardPack(player).removeItemNoUpdate(index - 45);
-                    player.setItemInHand(InteractionHand.MAIN_HAND, copy);
+                    player.setItemInHand(right ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND, copy);
                     give(player, mainCopy);
                 } closeGUI(player);
             }

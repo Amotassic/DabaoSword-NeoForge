@@ -1,10 +1,10 @@
 package com.amotassic.dabaosword.ui;
 
-import com.amotassic.dabaosword.util.AllRegs;
+import com.amotassic.dabaosword.item.ModItems;
+import com.amotassic.dabaosword.util.ModTools;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
@@ -18,11 +18,8 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static net.minecraft.world.inventory.InventoryMenu.*;
@@ -38,7 +35,7 @@ public class FullInvScreenHandler extends AbstractContainerMenu {
     public final boolean notSelf;
 
     public FullInvScreenHandler(int syncId, Inventory inv, FriendlyByteBuf buf) {
-        super(AllRegs.Other.FULL_INV_SCREEN_HANDLER.get(), syncId);
+        super(ModItems.FULL_INV_SCREEN_HANDLER, syncId);
         this.inventory = new SimpleContainer(86);
         this.target = (LivingEntity) inv.player.level().getEntity(buf.readInt());
         this.editable = buf.readBoolean();
@@ -186,28 +183,12 @@ public class FullInvScreenHandler extends AbstractContainerMenu {
             if (i == 39) to.setItemSlot(EquipmentSlot.FEET, stack);
             if (i == 40) to.setItemInHand(InteractionHand.OFF_HAND, stack);
             if (i >= 41) {
-                var pair = findSlot(to, i - 41);
-                if (pair != null) pair.getA().setStackInSlot(pair.getB(), stack);
-            }
-        }
-    }
-
-    public static Tuple<IDynamicStackHandler, Integer> findSlot(LivingEntity entity, int index) {
-        //将饰品栏的每一格添加到一个List中，若index与List中的饰品格的序列号相同，则输出该饰品格
-        var component = getCuriosInventory(entity);
-        List<Tuple<IDynamicStackHandler, Integer>> pairs = new ArrayList<>();
-        if (component.isPresent()) {
-            var slots = component.get().getCurios().values();
-            for (var group : slots) {
-                for (int i = 0; i < group.getSlots(); i++) {
-                    pairs.add(new Tuple<>(group.getStacks(), i));
+                var pairs = ModTools.trinketsWithSlots(to);
+                for (var pair : pairs) {
+                    if (pairs.indexOf(pair) == i - 41) pair.getA().setStackInSlot(pair.getB(), stack);
                 }
             }
         }
-        for (var pair : pairs) {
-            if (pairs.indexOf(pair) == index) return pair;
-        }
-        return null;
     }
 
     @Override public boolean stillValid(Player player) {return true;}

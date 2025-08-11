@@ -1,0 +1,73 @@
+package com.amotassic.dabaosword.client;
+
+import com.amotassic.dabaosword.command.DabaoSwordCommand;
+import com.amotassic.dabaosword.network.ActiveSkillPayload;
+import com.amotassic.dabaosword.network.QuickSwapPayload;
+import com.amotassic.dabaosword.util.ModTools;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.EntityHitResult;
+import net.neoforged.neoforge.network.PacketDistributor;
+import org.lwjgl.glfw.GLFW;
+
+public class KeyInputHandler {
+    private static String keysPressed = "";
+    private static final Minecraft mc = Minecraft.getInstance();
+
+    public static void onKeyInput(int key, int scancode, int action, int modifiers) {
+        //System.out.println("key: " + key + " scancode: " + scancode + " action: " + action + "mod: " + modifiers);
+        LocalPlayer user = mc.player;
+
+        if (action == 1 && modifiers == 2 && user != null) {
+            if (key == GLFW.GLFW_KEY_M) user.displayClientMessage(DabaoSwordCommand.menu, false);
+            if (key == GLFW.GLFW_KEY_I) PacketDistributor.sendToServer(new QuickSwapPayload(9));
+            return;
+        }
+
+        var skillKey = DabaoSwordClient.ACTIVE_SKILL.getKey().getValue();
+        if (key == skillKey && user != null && mc.screen == null) {
+            // 短按（松开）发动主动技能
+            if (action == 0 && !ChangeSkillRender.isRendering && ModTools.isEquipped(user, s -> ModTools.s(s).isActiveSkill())) {
+                var result = mc.hitResult; LivingEntity target;
+                if (result instanceof EntityHitResult eResult && eResult.getEntity() instanceof LivingEntity entity) {
+                    target = entity;
+                } else target = user;
+
+                PacketDistributor.sendToServer(new ActiveSkillPayload(target.getId()));
+            } // 长按打开技能选择轮盘
+            if (action == 2) {
+                ChangeSkillRender.isRendering = true;
+                mc.mouseHandler.releaseMouse();
+            }
+            return;
+        }
+
+        if (action != GLFW.GLFW_PRESS) return;
+
+        String keyPressed = getInputKey(key);
+        if (keyPressed.isEmpty()) {
+            keysPressed = "";
+            return;
+        }
+        keysPressed += keyPressed;
+        String MURASAME = "MURASAME";
+        if (!MURASAME.startsWith(keysPressed)) keysPressed = "";
+        if (MURASAME.equals(keysPressed)) {
+            doSomething(user);
+            keysPressed = "";
+        }
+    }
+
+    private static void doSomething(LocalPlayer player) {
+        if (player == null) return;
+        player.displayClientMessage(Component.nullToEmpty("MURASAME"), false);
+    }
+
+    private static String getInputKey(int key) {
+        if (key >= 48 && key <= 57) return String.valueOf(key - 48);
+        if (key >= 65 && key <= 90) return String.valueOf((char) key);
+        return "";
+    }
+}

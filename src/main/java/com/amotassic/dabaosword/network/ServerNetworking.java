@@ -4,6 +4,7 @@ import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.ui.PileScreenHandler;
+import com.amotassic.dabaosword.util.Tags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -68,6 +69,9 @@ public class ServerNetworking {
             if (i == 9) {
                 Player target = getClosestEntity(player, Player.class, 100, LivingEntity::isAlive);
                 if (target != null) openFullInv(player, target, false);
+            }
+            if (i >= 100) {
+                replaceTrinketSlot(trinketsWithSlots(player, s -> s.is(Tags.SKILLS)), i - 100);
             }
         });
     }

@@ -1,6 +1,7 @@
 package com.amotassic.dabaosword.item.card;
 
 import com.amotassic.dabaosword.item.ModItems;
+import com.amotassic.dabaosword.util.ModTools;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -14,30 +15,25 @@ import net.minecraft.world.phys.AABB;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.amotassic.dabaosword.util.ModTools.excuteServerCommand;
-import static com.amotassic.dabaosword.util.ModTools.voice;
-
 public class ShandianItem extends CardItem.Armoury {
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
-        if (world instanceof ServerLevel sw && hand == InteractionHand.MAIN_HAND) {
-            String[] command = {"weather thunder 15s"};
-            excuteServerCommand(user, command, true);
-            //world.setWeather(0, 15, true, true);
+        if (world instanceof ServerLevel sw) {
+            ModTools.excuteServerCommand(user, "weather thunder 15s");
 
             Set<LivingEntity> targets = new HashSet<>(sw.players());
             AABB box = new AABB(user.getOnPos()).inflate(10);
             targets.addAll(world.getEntitiesOfClass(LivingEntity.class, box, LivingEntity::isAlive));
-            onUse(user, user.getMainHandItem(), targets.toArray(new LivingEntity[0]));
+            onUse(user, user.getItemInHand(hand), hand, targets.toArray(new LivingEntity[0]));
 
-            return InteractionResultHolder.success(user.getMainHandItem());
+            return InteractionResultHolder.success(user.getItemInHand(hand));
         }
         return super.use(world, user, hand);
     }
 
     @Override
     public void effect(LivingEntity user, ItemStack card, LivingEntity target) {
-        if (target != user) voice(target, this);
+        if (target != user) ModTools.voice(target, this);
         target.addEffect(new MobEffectInstance(ModItems.SHANDIAN, 299));
     }
 

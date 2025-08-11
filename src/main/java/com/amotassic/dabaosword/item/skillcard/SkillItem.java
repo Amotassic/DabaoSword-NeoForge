@@ -2,16 +2,14 @@ package com.amotassic.dabaosword.item.skillcard;
 
 import com.amotassic.dabaosword.api.skill.ISkill;
 import com.amotassic.dabaosword.api.skill.Skill;
-import com.amotassic.dabaosword.item.card.CardItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -20,7 +18,6 @@ import net.minecraft.world.level.Level;
 import top.theillusivec4.curios.api.SlotContext;
 
 import java.util.List;
-import java.util.function.Predicate;
 
 import static com.amotassic.dabaosword.util.ModTools.*;
 
@@ -28,21 +25,17 @@ import static com.amotassic.dabaosword.util.ModTools.*;
 public class SkillItem extends Item implements ISkill {
     public SkillItem() {super(new Properties().stacksTo(1));}
 
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, Entity entity, int slotId, boolean isSelected) {
+        // curios的饰品会同时触发原版的inventoryTick（slotId为1）和curioTick
+        if (slotId != -1 && !level.isClientSide && equipped(stack)) setEquipped(stack, false);
+    }
+
     public void appendHoverText(ItemStack s, TooltipContext c, List<Component> t, TooltipFlag f) {addTip(s(s), t);}
     public void addTip(Skill skill, List<Component> tooltip) {}
     public MutableComponent getTip(ChatFormatting... format) {return getTip("", format);}
     public MutableComponent getTip(String suffix, ChatFormatting... format) {
         return Component.translatable(getDescriptionId() + ".tooltip" + suffix).withStyle(format);
-    }
-
-    @Override
-    public void onEquip(SlotContext slotContext, ItemStack prevStack, ItemStack stack) {
-        if (slotContext.entity().level() instanceof ServerLevel world && !equipped(stack)) {
-            world.players().forEach(player -> player.displayClientMessage(
-                    Component.translatable("dabaosword.entity.equip", slotContext.entity().getDisplayName(), stack.getDisplayName()), false
-            ));
-            setEquipped(stack, true);
-        }
     }
 
     public final void curioTick(SlotContext slotContext, ItemStack stack) {
@@ -66,20 +59,6 @@ public class SkillItem extends Item implements ISkill {
         ItemStack stack = customLoot(player, "draw_skill");
         if (!stack.isEmpty()) voice(player, "giftbox",3);
         give(player, stack);
-    }
-
-    /**转化卡牌技能通用方法*/
-    public static void viewAs(LivingEntity entity, Skill skill, int CD, Predicate<ItemStack> p, CardItem result) {
-        if (entity.level().isClientSide) return;
-        if (skill.getCD() > 0) return;
-        ItemStack off = entity.getOffhandItem(); var copy = off.copy();
-        if (off.isEmpty()) return;
-        if (p.test(off)) {
-            skill.setCD(CD);
-            off.shrink(1);
-            give(entity, c(copy, result).toStack());
-            voice(entity, skill.stack);
-        }
     }
 
     public Component activeSkillText(Player user, Skill skill) {

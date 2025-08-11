@@ -6,6 +6,7 @@ import com.amotassic.dabaosword.item.card.CardItem;
 import com.amotassic.dabaosword.item.card.Sha;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -70,18 +71,17 @@ public class ModifyDamage {
                 if (Objects.requireNonNull(entity.getEffect(ModItems.DEFEND)).getAmplifier() >= 2) return 1;
             }
             //决斗等物品虽然手长，但过远时普通伤害无效
-            if (!source.is(DamageTypeTags.BYPASSES_ARMOR) && entity.distanceTo(SE) > 5) {
-                if (SE.getMainHandItem().is(ModItems.JUEDOU) || SE.getMainHandItem().is(ModItems.DISCARD)) return 1;
-            }
+            if (!source.is(DamageTypeTags.BYPASSES_ARMOR) && shouldReachLong(SE) && entity.distanceTo(SE) > 5) return 1;
         } else if (at instanceof LivingEntity AT) {
             //被乐的生物无法造成伤害
             if (AT.hasEffect(ModItems.TOO_HAPPY)) return 1;
         }
 
         if (so instanceof LivingEntity SE && shouldSha(SE)) { //只要能触发杀，伤害就会被取消
-            ItemStack sha = isSha.test(SE.getMainHandItem()) ? SE.getMainHandItem() : getItem(SE, isSha);
+            InteractionHand hand = isSha.test(SE.getMainHandItem()) ? InteractionHand.MAIN_HAND : isSha.test(SE.getOffhandItem()) ? InteractionHand.OFF_HAND : null;
+            ItemStack sha = hand != null ? SE.getItemInHand(hand) : getItem(SE, isSha);
             SE.addTag("sha");
-            Sha.shaUse(SE, sha, amount, entity);
+            Sha.shaUse(SE, sha, hand, amount, entity);
             return 2;
         }
 
@@ -104,7 +104,7 @@ public class ModifyDamage {
             var stack = getCard(entity, isSha);
             if (!stack.isEmpty()) {
                 voice(entity, stack);
-                CardItem.onUse(entity, stack, true);
+                CardItem.onUse(entity, stack, null, true);
                 return 1;
             }
         }
@@ -113,7 +113,7 @@ public class ModifyDamage {
                 //此处条件是故意设置得与八卦阵条件不一样的，虽然感觉没啥用
                 if (hasCard(entity, p(ModItems.SHAN)) && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
                     ItemStack shan = new ItemStack(ModItems.SHAN);
-                    CardItem.onUse(entity, shan, true);
+                    CardItem.onUse(entity, shan, null, true);
                     shan(entity, false, source, amount);
                     return 1;
                 }

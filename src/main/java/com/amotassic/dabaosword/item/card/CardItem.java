@@ -10,6 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -57,10 +58,6 @@ public abstract class CardItem extends Item {
             tooltip.add(getTip("2"));
         }
 
-        if (stack.is(ModItems.DISCARD) || stack.is(ModItems.JUEDOU)) {
-            tooltip.add(Component.translatable("item.dabaosword.long_hand").withStyle(BOLD));
-        }
-
         if (stack.is(ModItems.BINGLIANG_ITEM)) {
             if (Screen.hasShiftDown()) {
                 tooltip.add(getTip("1"));
@@ -79,6 +76,10 @@ public abstract class CardItem extends Item {
                 tooltip.add(getTip().withStyle(RED));
                 tooltip.add(Component.translatable("dabaosword.shift_tip", Component.keybind("key.sneak")));
             }
+        }
+
+        if (stack.is(ModItems.DISCARD) || stack.is(ModItems.JUEDOU) || stack.is(ModItems.TOO_HAPPY_ITEM)) {
+            tooltip.add(Component.translatable("item.dabaosword.long_hand").withStyle(BOLD));
         }
 
         if (stack.is(ModItems.WANJIAN)) { //有大病的工具提示
@@ -109,20 +110,20 @@ public abstract class CardItem extends Item {
         tooltip.add(Component.translatable("card.suit_and_rank", card.suit.suit, card.rank.rank).withStyle(card.suit.color));
     }
 
-    public static void onUse(LivingEntity user, ItemStack stack, LivingEntity... targets) {
-        onUse(user, stack, false, targets);
+    public static void onUse(LivingEntity user, ItemStack stack, InteractionHand hand, LivingEntity... targets) {
+        onUse(user, stack, hand, false, targets);
     }
-    public static void onUse(LivingEntity user, ItemStack stack, boolean noTarget, LivingEntity... targets) {
-        onUse(user, stack, noTarget, true, targets);
+    public static void onUse(LivingEntity user, ItemStack stack, InteractionHand hand, boolean noTarget, LivingEntity... targets) {
+        onUse(user, stack, hand, noTarget, true, targets);
     }
     /**
      * @param noTarget 表示卡牌完全没有使用目标，类似于三国杀的“打出”。
      * @param consume 是否消耗卡牌。用于虚拟牌，如八卦阵视为使用的闪。
      * @param targets 卡牌的目标。对于我的mod中不便于选择目标的卡牌（比如火攻、万箭齐发等），需要将使用者填到目标中，否则卡牌不会执行任何效果。
      */
-    public static void onUse(LivingEntity user, ItemStack stack, boolean noTarget, boolean consume, LivingEntity... targets) {
+    public static void onUse(LivingEntity user, ItemStack stack, InteractionHand hand, boolean noTarget, boolean consume, LivingEntity... targets) {
         var card = c(stack); var cardData = d().cards(card, card.count);
-        if (consume) CardEvents.cardUseAndDecrement(user, stack);
+        if (consume) CardEvents.cardUseAndDecrement(user, stack, hand);
         if (card.type != 2) voice(user, card.item());
         List<LivingEntity> owners = getSkillOwners(user);
         //触发卡牌使用事件
@@ -140,7 +141,7 @@ public abstract class CardItem extends Item {
             owners.forEach(player -> getResult(Trigger.BECOME_TARGET, player, target, cardData));
 
             if (card.askForWuxie() && hasCard(target, p(ModItems.WUXIE))) { //如果目标有无懈可击，则使用无懈可击
-                onUse(target, new ItemStack(ModItems.WUXIE), true);
+                onUse(target, new ItemStack(ModItems.WUXIE), null, true);
                 continue;
             }
             card.effect(user, card.toStack(), target);

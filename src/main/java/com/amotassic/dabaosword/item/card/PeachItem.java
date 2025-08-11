@@ -12,17 +12,17 @@ public class PeachItem extends CardItem.Basic {
     //非潜行时右键，给自己回血
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
-        if (!world.isClientSide && player.getHealth() < player.getMaxHealth() && !player.isShiftKeyDown() && hand == InteractionHand.MAIN_HAND) {
-            onUse(player, player.getMainHandItem(), player);
-            return InteractionResultHolder.success(player.getMainHandItem());
+        if (!world.isClientSide && player.getHealth() < player.getMaxHealth() && !player.isShiftKeyDown()) {
+            onUse(player, player.getItemInHand(hand), hand, player);
+            return InteractionResultHolder.success(player.getItemInHand(hand));
         }
         return super.use(world, player, hand);
     }
 
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
-        if (!user.level().isClientSide && entity.getHealth() < entity.getMaxHealth() && user.isShiftKeyDown() && hand == InteractionHand.MAIN_HAND) {
-            onUse(user, user.getMainHandItem(), entity);
+        if (!user.level().isClientSide && entity.getHealth() < entity.getMaxHealth() && user.isShiftKeyDown()) {
+            onUse(user, user.getItemInHand(hand), hand, entity);
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;

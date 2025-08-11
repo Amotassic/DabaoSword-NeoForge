@@ -12,9 +12,9 @@ import static com.amotassic.dabaosword.util.ModTools.draw;
 public class WuzhongItem extends CardItem.Armoury {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player user, InteractionHand hand) {
-        if (!level.isClientSide && hand == InteractionHand.MAIN_HAND) {
-            onUse(user, user.getMainHandItem(), user);
-            return InteractionResultHolder.success(user.getMainHandItem());
+        if (!level.isClientSide) {
+            onUse(user, user.getItemInHand(hand), hand, user);
+            return InteractionResultHolder.success(user.getItemInHand(hand));
         }
         return super.use(level, user, hand);
     }

@@ -1,11 +1,11 @@
 package com.amotassic.dabaosword.entity;
 
 import com.amotassic.dabaosword.api.CardEvents;
+import com.amotassic.dabaosword.damage_type.ModDT;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -94,7 +94,10 @@ public class XuyouEntity extends Monster implements RangedAttackMob {
     protected SoundEvent getDeathSound() {return getSound("dabaosword", "xuyou");}
 
     @Override
-    protected SoundEvent getHurtSound(DamageSource source) {return source.type().effects().sound();}
+    protected SoundEvent getHurtSound(DamageSource source) {
+        if (source.is(ModDT.LOSEHP)) return getSound("dabaosword", "losehp");
+        return source.type().effects().sound();
+    }
 
     @Override
     public void die(DamageSource damageSource) {
@@ -111,7 +114,7 @@ public class XuyouEntity extends Monster implements RangedAttackMob {
     public void performRangedAttack(@NotNull LivingEntity target, float v) {
         bbTimes++;
         target.invulnerableTime = 0;
-        target.hurt(getDamageSource(this, DamageTypes.GENERIC), 2);
+        target.hurt(ModDT.bbll(this), 2);
         voice(this, "bbji");
     }
 }

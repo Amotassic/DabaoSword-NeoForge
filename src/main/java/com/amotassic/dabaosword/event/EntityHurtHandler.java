@@ -3,7 +3,6 @@ package com.amotassic.dabaosword.event;
 import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.api.skill.Trigger;
 import com.amotassic.dabaosword.effect.ShandianEffect;
-import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.item.card.CardItem;
 import com.amotassic.dabaosword.util.Tags;
 import net.minecraft.network.chat.Component;
@@ -23,7 +22,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 import java.util.Random;
 
-import static com.amotassic.dabaosword.api.CardEvents.hurtBy;
+import static com.amotassic.dabaosword.api.CardEvents.hurtByCard;
 import static com.amotassic.dabaosword.util.ModTools.*;
 
 @EventBusSubscriber(modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
@@ -34,7 +33,7 @@ public class EntityHurtHandler {
             if (entity.isAlive()) return;
             ItemStack stack = getCard(entity, canSaveDying);
             if (!stack.isEmpty()) {
-                CardItem.onUse(entity, stack, true);
+                CardItem.onUse(entity, stack, null, true);
                 entity.setHealth(entity.getHealth() - amount + 5);
                 amount -= 5;
             }
@@ -74,8 +73,7 @@ public class EntityHurtHandler {
 
             trySave(entity, amount);
 
-            if (isHuogong(source)) hurtBy(entity, ModItems.FIRE_ATTACK);
-            if (isShandian(source)) hurtBy(entity, ModItems.SHANDIAN_ITEM);
+            if (source.is(Tags.FROM_CARD)) hurtByCard(entity, source, amount);
 
             if (source.getEntity() instanceof LivingEntity living) {
                 if (living.getTags().contains("px")) entity.invulnerableTime = 0;

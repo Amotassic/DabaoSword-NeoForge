@@ -15,10 +15,10 @@ import java.util.Set;
 public class TiesuoItem extends CardItem.Armoury {
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
-        if (!user.level().isClientSide && !entity.isCurrentlyGlowing() && hand == InteractionHand.MAIN_HAND) {
+        if (!user.level().isClientSide && !entity.isCurrentlyGlowing()) {
             AABB box = user.getBoundingBox().expandTowards(user.getViewVector(1.0F).scale(10));
             Set<LivingEntity> targets = new HashSet<>(user.level().getEntitiesOfClass(LivingEntity.class, box, LivingEntity::isAlive));
-            onUse(user, user.getMainHandItem(), targets.toArray(new LivingEntity[0]));
+            onUse(user, user.getItemInHand(hand), hand, targets.toArray(new LivingEntity[0]));
             user.removeEffect(MobEffects.GLOWING);
             return InteractionResult.SUCCESS;
         }
