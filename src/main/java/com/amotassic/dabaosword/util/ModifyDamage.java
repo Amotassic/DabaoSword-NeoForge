@@ -70,8 +70,6 @@ public class ModifyDamage {
             if (!(SE instanceof Player) && entity.hasEffect(ModItems.DEFEND)) {
                 if (Objects.requireNonNull(entity.getEffect(ModItems.DEFEND)).getAmplifier() >= 2) return 1;
             }
-            //决斗等物品虽然手长，但过远时普通伤害无效
-            if (!source.is(DamageTypeTags.BYPASSES_ARMOR) && shouldReachLong(SE) && entity.distanceTo(SE) > 5) return 1;
         } else if (at instanceof LivingEntity AT) {
             //被乐的生物无法造成伤害
             if (AT.hasEffect(ModItems.TOO_HAPPY)) return 1;

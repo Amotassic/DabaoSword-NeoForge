@@ -16,8 +16,9 @@ public class TiesuoItem extends CardItem.Armoury {
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
         if (!user.level().isClientSide && !entity.isCurrentlyGlowing()) {
-            AABB box = user.getBoundingBox().expandTowards(user.getViewVector(1.0F).scale(10));
+            AABB box = new AABB(entity.getOnPos()).inflate(5);
             Set<LivingEntity> targets = new HashSet<>(user.level().getEntitiesOfClass(LivingEntity.class, box, LivingEntity::isAlive));
+            targets.remove(user);
             onUse(user, user.getItemInHand(hand), hand, targets.toArray(new LivingEntity[0]));
             user.removeEffect(MobEffects.GLOWING);
             return InteractionResult.SUCCESS;
@@ -29,6 +30,8 @@ public class TiesuoItem extends CardItem.Armoury {
     public void effect(LivingEntity user, ItemStack card, LivingEntity target) {
         target.addEffect(new MobEffectInstance(MobEffects.GLOWING, -1, 0, false, true,false));
     }
+
+    @Override public boolean rangedUse() {return true;}
 
     @Override public boolean askForWuxie() {return true;}
 }

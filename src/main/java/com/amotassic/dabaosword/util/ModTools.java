@@ -142,8 +142,7 @@ public class ModTools {
 
     public static boolean shouldReachLong(LivingEntity entity) {
         for (var hand : InteractionHand.values()) {
-            ItemStack stack = entity.getItemInHand(hand);
-            if (stack.is(ModItems.DISCARD) || stack.is(ModItems.JUEDOU) || stack.is(ModItems.TOO_HAPPY_ITEM)) return true;
+            if (entity.getItemInHand(hand).getItem() instanceof CardItem c && c.rangedUse()) return true;
         }
         return false;
     }

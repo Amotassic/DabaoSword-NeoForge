@@ -413,7 +413,7 @@ public class Wei {
             tooltip.add(getTip(BLUE));
         }
 
-        @Override public Predicate<ItemStack> getConvertFilter() {return isSpadeCard;}
+        @Override public Predicate<ItemStack> getConvertFilter() {return isBlackCard;}
         @Override public CardItem convert(ItemStack stack) {return ModItems.SHAN;}
     }
 

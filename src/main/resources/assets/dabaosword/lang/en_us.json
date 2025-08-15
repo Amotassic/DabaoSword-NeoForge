@@ -113,6 +113,8 @@
   "effect.dabaosword.defended": "Decrease in attack range",
   "item.dabaosword.gift_box": "Gift Box",
   "item.dabaosword.gift_box.tooltip": "Hold gold ingots or gold blocks in the off-hand, right-click to draw a skill",
+  "item.dabaosword.warm_wine": "The Wine Still Warm",
+  "item.dabaosword.warm_wine.tooltip": "The wine chills after 3 minutes",
   "item.dabaosword.sha": "Slash",
   "item.dabaosword.sha.tooltip": "Consumes this card after hitting to increase damage by 5",
   "item.dabaosword.fire_sha": "Fire Slash",
@@ -515,9 +517,15 @@
   "screen.dabaosword.ctrl_z": "Ctrl+Z Deselect All",
   "screen.dabaosword.min_tip": "Minimum %1$s cards required  ",
   "screen.dabaosword.max_tip": "Maximum %1$s cards allowed",
-  "screen.dabaosword.select_card": "右键点击将物品转移到主手，否则转移到副手",
+  "screen.dabaosword.select_card": "Right-click moves to main hand, otherwise to off-hand",
 
   "category.dabaosword.keybindings": "DabaoSword",
   "key.dabaosword.active_skill": "Active skill",
-  "key.dabaosword.select_card": "Quick Switch Item"
+  "key.dabaosword.select_card": "Quick Switch Item",
+
+  "dabaosword.configuration.SearchRadius": "Search radius create game",
+  "dabaosword.configuration.WaitTime": "Wait time before game starts",
+  "dabaosword.configuration.TimeOut": "Time to end game if no one scores",
+  "dabaosword.configuration.KillStreak": "Play sounds when kill streak",
+  "dabaosword.configuration.FireAttackBreaksBlock": "Fire Attack breaks block"
 }

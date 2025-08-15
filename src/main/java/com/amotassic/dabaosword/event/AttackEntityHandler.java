@@ -16,9 +16,13 @@ public class AttackEntityHandler {
     public static void AttackEntity(AttackEntityEvent event) {
         Player player = event.getEntity();
         Entity entity = event.getTarget();
-        if (!entity.level().isClientSide && !player.isSpectator() && entity instanceof LivingEntity target) {
-            if (ModTools.shouldReachLong(player) && target.distanceTo(player) >= 5) return;
-            for (var skill : ModTools.getSkillsMayUse(player)) {
+        if (!entity.level().isClientSide && !player.isSpectator()) {
+            //决斗等物品虽然手长，但过远时普通伤害无效
+            if (ModTools.shouldReachLong(player) && entity.distanceTo(player) >= 5) {
+                event.setCanceled(true);
+                return;
+            }
+            if (entity instanceof LivingEntity target) for (var skill : ModTools.getSkillsMayUse(player)) {
                 skill.item.preAttack(player, target, skill);
             }
         }

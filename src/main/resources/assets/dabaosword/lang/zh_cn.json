@@ -113,6 +113,8 @@
   "effect.dabaosword.defended": "攻击范围下降",
   "item.dabaosword.gift_box": "礼盒",
   "item.dabaosword.gift_box.tooltip": "副手拿好金锭或金块，右键抽技能",
+  "item.dabaosword.warm_wine": "温酒",
+  "item.dabaosword.warm_wine.tooltip": "3分钟后，酒就冷了",
   "item.dabaosword.sha": "杀",
   "item.dabaosword.sha.tooltip": "攻击命中后，消耗此牌，使伤害+5",
   "item.dabaosword.fire_sha": "火杀",

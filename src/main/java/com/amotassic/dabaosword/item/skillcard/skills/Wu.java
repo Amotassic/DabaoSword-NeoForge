@@ -325,7 +325,7 @@ public class Wu {
         }
 
         @Override public boolean chooseEquipment() {return true;}
-        @Override public Predicate<ItemStack> getConvertFilter() {return isSpadeCard;}
+        @Override public Predicate<ItemStack> getConvertFilter() {return isBlackCard;}
         @Override public CardItem convert(ItemStack stack) {return ModItems.DISCARD;}
     }
 
