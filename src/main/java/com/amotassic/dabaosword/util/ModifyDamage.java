@@ -138,12 +138,4 @@ public class ModifyDamage {
             if (bl) player.displayClientMessage(Component.translatable("dabaosword.bagua"),true);
         }
     }
-
-    public static ItemStack modifyStack(ItemStack stack) {
-        if (stack.is(ModItems.SUNSHINE_SMILE)) {
-            stack.enchant(ModTools.getEntry(ModItems.CRIT), 1);
-        }
-        return stack;
-    }
-
 }

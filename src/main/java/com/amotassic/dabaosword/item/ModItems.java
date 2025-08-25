@@ -12,6 +12,8 @@ import com.amotassic.dabaosword.item.tool.*;
 import com.amotassic.dabaosword.ui.FullInvScreenHandler;
 import com.amotassic.dabaosword.ui.PileScreenHandler;
 import com.amotassic.dabaosword.ui.PlayerInvScreenHandler;
+import com.amotassic.dabaosword.util.ModTools;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
@@ -153,10 +155,6 @@ public class ModItems {
     public static final ResourceKey<CreativeModeTab> ZZRS = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath("dabaosword", "zzrs"));
 
     private static void addToGroup(CreativeModeTab.ItemDisplayParameters context, CreativeModeTab.Output entries) {
-        var wrapper = context.holders().lookup(Registries.ENCHANTMENT).orElseThrow();
-        var entry = wrapper.get(CRIT).orElse(null);
-        ItemStack smile = new ItemStack(SUNSHINE_SMILE);
-        if (entry != null) smile.enchant(entry, 1);
         //添加所有卡牌
         CARDS.forEach(entries::accept);
         entries.accept(GAIN_CARD);
@@ -167,8 +165,17 @@ public class ModItems {
         entries.accept(GIFTBOX);
         entries.accept(BBJI);
         entries.accept(LET_ME_CC);
-        entries.accept(smile);
+        addToGroupWithEnchant(entries, SUNSHINE_SMILE, CRIT, 1);
         entries.accept(XUYOU_SPAWN_EGG);
+    }
+
+    private static void addToGroupWithEnchant(CreativeModeTab.Output output, Item item, ResourceKey<Enchantment> key, int level) {
+        ItemStack stack = new ItemStack(item);
+        var player = Minecraft.getInstance().player;
+        if (player != null) {
+            stack.enchant(ModTools.getEntry(key, player), level);
+        }
+        output.accept(stack);
     }
 
     //注册部分

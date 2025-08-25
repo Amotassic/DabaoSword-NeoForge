@@ -11,6 +11,13 @@
     "X X"
   ],
   "result": {
+    "components": {
+      "minecraft:enchantments": {
+        "levels": {
+          "dabaosword:crit": 1
+        }
+      }
+    },
     "count": 1,
     "id": "dabaosword:sunshine_smile"
   },

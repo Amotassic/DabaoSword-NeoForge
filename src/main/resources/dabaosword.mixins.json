@@ -6,9 +6,6 @@
   "refmap": "dabaosword.refmap.json",
   "mixins": [
     "ArrowEntityMixin",
-    "Crafter",
-    "CrafterScreen",
-    "CraftingMixin",
     "EntityMixin",
     "ExplosionMixin",
     "ItemEntityMixin",

@@ -85,7 +85,7 @@
   "item.dabaosword.bingliang.tooltip2": "Affected players remain weakened until two Draw Card are removed",
   "effect.dabaosword.bingliang": "Starvation",
   "item.dabaosword.tiesuo": "Iron Shackles",
-  "item.dabaosword.tiesuo.tooltip": "Upon use on a entity, connects all entities within ten blocks in front of you",
+  "item.dabaosword.tiesuo.tooltip": "Upon use on a entity, connects all entities near by",
   "item.dabaosword.jiedao": "Borrow a Knife to Kill",
   "item.dabaosword.jiedao.tooltip": "Obtains the main hand item of the opponent",
   "item.dabaosword.nanman": "Barbarian Invasion",

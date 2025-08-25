@@ -4,6 +4,7 @@ import com.amotassic.dabaosword.DabaoSword;
 import com.amotassic.dabaosword.item.skillcard.SkillCards;
 import com.amotassic.dabaosword.network.QuickSwapPayload;
 import com.amotassic.dabaosword.network.ShensuPayload;
+import com.amotassic.dabaosword.util.ModTools;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -11,8 +12,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-
-import static com.amotassic.dabaosword.util.ModTools.hasTrinket;
 
 @EventBusSubscriber(value = Dist.CLIENT, modid = DabaoSword.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class ClientTickEnd {
@@ -28,7 +27,7 @@ public class ClientTickEnd {
         }
 
         if (user == null) return;
-        if (hasTrinket(SkillCards.SHENSU, user)) {
+        if (ModTools.hasTrinket(SkillCards.SHENSU, user)) {
             Vec3 lastPos = new Vec3(user.xOld, user.yOld, user.zOld);
             float speed = (float) (user.position().distanceTo(lastPos) * 20);
             if (speed > 0) PacketDistributor.sendToServer(new ShensuPayload(speed));
