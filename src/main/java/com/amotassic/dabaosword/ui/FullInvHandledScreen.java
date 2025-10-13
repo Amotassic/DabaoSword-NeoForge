@@ -52,7 +52,7 @@ public class FullInvHandledScreen extends AbstractContainerScreen<FullInvScreenH
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         guiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
         if (notSelf) guiGraphics.drawString(this.font, this.playerInventoryTitle, 8, 21 + rows * 18, 0x404040, false);
-        if (slotsEnabled.contains(41)) guiGraphics.drawString(this.font, Component.translatable("trinkets"), 8, 5 + armorRow * 18, 0x404040, false);
+        if (slotsEnabled.contains(42)) guiGraphics.drawString(this.font, Component.translatable("trinkets"), 8, 5 + armorRow * 18, 0x404040, false);
     }
 
     @Override

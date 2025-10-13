@@ -53,7 +53,7 @@ public class ServerNetworking {
             Player player = c.player();
             int i = pl.id();
             if (i == 0) openInv(player, player, player, Component.translatable("key.dabaosword.select_card"), ItemStack.EMPTY, false, false, 3);
-            if (i == 2) player.openMenu(new SimpleMenuProvider((id, inv, player1) -> new PileScreenHandler(id, inv), Component.translatable("card_pile.title")), (buf -> buf.writeInt(0)));
+            if (i == 2) player.openMenu(new SimpleMenuProvider((id, inv, player1) -> new PileScreenHandler(id, inv), Component.translatable("card_pile.title")), (buf -> {}));
             if (i == 3) {
                 var pair = getDamage(player);
                 if (pair != null) {

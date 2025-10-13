@@ -35,7 +35,7 @@ public class ChangeSkillRender {
 
         LocalPlayer player = client.player;
         if (!isRendering || player == null) return;
-        if (skills.isEmpty()) skills = ModTools.trinketsWithSlots(player, s -> s.is(Tags.SKILLS)).stream().map(p -> p.getA().getStackInSlot(p.getB())).toList();
+        if (skills.isEmpty()) skills = ModTools.trinketsWithSlots(player, s -> s.is(Tags.SKILLS)).stream().map(p -> p.getA().getStacks().getStackInSlot(p.getB())).toList();
         if (skills.size() < 2) {
             close();
             client.mouseHandler.grabMouse();

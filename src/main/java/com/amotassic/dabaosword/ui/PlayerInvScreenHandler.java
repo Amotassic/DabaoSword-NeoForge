@@ -5,7 +5,6 @@ import com.amotassic.dabaosword.api.skill.ExData;
 import com.amotassic.dabaosword.api.skill.Skill;
 import com.amotassic.dabaosword.item.ModItems;
 import com.amotassic.dabaosword.util.TempInventory;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -57,31 +56,18 @@ public class PlayerInvScreenHandler extends AbstractContainerMenu {
             if (rowsToShow.contains(j)) {
                 if (j == 0) {
                     for (int i = 0; i < 4; ++i) addSlot(new Slot(inv, i, 8 + i * 18, 18));
-                    addSlot(new Slot(inv, 4, 8 + 4 * 18, 18) {
-                        public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-                            return Pair.of(BLOCK_ATLAS, EMPTY_ARMOR_SLOT_HELMET);
-                        }
-                    });
-                    addSlot(new Slot(inv, 5, 8 + 5 * 18, 18) {
-                        public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-                            return Pair.of(BLOCK_ATLAS, EMPTY_ARMOR_SLOT_CHESTPLATE);
-                        }
-                    });
-                    addSlot(new Slot(inv, 6, 8 + 6 * 18, 18) {
-                        public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-                            return Pair.of(BLOCK_ATLAS, EMPTY_ARMOR_SLOT_LEGGINGS);
-                        }
-                    });
-                    addSlot(new Slot(inv, 7, 8 + 7 * 18, 18) {
-                        public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-                            return Pair.of(BLOCK_ATLAS, EMPTY_ARMOR_SLOT_BOOTS);
-                        }
-                    });
-                    addSlot(new Slot(inv, 8, 8 + 8 * 18, 18) {
-                        public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-                            return Pair.of(BLOCK_ATLAS, EMPTY_ARMOR_SLOT_SHIELD);
-                        }
-                    });
+                    List<Object[]> slotData = Arrays.asList(
+                            new Object[]{4, EMPTY_ARMOR_SLOT_HELMET},
+                            new Object[]{5, EMPTY_ARMOR_SLOT_CHESTPLATE},
+                            new Object[]{6, EMPTY_ARMOR_SLOT_LEGGINGS},
+                            new Object[]{7, EMPTY_ARMOR_SLOT_BOOTS},
+                            new Object[]{8, EMPTY_ARMOR_SLOT_SHIELD}
+                    ); //护甲和副手的格子
+                    for (Object[] data : slotData) {
+                        int slotId = (int) data[0];
+                        ResourceLocation texture = (ResourceLocation) data[1];
+                        addSlot(new Slot(inv, slotId, 8 + slotId * 18, 18).setBackground(BLOCK_ATLAS, texture));
+                    }
                 }
                 else {
                     for (int i = 0; i < 9; ++i) addSlot(new Slot(inv, i + j * 9, 8 + i * 18, 18 + line * 18));

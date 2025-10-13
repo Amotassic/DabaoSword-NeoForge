@@ -58,7 +58,7 @@ import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.theillusivec4.curios.api.SlotResult;
-import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
+import top.theillusivec4.curios.api.type.inventory.ICurioStacksHandler;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -109,29 +109,29 @@ public class ModTools {
     public static List<ItemStack> allTrinkets(LivingEntity entity) {
         return getCuriosInventory(entity).map(h -> h.findCurios(s -> true).stream().map(SlotResult::stack).toList()).orElse(Collections.emptyList());
     }
-    public static List<Tuple<IDynamicStackHandler, Integer>> trinketsWithSlots(LivingEntity entity) {
+    public static List<Tuple<ICurioStacksHandler, Integer>> trinketsWithSlots(LivingEntity entity) {
         return trinketsWithSlots(entity, s -> true);
     }
-    public static List<Tuple<IDynamicStackHandler, Integer>> trinketsWithSlots(LivingEntity entity, Predicate<ItemStack> filter) {
-        List<Tuple<IDynamicStackHandler, Integer>> pairs = new ArrayList<>();
+    public static List<Tuple<ICurioStacksHandler, Integer>> trinketsWithSlots(LivingEntity entity, Predicate<ItemStack> filter) {
+        List<Tuple<ICurioStacksHandler, Integer>> pairs = new ArrayList<>();
         getCuriosInventory(entity).ifPresent(c -> c.getCurios().values().forEach(group -> {
             for (int i = 0; i < group.getSlots(); i++) {
-                if (filter.test(group.getStacks().getStackInSlot(i))) pairs.add(new Tuple<>(group.getStacks(), i));
+                if (filter.test(group.getStacks().getStackInSlot(i))) pairs.add(new Tuple<>(group, i));
             }
         }));
         return pairs;
     }
 
-    public static void replaceTrinketSlot(List<Tuple<IDynamicStackHandler, Integer>> pairs, int slot) {
+    public static void replaceTrinketSlot(List<Tuple<ICurioStacksHandler, Integer>> pairs, int slot) {
         if (slot < 1 || slot >= pairs.size()) return;
-        List<ItemStack> copys = new ArrayList<>(pairs.stream().map(p -> p.getA().getStackInSlot(p.getB()).copy()).toList());
+        List<ItemStack> copys = new ArrayList<>(pairs.stream().map(p -> p.getA().getStacks().getStackInSlot(p.getB()).copy()).toList());
         ItemStack stack = copys.get(slot).copy();
         for (int i = slot; i > 0; i--) {
             copys.set(i, copys.get(i - 1));
         }
         copys.set(0, stack);
         for (int i = 0; i < pairs.size(); i++) {
-            pairs.get(i).getA().setStackInSlot(pairs.get(i).getB(), copys.get(i));
+            pairs.get(i).getA().getStacks().setStackInSlot(pairs.get(i).getB(), copys.get(i));
         }
     }
 
