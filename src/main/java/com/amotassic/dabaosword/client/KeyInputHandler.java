@@ -1,15 +1,13 @@
 package com.amotassic.dabaosword.client;
 
 import com.amotassic.dabaosword.command.DabaoSwordCommand;
-import com.amotassic.dabaosword.network.ActiveSkillPayload;
-import com.amotassic.dabaosword.network.QuickSwapPayload;
+import com.amotassic.dabaosword.network.SimplePayload;
 import com.amotassic.dabaosword.util.ModTools;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.EntityHitResult;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 public class KeyInputHandler {
@@ -22,7 +20,7 @@ public class KeyInputHandler {
 
         if (action == 1 && modifiers == 2 && user != null) {
             if (key == GLFW.GLFW_KEY_M) user.displayClientMessage(DabaoSwordCommand.menu, false);
-            if (key == GLFW.GLFW_KEY_I) PacketDistributor.sendToServer(new QuickSwapPayload(9));
+            if (key == GLFW.GLFW_KEY_I) SimplePayload.sendToServer(SimplePayload.VIEW_INFO);
             return;
         }
 
@@ -35,7 +33,7 @@ public class KeyInputHandler {
                     target = entity;
                 } else target = user;
 
-                PacketDistributor.sendToServer(new ActiveSkillPayload(target.getId()));
+                SimplePayload.sendToServer(SimplePayload.ACTIVE_SKILL, Integer.toString(target.getId()));
             } // 长按打开技能选择轮盘
             if (action == 2) {
                 ChangeSkillRender.isRendering = true;

@@ -1,7 +1,7 @@
 package com.amotassic.dabaosword.client;
 
 import com.amotassic.dabaosword.DabaoSword;
-import com.amotassic.dabaosword.network.QuickSwapPayload;
+import com.amotassic.dabaosword.network.SimplePayload;
 import com.amotassic.dabaosword.util.ModTools;
 import com.amotassic.dabaosword.util.Tags;
 import net.minecraft.client.Minecraft;
@@ -14,7 +14,6 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +81,7 @@ public class ChangeSkillRender {
         if (part <= 0) return;
 
         // System.out.printf("鼠标与中心夹角: %.2f°，所在部分: %d\n", angleDegrees, part);
-        PacketDistributor.sendToServer(new QuickSwapPayload(part + 100));
+        SimplePayload.sendToServer(SimplePayload.REPLACE_TRINKET, Integer.toString(part));
     }
 
     private static double getAngleDegrees(double x, double y) {
